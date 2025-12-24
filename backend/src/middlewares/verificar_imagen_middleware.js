@@ -1,5 +1,5 @@
 const fs = require('fs');
-const upload = require('../config/multerConfig');
+const upload = require('../config/multer_config');
 
 const verificarImagen = (req, res, next) => {
   upload.array('image', 2)(req, res, function (err) {
