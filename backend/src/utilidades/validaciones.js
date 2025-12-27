@@ -11,5 +11,5 @@ const validarCorreo = (correo) => {
 };
 
 module.exports = {
-    validarCorreo
+  validarCorreo
 }

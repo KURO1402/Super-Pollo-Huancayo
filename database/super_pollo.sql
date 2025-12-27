@@ -2,6 +2,16 @@ CREATE DATABASE super_pollo_hyo;
 
 USE super_pollo_hyo;
 
+-- Tabla para verificar correos
+CREATE TABLE verificacion_correos(
+    id_verificacion INT PRIMARY KEY AUTO_INCREMENT,
+    correo_verificacion VARCHAR(100) NOT NULL,
+    codigo_verificacion CHAR(6) NOT NULL,
+    expiracion_verificacion DATETIME NOT NULL,
+    estado_verificacion TINYINT(1) NOT NULL,
+    registro_verificacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+
 -- Tabla de roles
 CREATE TABLE rol_usuario (
     id_rol INT PRIMARY KEY AUTO_INCREMENT,

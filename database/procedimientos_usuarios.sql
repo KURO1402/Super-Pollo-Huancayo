@@ -1,6 +1,10 @@
 USE super_pollo_hyo;
 DROP PROCEDURE IF EXISTS sp_registrar_usuario;
 DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
+DROP PROCEDURE IF EXISTS sp_registrar_codigo_verificacion;
+DROP PROCEDURE IF EXISTS sp_obtener_verificacion_correo;
+DROP PROCEDURE IF EXISTS sp_verificar_codigo_correo;
+DROP PROCEDURE IF EXISTS sp_verificar_validacion_correo;
 
 DELIMITER //
 
@@ -74,6 +78,129 @@ BEGIN
     SELECT COUNT(*) AS total
     FROM usuarios
     WHERE correo_usuario = p_correo_usuario;
+END //
+
+-- Procedimiento para registrar un codigo de verificación de un correo
+CREATE PROCEDURE sp_registrar_codigo_verificacion (
+    IN p_correo VARCHAR(100),
+    IN p_codigo CHAR(6)
+)
+BEGIN
+    DECLARE v_existente INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    SELECT COUNT(*) INTO v_existente
+    FROM verificacion_correos
+    WHERE correo_verificacion = p_correo AND estado_verificacion = 0;
+
+    IF v_existente > 0 THEN
+        UPDATE verificacion_correos
+        SET 
+            codigo_verificacion = p_codigo,
+            expiracion_verificacion = DATE_ADD(NOW(), INTERVAL 5 MINUTE),
+            registro_verificacion = NOW()
+        WHERE correo_verificacion = p_correo AND estado_verificacion = 0;
+    ELSE
+        INSERT INTO verificacion_correos (
+            correo_verificacion,
+            codigo_verificacion,
+            expiracion_verificacion
+        )
+        VALUES (
+            p_correo,
+            p_codigo,
+            DATE_ADD(NOW(), INTERVAL 5 MINUTE)
+        );
+    END IF;
+
+    COMMIT;
+END //
+
+CREATE PROCEDURE sp_verificar_codigo_correo(
+    IN p_correo VARCHAR(100),
+    IN p_codigo CHAR(6),
+    IN p_fecha_actual DATETIME
+)
+BEGIN
+    DECLARE v_id INT;
+    DECLARE v_estado TINYINT(1);
+    DECLARE v_expiracion DATETIME;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    SELECT 
+        id_verificacion,
+        estado_verificacion,
+        expiracion_verificacion
+    INTO 
+        v_id,
+        v_estado,
+        v_expiracion
+    FROM verificacion_correos
+    WHERE correo_verificacion = p_correo
+      AND codigo_verificacion = p_codigo
+    LIMIT 1;
+
+    IF v_id IS NULL THEN
+        SELECT 2 AS status, 'El código es incorrecto o no existe' AS mensaje;
+        ROLLBACK;
+
+    ELSEIF v_estado = 1 THEN
+        SELECT 3 AS status,'Este código ya fue utilizado' AS mensaje;
+        ROLLBACK;
+
+    ELSEIF v_expiracion < p_fecha_actual THEN
+        SELECT 4 AS status, 'El código ha expirado' AS mensaje;
+        ROLLBACK;
+
+    ELSE
+        UPDATE verificacion_correos
+        SET estado_verificacion = 1
+        WHERE id_verificacion = v_id;
+
+        COMMIT;
+        SELECT 1 AS status, 'Correo verificado correctamente' AS mensaje;
+    END IF;
+
+END //
+
+CREATE PROCEDURE sp_verificar_validacion_correo(
+    IN p_correo VARCHAR(100)
+)
+BEGIN
+    SELECT estado_verificacion
+    FROM verificacion_correos
+    WHERE correo_verificacion = p_correo
+    ORDER BY registro_verificacion DESC
+    LIMIT 1;
+END //
+
+CREATE PROCEDURE sp_seleccionar_usuario_correo(
+    IN p_correoUsuario VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        u.idUsuario,
+        u.nombresUsuario,
+        u.apellidosUsuario,
+        u.correoUsuario,
+        u.clave,
+        u.idRol
+    FROM usuarios u
+    WHERE u.correoUsuario = p_correoUsuario;
 END //
 
 DELIMITER ;

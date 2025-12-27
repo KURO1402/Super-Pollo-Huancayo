@@ -43,7 +43,79 @@ const seleccionarUsuarioPorCorreoModel = async (correo) => {
     }
 };
 
+const registrarVerificacionCorreoModel = async (correo, codigo) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_registrar_codigo_verificacion(?, ?)', [correo, codigo]);
+
+        return result;
+    } catch (err) {
+        console.log('Error al registrar codigo de verificacion en la BD.', err.message);
+        throw new Error('Error al insertar codigo de verificacion en la base de datos');
+
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
+const validarCodigoCorreoModel = async (correo, codigo, fechaActual) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_verificar_codigo_correo(?, ?, ?)', [correo, codigo, fechaActual]);
+
+        return  result[0][0];
+
+    } catch (err) {
+        console.log(err.message)
+        throw new Error('Error al validar codigo de correo en la base de datos.');
+
+    } finally {
+        if(conexion) conexion.release();
+    }
+};
+
+const validarVerificacionCorreo = async (correo) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute('CALL sp_verificar_validacion_correo(?)', [correo]);
+
+        return rows[0]?.[0] || null;
+
+    } catch (err) {
+        throw Object.assign(new Error('Error al obtener el estado de verificación del correo'), { status: 500 });
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const seleccionarUsuarioCorreoModel = async (correoUsuario) => {
+    let conexion;
+    try {
+
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL seleccionarUsuarioCorreo(?)', [correoUsuario]);
+
+        return result[0];
+    } catch (err) {
+
+        throw new Error('Error en la base de datos al buscar usuario');
+
+    } finally {
+
+        if (conexion) conexion.release();
+
+    }
+};
+
 module.exports = {
     registroUsuarioModel,
-    seleccionarUsuarioPorCorreoModel
+    seleccionarUsuarioPorCorreoModel,
+    registrarVerificacionCorreoModel,
+    validarCodigoCorreoModel,
+    validarVerificacionCorreo
 }
