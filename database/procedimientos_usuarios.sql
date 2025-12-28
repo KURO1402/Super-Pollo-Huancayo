@@ -1,10 +1,11 @@
 USE super_pollo_hyo;
 DROP PROCEDURE IF EXISTS sp_registrar_usuario;
-DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
+DROP PROCEDURE IF EXISTS sp_seleccionar_total_usuario_correo;
 DROP PROCEDURE IF EXISTS sp_registrar_codigo_verificacion;
 DROP PROCEDURE IF EXISTS sp_obtener_verificacion_correo;
 DROP PROCEDURE IF EXISTS sp_verificar_codigo_correo;
 DROP PROCEDURE IF EXISTS sp_verificar_validacion_correo;
+DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
 
 DELIMITER //
 
@@ -71,7 +72,7 @@ BEGIN
 END //
 
 -- Procedimiento para seleccionar un total de conteos de usuarios por correo
-CREATE PROCEDURE sp_seleccionar_usuario_correo (
+CREATE PROCEDURE sp_seleccionar_total_usuario_correo (
     IN p_correo_usuario VARCHAR(50)
 )
 BEGIN
@@ -177,6 +178,8 @@ BEGIN
 
 END //
 
+
+-- Procedimiento para iniciar sesion 
 CREATE PROCEDURE sp_verificar_validacion_correo(
     IN p_correo VARCHAR(100)
 )
@@ -193,14 +196,21 @@ CREATE PROCEDURE sp_seleccionar_usuario_correo(
 )
 BEGIN
     SELECT 
-        u.idUsuario,
-        u.nombresUsuario,
-        u.apellidosUsuario,
-        u.correoUsuario,
-        u.clave,
-        u.idRol
+        u.id_usuario,
+        u.nombre_usuario,
+        u.apellido_usuario,
+        u.correo_usuario,
+        u.clave_usuario,
+        r.id_rol,
+        r.nombre_rol
     FROM usuarios u
-    WHERE u.correoUsuario = p_correoUsuario;
+    INNER JOIN usuario_rol ur 
+        ON u.id_usuario = ur.id_usuario
+    INNER JOIN rol_usuario r 
+        ON ur.id_rol = r.id_rol
+    WHERE u.correo_usuario = p_correoUsuario
+      AND u.estado_usuario = 1
+      AND ur.rol_activo = 1;
 END //
 
 DELIMITER ;

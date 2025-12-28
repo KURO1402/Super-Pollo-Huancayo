@@ -20,14 +20,14 @@ const registroUsuarioModel = async (nombre, apellido, correo, clave, telefono) =
     }
 };
 
-const seleccionarUsuarioPorCorreoModel = async (correo) => {
+const seleccionarTotalUsuarioPorCorreoModel = async (correo) => {
     let conexion;
 
     try {
         conexion = await pool.getConnection();
 
         const [result] = await conexion.execute(
-            'CALL sp_seleccionar_usuario_correo(?)',
+            'CALL sp_seleccionar_total_usuario_correo(?)',
             [correo]
         );
 
@@ -95,27 +95,23 @@ const validarVerificacionCorreo = async (correo) => {
 const seleccionarUsuarioCorreoModel = async (correoUsuario) => {
     let conexion;
     try {
-
         conexion = await pool.getConnection();
-
-        const [result] = await conexion.execute('CALL seleccionarUsuarioCorreo(?)', [correoUsuario]);
+        const [result] = await conexion.execute('CALL sp_seleccionar_usuario_correo(?)', [correoUsuario]);
 
         return result[0];
     } catch (err) {
-
+        console.log(err.message);
         throw new Error('Error en la base de datos al buscar usuario');
-
     } finally {
-
         if (conexion) conexion.release();
-
     }
 };
 
 module.exports = {
     registroUsuarioModel,
-    seleccionarUsuarioPorCorreoModel,
+    seleccionarTotalUsuarioPorCorreoModel,
     registrarVerificacionCorreoModel,
     validarCodigoCorreoModel,
-    validarVerificacionCorreo
+    validarVerificacionCorreo,
+    seleccionarUsuarioCorreoModel
 }

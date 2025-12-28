@@ -2,8 +2,10 @@ require('dotenv').config();
 const {
   registroUsuarioService,
   registrarVerificacionCorreoService,
-  validarCodigoCorreoService
-} = require("./autenticacion_service");
+  validarCodigoCorreoService,
+  iniciarSesionUsuarioService,
+  renovarAccessTokenService
+} = require('./autenticacion_service');
 
 const registroUsuarioController = async (req, res) => {
   try {
@@ -13,15 +15,15 @@ const registroUsuarioController = async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: "Strict",
+      sameSite: 'Strict',
       maxAge: 20 * 60 * 60 * 1000
     };
 
-    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
 
     return res.status(201).json({
       ok: true,
-      mensaje: "Usuario registrado exitosamente",
+      mensaje: 'Usuario registrado exitosamente',
       usuario,
       accessToken
     });
@@ -32,7 +34,7 @@ const registroUsuarioController = async (req, res) => {
 
     return res.status(statusCode).json({
       ok: false,
-      mensaje: err.message || "Error interno del servidor",
+      mensaje: err.message || 'Error interno del servidor',
     });
   }
 };
@@ -49,7 +51,7 @@ const registrarVerificacionCorreoController = async (req, res) => {
 
     return res.status(statusCode).json({
       ok: false,
-      mensaje: err.message || "Error interno del servidor",
+      mensaje: err.message || 'Error interno del servidor',
     });
   }
 };
@@ -66,13 +68,62 @@ const validarCodigoCorreoController = async (req, res) => {
 
     return res.status(statusCode).json({
       ok: false,
-      mensaje: err.message || "Error interno del servidor",
+      mensaje: err.message || 'Error interno del servidor',
     });
+  }
+};
+
+const iniciarSesionUsuarioController = async (req, res) => {
+  try {
+    const resultado = await iniciarSesionUsuarioService(req.body);
+    const { usuario, accessToken, refreshToken } = resultado;
+    const cookieOptions = {
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'Strict', 
+      maxAge: 20 * 60 * 60 * 1000 
+    };
+
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    return res.status(200).json({
+      ok: true,
+      mensaje: 'Inicio de sesión exitoso',
+      usuario,
+      accessToken
+    });
+
+  } catch (err) {
+
+    const statusCode = err.status || 500;
+
+    return res.status(statusCode).json({
+      ok: false,
+      mensaje: err.message || 'Error interno del servidor',
+    });
+  }
+};
+
+const renovarAccessTokenController = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({ ok: false, mensaje: 'No hay refresh token' });
+    }
+
+    const nuevoAccessToken = await renovarAccessTokenService(refreshToken);
+
+    return res.status(200).json({ ok: true, accessToken: nuevoAccessToken });
+
+  } catch (err) {
+    return res.status(403).json({ ok: false, mensaje: 'Refresh token inválido o expirado' });
   }
 };
 
 module.exports = {
   registroUsuarioController,
   registrarVerificacionCorreoController,
-  validarCodigoCorreoController
+  validarCodigoCorreoController,
+  iniciarSesionUsuarioController,
+  renovarAccessTokenController
 }

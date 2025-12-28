@@ -5,10 +5,11 @@ const crear_error = require('../../utilidades/crear_error');
 const { validarCorreo } = require('../../utilidades/validaciones');
 const {
   registroUsuarioModel,
-  seleccionarUsuarioPorCorreoModel,
+  seleccionarTotalUsuarioPorCorreoModel,
   registrarVerificacionCorreoModel,
   validarCodigoCorreoModel,
-  validarVerificacionCorreo
+  validarVerificacionCorreo,
+  seleccionarUsuarioCorreoModel
 } = require('./autenticacion_model');
 const { validarRegistroUsuario } = require('./autenticacion_validacion');
 const enviarCorreoVerificacion = require('../../utilidades/helpers/enviar_codigo_correo');
@@ -25,10 +26,10 @@ const registroUsuarioService = async (datos) => {
     telefono = telefonoUsuario;
   }
   const correoValidado = await validarVerificacionCorreo(correoUsuario);
-  if(!correoValidado || correoValidado.estado_verificacion == 0 ){
+  if (!correoValidado || correoValidado.estado_verificacion == 0) {
     throw crear_error('Verificación pendiente: Primero valide su correo.', 403);
   }
-  const coincidenciasCorreo = await seleccionarUsuarioPorCorreoModel(correoUsuario);
+  const coincidenciasCorreo = await seleccionarTotalUsuarioPorCorreoModel(correoUsuario);
   if (coincidenciasCorreo > 0) {
     throw crear_error('Correo electrónico ya en uso, ingrese otro correo.', 409);
   }
@@ -70,7 +71,7 @@ const registrarVerificacionCorreoService = async (datos) => {
     throw crear_error('Formato de correo no valido', 400);
   };
 
-  const correosCoincidentes = await seleccionarUsuarioPorCorreoModel(correo);
+  const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoModel(correo);
   if (correosCoincidentes > 0) {
     throw crear_error('Ya existe un usuario registrado con el correo ingresado.', 409);
   }
@@ -130,11 +131,91 @@ const validarCodigoCorreoService = async (datos) => {
     default:
       throw crear_error('Estado desconocido', 500);
   }
+};
 
+const iniciarSesionUsuarioService = async (datos) => {
+  if (!datos || typeof datos !== 'object') {
+    throw crear_error('Se necesita correo y contraseña para iniciar sesion', 400);
+  }
+  const { email, clave } = datos;
+
+  if (!email || typeof email != 'string' || !email.trim()) {
+    throw crear_error('Se necesita el email o correo para iniciar sesion');
+  }
+
+  if (!clave || typeof clave != 'string' || !clave.trim()) {
+    throw crear_error('Se necesita la clave para iniciar sesión');
+  }
+
+  const resultado = await seleccionarUsuarioCorreoModel(email);
+
+  if (resultado.length === 0) {
+    throw crear_error('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
+  }
+
+  const usuario = resultado[0];
+  const contraseñaValida = await bcrypt.compare(clave, usuario.clave_usuario);
+
+  if (!contraseñaValida) {
+    throw crear_error('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
+  }
+  
+  const payload = {
+    idUsuario: usuario.id_usuario,
+    nombresUsuario: usuario.nombre_usuario,
+    apellidosUsuario: usuario.apellido_usuario,
+    idRol: usuario.id_rol,
+    rol: usuario.nombre_rol
+  };
+
+  const accessToken = jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_ACCESS_EXPIRATION || '15m' }
+  );
+
+  const refreshToken = jwt.sign(
+    payload,
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRATION || '20h' }
+  );
+
+  return {
+    usuario: payload,
+    accessToken,
+    refreshToken
+  };
+};
+
+const renovarAccessTokenService = async (refreshToken) => {
+
+  const usuario = await new Promise((resolve, reject) => {
+
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
+      if (err) reject(err);
+      else resolve(decoded);
+    });
+  });
+
+  const nuevoAccessToken = jwt.sign(
+    {
+      idUsuario: usuario.id_usuario,
+      nombresUsuario: usuario.nombre_usuario,
+      apellidosUsuario: usuario.apellido_usuario,
+      idRol: usuario.id_rol,
+      rol: usuario.nombre_rol
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+
+  return nuevoAccessToken;
 };
 
 module.exports = {
   registroUsuarioService,
   registrarVerificacionCorreoService,
-  validarCodigoCorreoService
+  validarCodigoCorreoService,
+  iniciarSesionUsuarioService,
+  renovarAccessTokenService
 }
