@@ -1,4 +1,5 @@
 USE super_pollo_hyo;
+
 DROP PROCEDURE IF EXISTS sp_registrar_usuario;
 DROP PROCEDURE IF EXISTS sp_seleccionar_total_usuario_correo;
 DROP PROCEDURE IF EXISTS sp_registrar_codigo_verificacion;
@@ -6,14 +7,15 @@ DROP PROCEDURE IF EXISTS sp_obtener_verificacion_correo;
 DROP PROCEDURE IF EXISTS sp_verificar_codigo_correo;
 DROP PROCEDURE IF EXISTS sp_verificar_validacion_correo;
 DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
+DROP PROCEDURE IF EXISTS sp_listar_usuarios;
 
 DELIMITER //
 
 CREATE PROCEDURE sp_registrar_usuario(
-    IN p_nombre_usuario   VARCHAR(50),
+    IN p_nombre_usuario VARCHAR(50),
     IN p_apellido_usuario VARCHAR(100),
-    IN p_correo_usuario   VARCHAR(50),
-    IN p_clave_usuario    CHAR(60),
+    IN p_correo_usuario VARCHAR(50),
+    IN p_clave_usuario CHAR(60),
     IN p_telefono_usuario VARCHAR(15)
 )
 BEGIN
@@ -211,6 +213,32 @@ BEGIN
     WHERE u.correo_usuario = p_correoUsuario
       AND u.estado_usuario = 1
       AND ur.rol_activo = 1;
+END //
+
+CREATE PROCEDURE sp_listar_usuarios(
+    IN p_limite INT,
+    IN p_desplazamiento INT,
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT 
+        u.id_usuario,
+        u.nombre_usuario,
+        u.apellido_usuario,
+        u.correo_usuario,
+        u.telefono_usuario,
+        ru.id_rol,
+        ru.nombre_rol
+    FROM usuarios u
+    LEFT JOIN usuario_rol ur
+        ON u.id_usuario = ur.id_usuario
+        AND ur.rol_activo = 1
+    LEFT JOIN rol_usuario ru
+        ON ur.id_rol = ru.id_rol
+    WHERE u.estado_usuario = 1
+      AND u.id_usuario <> p_id_usuario
+    ORDER BY u.id_usuario DESC
+    LIMIT p_limite OFFSET p_desplazamiento;
 END //
 
 DELIMITER ;

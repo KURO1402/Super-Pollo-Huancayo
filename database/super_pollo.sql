@@ -2,6 +2,11 @@ CREATE DATABASE super_pollo_hyo;
 
 USE super_pollo_hyo;
 
+DROP TABLE IF EXISTS verificacion_correos;
+DROP TABLE IF EXISTS usuario_rol;
+DROP TABLE IF EXISTS rol_usuario;
+DROP TABLE IF EXISTS usuarios;
+
 -- Tabla para verificar correos
 CREATE TABLE verificacion_correos(
     id_verificacion INT PRIMARY KEY AUTO_INCREMENT,
@@ -10,7 +15,7 @@ CREATE TABLE verificacion_correos(
     expiracion_verificacion DATETIME NOT NULL,
     estado_verificacion TINYINT(1) NOT NULL,
     registro_verificacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-)
+);
 
 -- Tabla de roles
 CREATE TABLE rol_usuario (
@@ -21,8 +26,7 @@ CREATE TABLE rol_usuario (
 INSERT INTO rol_usuario(nombre_rol) VALUES
 ('usuario'),
 ('colaborador'),
-('administrador')
-
+('administrador');
 
 -- Tabla de usuarios
 CREATE TABLE usuarios (
@@ -39,7 +43,7 @@ CREATE TABLE usuarios (
 CREATE TABLE usuario_rol (
     id_rol INT NOT NULL,
     id_usuario INT  NOT NULL,
-    fecha_inicio DATE NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+    fecha_inicio DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_fin DATE DEFAULT NULL,
     rol_activo TINYINT(1) DEFAULT 1
 )

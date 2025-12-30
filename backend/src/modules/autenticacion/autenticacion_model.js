@@ -14,7 +14,7 @@ const registroUsuarioModel = async (nombre, apellido, correo, clave, telefono) =
 
     } catch (err) {
         console.log('Error en registroUsuarioModel:', err.message);
-        throw new Error('Ocurrio un error al insertar usuario en la base de datos')
+        throw new Error('Ocurrio un error al insertar usuario en la base de datos');
     } finally {
         if (conexion) conexion.release();
     }

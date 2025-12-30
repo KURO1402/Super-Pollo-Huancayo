@@ -13,13 +13,15 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 
-const autenticacionRoutes = require('./src/modules/autenticacion/autenticaion_routes');
+const autenticacionRoutes = require('./src/modules/autenticacion/autenticacion_routes');
+const usuarioRoutes = require('./src/modules/usuarios/usuario_routes');
 
 app.get('/', (req, res) => {
   res.send("Super-pollo");
 });
 
 app.use('/api/auth', autenticacionRoutes);
+app.use('/api/usuarios', usuarioRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
