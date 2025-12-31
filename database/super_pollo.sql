@@ -31,9 +31,9 @@ INSERT INTO rol_usuario(nombre_rol) VALUES
 -- Tabla de usuarios
 CREATE TABLE usuarios (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
-    nombre_usuario VARCHAR(50) NOT NULL,
+    nombre_usuario VARCHAR(100) NOT NULL,
     apellido_usuario VARCHAR(100) NOT NULL,
-    correo_usuario VARCHAR(50) NOT NULL,
+    correo_usuario VARCHAR(100) NOT NULL,
     clave_usuario CHAR(60) NOT NULL,
     telefono_usuario VARCHAR(15) ,
     estado_usuario TINYINT(1) DEFAULT 1

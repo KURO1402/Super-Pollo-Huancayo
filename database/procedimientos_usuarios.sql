@@ -9,14 +9,18 @@ DROP PROCEDURE IF EXISTS sp_verificar_validacion_correo;
 DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
 DROP PROCEDURE IF EXISTS sp_listar_usuarios;
 DROP PROCEDURE IF EXISTS sp_contar_usuario_id;
+DROP PROCEDURE IF EXISTS sp_obtener_usuario_por_id;
 DROP PROCEDURE IF EXISTS sp_actualizar_datos_usuario;
+DROP PROCEDURE IF EXISTS sp_actualizar_correo_usuario;
+DROP PROCEDURE IF EXISTS sp_actualizar_clave_usuario;
 
 DELIMITER //
 
+-- Procedimiento para registrar un usuario
 CREATE PROCEDURE sp_registrar_usuario(
-    IN p_nombre_usuario VARCHAR(50),
+    IN p_nombre_usuario VARCHAR(100),
     IN p_apellido_usuario VARCHAR(100),
-    IN p_correo_usuario VARCHAR(50),
+    IN p_correo_usuario VARCHAR(100),
     IN p_clave_usuario CHAR(60),
     IN p_telefono_usuario VARCHAR(15)
 )
@@ -77,7 +81,7 @@ END //
 
 -- Procedimiento para seleccionar un total de conteos de usuarios por correo
 CREATE PROCEDURE sp_seleccionar_total_usuario_correo (
-    IN p_correo_usuario VARCHAR(50)
+    IN p_correo_usuario VARCHAR(100)
 )
 BEGIN
     SELECT COUNT(*) AS total
@@ -179,7 +183,6 @@ BEGIN
         COMMIT;
         SELECT 1 AS status, 'Correo verificado correctamente' AS mensaje;
     END IF;
-
 END //
 
 
@@ -250,9 +253,43 @@ BEGIN
     SELECT COUNT(*) AS total_usuarios FROM usuarios WHERE id_usuario = p_id_usuario;
 END //
 
+CREATE PROCEDURE sp_obtener_usuario_por_id(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT 
+        u.id_usuario,
+        u.nombre_usuario,
+        u.apellido_usuario,
+        u.correo_usuario,
+        u.telefono_usuario,
+        ru.id_rol,
+        ru.nombre_rol
+    FROM usuarios u
+    LEFT JOIN usuario_rol ur
+        ON u.id_usuario = ur.id_usuario
+        AND ur.rol_activo = 1
+    LEFT JOIN rol_usuario ru
+        ON ur.id_rol = ru.id_rol
+    WHERE u.estado_usuario = 1
+      AND u.id_usuario = p_id_usuario;
+END //
+
+CREATE PROCEDURE sp_obtener_clave_usuario_por_id(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT
+        CONCAT(nombre_usuario, ', ', apellido_usuario) as usuario,
+        clave_usuario
+    FROM usuarios 
+    WHERE estado_usuario = 1
+      AND id_usuario = p_id_usuario;
+END//
+
 CREATE PROCEDURE sp_actualizar_datos_usuario(
     IN p_id_usuario INT,
-    IN p_nombre_usuario VARCHAR(50),
+    IN p_nombre_usuario VARCHAR(100),
     IN p_apellido_usuario VARCHAR(50),
     IN p_telefono_usuario VARCHAR(15)
 )
@@ -275,6 +312,50 @@ BEGIN
     COMMIT;
 
     SELECT 'Datos de usuario actualizado correctamente' AS mensaje;
+END //
+
+CREATE PROCEDURE sp_actualizar_correo_usuario(
+    IN p_id_usuario INT,
+    IN p_correo_usuario VARCHAR(100)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE usuarios
+    SET correo_usuario = p_correo_usuario
+    WHERE id_usuario = p_id_usuario;
+
+    COMMIT;
+
+    SELECT 'Correo actualizado correctamente' AS mensaje;
+END //
+
+CREATE PROCEDURE sp_actualizar_clave_usuario(
+    IN p_id_usuario INT,
+    IN p_clave CHAR(60)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE usuarios
+    SET clave_usuario = p_clave
+    WHERE id_usuario = p_id_usuario;
+
+    COMMIT;
+
+    SELECT 'Contraseña actualizada correctamente' AS mensaje;
 END //
 
 DELIMITER ;

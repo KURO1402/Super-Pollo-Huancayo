@@ -1,7 +1,7 @@
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crear_error = require('../../utilidades/crear_error');
+const crearError = require('../../utilidades/crear_error');
 const { validarCorreo } = require('../../utilidades/validaciones');
 const {
   registroUsuarioModel,
@@ -27,11 +27,11 @@ const registroUsuarioService = async (datos) => {
   }
   const correoValidado = await validarVerificacionCorreo(correoUsuario);
   if (!correoValidado || correoValidado.estado_verificacion == 0) {
-    throw crear_error('Verificación pendiente: Primero valide su correo.', 403);
+    throw crearError('Verificación pendiente: Primero valide su correo.', 403);
   }
   const coincidenciasCorreo = await seleccionarTotalUsuarioPorCorreoModel(correoUsuario);
   if (coincidenciasCorreo > 0) {
-    throw crear_error('Correo electrónico ya en uso, ingrese otro correo.', 409);
+    throw crearError('Correo electrónico ya en uso, ingrese otro correo.', 409);
   }
 
   const claveEncriptada = await bcrypt.hash(claveUsuario, 10);
@@ -59,28 +59,28 @@ const registroUsuarioService = async (datos) => {
 
 const registrarVerificacionCorreoService = async (datos) => {
   if (!datos || typeof datos !== 'object') {
-    throw crear_error('Se necesitan datos(correo) para generar el codigo de verificación.', 400);
+    throw crearError('Se necesitan datos(correo) para generar el codigo de verificación.', 400);
   }
   const { correo } = datos;
 
   if (!correo || typeof correo !== 'string' || !correo.trim()) {
-    throw crear_error('Se necesita el correo', 400);
+    throw crearError('Se necesita el correo', 400);
   };
 
   if (!validarCorreo(correo)) {
-    throw crear_error('Formato de correo no valido', 400);
+    throw crearError('Formato de correo no valido', 400);
   };
 
   const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoModel(correo);
   if (correosCoincidentes > 0) {
-    throw crear_error('Ya existe un usuario registrado con el correo ingresado.', 409);
+    throw crearError('Ya existe un usuario registrado con el correo ingresado.', 409);
   }
 
   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
   const resultado = await registrarVerificacionCorreoModel(correo, codigo);
   if (resultado.affectedRows === 0) {
-    throw crear_error('No se pudo verificar el correo', 500);
+    throw crearError('No se pudo verificar el correo', 500);
   }
   const info = await enviarCorreoVerificacion(correo, codigo)
 
@@ -92,24 +92,24 @@ const registrarVerificacionCorreoService = async (datos) => {
 
 const validarCodigoCorreoService = async (datos) => {
   if (!datos, typeof datos !== 'object') {
-    throw crear_error('Se necesita el codigo y correo para verificar el codigo', 400);
+    throw crearError('Se necesita el codigo y correo para verificar el codigo', 400);
   };
 
   const { correo, codigo } = datos;
 
   if (!correo || typeof correo !== 'string' || !correo.trim()) {
-    throw crear_error('Se necesita el correo', 400)
+    throw crearError('Se necesita el correo', 400)
   }
 
   if (!codigo || typeof codigo !== 'string' || !codigo.trim() || codigo.length !== 6) {
-    throw crear_error('Se necesita el codigo de 6 digitos', 400);
+    throw crearError('Se necesita el codigo de 6 digitos', 400);
   }
   const fechaActual = new Date();
 
   const resultado = await validarCodigoCorreoModel(correo, codigo, fechaActual);
 
   if (!resultado) {
-    throw crear_error('Ocurrrio un error al verificar el correo', 500);
+    throw crearError('Ocurrrio un error al verificar el correo', 500);
   }
 
   switch (resultado?.status) {
@@ -120,44 +120,44 @@ const validarCodigoCorreoService = async (datos) => {
       }
 
     case 2:
-      throw crear_error(resultado?.mensaje, 404);
+      throw crearError(resultado?.mensaje, 404);
 
     case 3:
-      throw crear_error(resultado?.mensaje, 409);
+      throw crearError(resultado?.mensaje, 409);
 
     case 4:
-      throw crear_error(resultado?.mensaje, 410);
+      throw crearError(resultado?.mensaje, 410);
 
     default:
-      throw crear_error('Estado desconocido', 500);
+      throw crearError('Estado desconocido', 500);
   }
 };
 
 const iniciarSesionUsuarioService = async (datos) => {
   if (!datos || typeof datos !== 'object') {
-    throw crear_error('Se necesita correo y contraseña para iniciar sesion', 400);
+    throw crearError('Se necesita correo y contraseña para iniciar sesion', 400);
   }
   const { email, clave } = datos;
 
   if (!email || typeof email != 'string' || !email.trim()) {
-    throw crear_error('Se necesita el email o correo para iniciar sesion');
+    throw crearError('Se necesita el email o correo para iniciar sesion');
   }
 
   if (!clave || typeof clave != 'string' || !clave.trim()) {
-    throw crear_error('Se necesita la clave para iniciar sesión');
+    throw crearError('Se necesita la clave para iniciar sesión');
   }
 
   const resultado = await seleccionarUsuarioCorreoModel(email);
 
   if (resultado.length === 0) {
-    throw crear_error('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
+    throw crearError('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
   }
 
   const usuario = resultado[0];
   const contraseñaValida = await bcrypt.compare(clave, usuario.clave_usuario);
 
   if (!contraseñaValida) {
-    throw crear_error('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
+    throw crearError('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
   }
   
   const payload = {

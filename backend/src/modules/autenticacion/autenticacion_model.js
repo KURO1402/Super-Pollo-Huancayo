@@ -31,9 +31,7 @@ const seleccionarTotalUsuarioPorCorreoModel = async (correo) => {
             [correo]
         );
 
-        const total = result[0][0]?.total;
-
-        return total;
+         return result[0][0]?.total;
 
     } catch (err) {
         console.error('Error en seleccionarUsuarioPorCorreoModel:', err.message);
