@@ -1,18 +1,51 @@
 const pool = require('../../config/conexion_DB');
 
+const obtenerRolesModel = async () => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute("CALL sp_listar_roles()");
+        return rows[0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error("Error al obtener roles de la base de datos");
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 const obtenerUsuariosModel = async (limite, desplazamiento, idUsuario) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
 
-        const [result] = await conexion.execute('CALL sp_listar_usuarios(?, ?, ?)', [limite, desplazamiento, idUsuario]);
+        const [rows] = await conexion.execute('CALL sp_listar_usuarios(?, ?, ?)', [limite, desplazamiento, idUsuario]);
 
-        return result[0];
+        return rows[0];
     } catch (err) {
         console.log(err.message)
         throw new Error('Ocurrio un error al listar usuarios en la base de datos'); 
     } finally {
         if(conexion) conexion.release();
+    }
+};
+
+const buscarUsuariosPorValorModel = async (valor, idUsuario) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [rows] = await conexion.execute(
+            'CALL sp_buscar_usuarios_por_valor(?, ?)',
+            [valor, idUsuario]
+        );
+
+        return rows[0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Ocurrió un error al buscar usuarios en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
     }
 };
 
@@ -35,12 +68,9 @@ const obtenerUsuarioPorIdModel = async (idUsuario) => {
     try {
         conexion = await pool.getConnection();
 
-        const [result] = await conexion.execute(
-            'CALL sp_obtener_usuario_por_id(?)',
-            [idUsuario]
-        );
+        const [rows] = await conexion.execute('CALL sp_obtener_usuario_por_id(?)',[idUsuario]);
 
-        return result[0][0]; 
+        return rows[0][0]; 
     } catch (err) {
         throw new Error('Ocurrió un error al obtener el usuario desde la base de datos');
     } finally {
@@ -148,13 +178,49 @@ const eliminarUsuarioModel = async (idUsuario, estado) => {
     }
 };
 
+const obtenerRolPorIdModel = async (idRol) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_rol_por_id_rol(?)', [idRol]);
+
+        return result[0][0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Ocurrió un error al obtener el rol desde la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const actualizarRolUsuarioModel = async (idUsuario, idRolNuevo) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute("CALL sp_actualizar_rol_usuario(?, ?)", [idUsuario, idRolNuevo]);
+
+        return result[0][0]?.mensaje;
+
+    } catch (err) {
+        throw new Error("Error al actualizar el rol del usuario en la base de datos.");
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
+    obtenerRolesModel,
     obtenerUsuariosModel,
     contarUsuarioPorIdModel,
     obtenerUsuarioPorIdModel,
+    buscarUsuariosPorValorModel,
     obtenerClaveUsuarioPorIdModel,
     actualizarDatosUsuarioModel,
     actualizarCorreoUsuarioModel,
     actualizarClaveUsuarioModel,
-    eliminarUsuarioModel
+    eliminarUsuarioModel,
+    obtenerRolPorIdModel,
+    actualizarRolUsuarioModel
 }

@@ -2,18 +2,34 @@ const bcrypt = require('bcryptjs');
 
 const crearError = require('../../utilidades/crear_error');
 const {
+    obtenerRolesModel,
     obtenerUsuariosModel,
     contarUsuarioPorIdModel,
+    buscarUsuariosPorValorModel,
     actualizarDatosUsuarioModel,
     obtenerUsuarioPorIdModel,
     obtenerClaveUsuarioPorIdModel,
     actualizarCorreoUsuarioModel,
     actualizarClaveUsuarioModel,
-    eliminarUsuarioModel
+    eliminarUsuarioModel,
+    obtenerRolPorIdModel,
+    actualizarRolUsuarioModel
 } = require('./usuario_model');
 const { validarActualizarUsuario, validarActualizarCorreoUsuario } = require('./usuario_validacion');
 
 const { seleccionarTotalUsuarioPorCorreoModel, validarVerificacionCorreo } = require('../autenticacion/autenticacion_model');
+
+const obtenerRolesService = async () => {
+    const roles = await obtenerRolesModel();
+    if (roles.length === 0) {
+        throw crearError('No se encontraron roles.', 404);
+    }
+
+    return {
+        ok: true,
+        roles
+    };
+};
 
 const obtenerUsuariosService = async (limit, offset, idUsuario) => {
     const limite = parseInt(limit) || 10;
@@ -29,6 +45,45 @@ const obtenerUsuariosService = async (limit, offset, idUsuario) => {
         ok: true,
         usuarios
     }
+};
+
+const obtenerUsuarioPorIdService = async (id) => {
+    if (!id || isNaN(Number(id))) {
+        throw crearError('Se requiere un ID de usuario válido.', 400);
+    }
+
+    const usuario = await obtenerUsuarioPorIdModel(Number(id));
+
+    if (!usuario) {
+        crearError('El usuario no existe.', 404);
+    }
+
+    return {
+        ok: true,
+        usuario
+    };
+};
+
+const buscarUsuariosPorValorService = async (valor, idUsuario) => {
+
+    if (!valor || typeof valor !== 'string') {
+        throw crearError('Se requiere un valor de búsqueda válido.', 400);
+    }
+
+    if (!idUsuario || typeof idUsuario != 'number') {
+        throw crearError('Se requiere un ID de usuario válido.', 400);
+    }
+
+    const usuarios = await buscarUsuariosPorValorModel(valor.trim(), idUsuario);
+
+    if (!usuarios || usuarios.length === 0) {
+        throw crearError('No se encontraron usuarios.', 404);
+    }
+
+    return {
+        ok: true,
+        usuarios
+    };
 };
 
 const actualizarDatosUsuarioService = async (datos, idUsuario) => {
@@ -135,12 +190,12 @@ const eliminarUsuarioService = async (idUsuario) => {
 
     const idUsuarioNumerico = Number(idUsuario);
 
-    const usuarios = await obtenerUsuarioPorIdModel(idUsuarioNumerico);
+    const usuario = await obtenerUsuarioPorIdModel(idUsuarioNumerico);
 
-    if (!usuarios || usuarios.length === 0) {
+    if (!usuario) {
         throw crearError('El usuario especificado no existe', 404)
     }
-    if(usuarios.id_rol == 3 || usuarios.nombre_rol == 'administrador') {
+    if(usuario.id_rol == 3 || usuario.nombre_rol == 'administrador') {
         throw crearError('No puedes eliminar a este usuario', 403);
     }
 
@@ -151,10 +206,60 @@ const eliminarUsuarioService = async (idUsuario) => {
     }
 };
 
+const actualizarRolUsuarioService = async (datos, idUsuario, idActual) => {
+
+    if (!idUsuario || isNaN(Number(idUsuario))) {
+        throw crearError("Se necesita un ID de usuario válido.", 400);
+    }
+
+    if (!datos || typeof datos !== "object") {
+        throw crearError("Se necesitan datos para actualizar el rol.", 400);
+    }
+
+    const { nuevoRol } = datos;
+
+    if (!nuevoRol || typeof nuevoRol !== "number") {
+        throw crearError("Debe proporcionar un rol válido.", 400);
+    }
+
+    if (Number(idUsuario) === Number(idActual)) {
+        throw crearError("Usted mismo no puede modificar su rol.", 403);
+    }
+
+    const usuario = await obtenerUsuarioPorIdModel(idUsuario);
+    if (!usuario) {
+        throw crearError("El usuario especificado no existe.", 404);
+    }
+
+    const rol = await obtenerRolPorIdModel(nuevoRol);
+    if (!rol || rol.length === 0) {
+        throw crearError("El rol especificado no existe.", 404);
+    }
+
+    if (usuario.id_rol === nuevoRol) {
+        throw crearError("El usuario ya tiene asignado este rol.", 400);
+    }
+
+    if(usuario.id_rol == 3 || usuario.nombre_rol == 'administrador') {
+        throw crearError('No puedes actualizar el rol de este usuario', 403);
+    }
+
+    const respuesta = await actualizarRolUsuarioModel(idUsuario, nuevoRol);
+
+    return {
+        ok: true,
+        mensaje: respuesta
+    };
+};
+
 module.exports = {
+    obtenerRolesService,
     obtenerUsuariosService,
+    obtenerUsuarioPorIdService,
+    buscarUsuariosPorValorService,
     actualizarDatosUsuarioService,
     actualizarCorreoUsuarioService,
     actualizarClaveUsuarioService,
-    eliminarUsuarioService
+    eliminarUsuarioService,
+    actualizarRolUsuarioService
 }

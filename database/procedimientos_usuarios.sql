@@ -1,5 +1,6 @@
 USE super_pollo_hyo;
 
+DROP PROCEDURE IF EXISTS sp_listar_roles;
 DROP PROCEDURE IF EXISTS sp_registrar_usuario;
 DROP PROCEDURE IF EXISTS sp_seleccionar_total_usuario_correo;
 DROP PROCEDURE IF EXISTS sp_registrar_codigo_verificacion;
@@ -15,8 +16,19 @@ DROP PROCEDURE IF EXISTS sp_actualizar_datos_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_correo_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_clave_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_estado_usuario;
+DROP PROCEDURE IF EXISTS sp_actualizar_rol_usuario;
+DROP PROCEDURE IF EXISTS sp_obtener_rol_por_id_rol;
+DROP PROCEDURE IF EXISTS sp_buscar_usuarios_por_valor;
 
 DELIMITER //
+
+CREATE PROCEDURE sp_listar_roles()
+BEGIN
+    SELECT 
+        id_rol, 
+        nombre_rol 
+    FROM rol_usuario;
+END //
 
 -- Procedimiento para registrar un usuario
 CREATE PROCEDURE sp_registrar_usuario(
@@ -68,17 +80,19 @@ BEGIN
     );
 
     COMMIT;
-
     SELECT 
         u.id_usuario,
         u.nombre_usuario,
         u.apellido_usuario,
-        u.correo_usuario,
-        ur.id_rol
+        ru.id_rol,
+        ru.nombre_rol
     FROM usuarios u
-    INNER JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+    LEFT JOIN usuario_rol ur
+        ON u.id_usuario = ur.id_usuario
+        AND ur.rol_activo = 1
+    LEFT JOIN rol_usuario ru
+        ON ur.id_rol = ru.id_rol
     WHERE u.id_usuario = v_id_usuario;
-
 END //
 
 -- Procedimiento para seleccionar un total de conteos de usuarios por correo
@@ -389,6 +403,85 @@ BEGIN
 
     COMMIT;
     SELECT v_mensaje AS mensaje;
+END //
+
+CREATE PROCEDURE sp_obtener_rol_por_id_rol(
+    IN p_id_rol INT
+)
+BEGIN
+    SELECT 
+        id_rol,
+        nombre_rol
+    FROM rol_usuario
+    WHERE id_rol = p_id_rol;
+END //
+
+CREATE PROCEDURE sp_actualizar_rol_usuario(
+    IN p_id_usuario INT,
+    IN p_id_rol_nuevo INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE usuario_rol
+    SET 
+        rol_activo = 0,
+        fecha_fin = CURRENT_DATE
+    WHERE id_usuario = p_id_usuario
+      AND rol_activo = 1;
+
+    INSERT INTO usuario_rol (
+        id_usuario,
+        id_rol,
+        fecha_inicio,
+        rol_activo
+    )
+    VALUES (
+        p_id_usuario,
+        p_id_rol_nuevo,
+        CURRENT_DATE,
+        1
+    );
+
+    COMMIT;
+
+    SELECT 'Rol del usuario actualizado correctamente' AS mensaje;
+END //
+
+CREATE PROCEDURE sp_buscar_usuarios_por_valor(
+    IN p_valor VARCHAR(100),
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT 
+        u.id_usuario,
+        u.nombre_usuario,
+        u.apellido_usuario,
+        u.correo_usuario,
+        u.telefono_usuario,
+        ru.id_rol,
+        ru.nombre_rol
+    FROM usuarios u
+    LEFT JOIN usuario_rol ur
+        ON u.id_usuario = ur.id_usuario
+        AND ur.rol_activo = 1
+    LEFT JOIN rol_usuario ru
+        ON ur.id_rol = ru.id_rol
+    WHERE u.estado_usuario = 1
+      AND u.id_usuario <> p_id_usuario
+      AND (
+            u.nombre_usuario   LIKE CONCAT('%', p_valor, '%') OR
+            u.apellido_usuario LIKE CONCAT('%', p_valor, '%') OR
+            u.correo_usuario   LIKE CONCAT('%', p_valor, '%') OR
+            u.telefono_usuario LIKE CONCAT('%', p_valor, '%')
+          )
+    ORDER BY u.id_usuario DESC;
 END //
 
 DELIMITER ;

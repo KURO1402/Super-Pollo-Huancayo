@@ -161,11 +161,11 @@ const iniciarSesionUsuarioService = async (datos) => {
   }
   
   const payload = {
-    idUsuario: usuario.id_usuario,
-    nombresUsuario: usuario.nombre_usuario,
-    apellidosUsuario: usuario.apellido_usuario,
-    idRol: usuario.id_rol,
-    rol: usuario.nombre_rol
+    id_usuario: usuario.id_usuario,
+    nombre_usuario: usuario.nombre_usuario,
+    apellido_usuario: usuario.apellido_usuario,
+    id_rol: usuario.id_rol,
+    nombre_rol: usuario.nombre_rol
   };
 
   const accessToken = jwt.sign(
