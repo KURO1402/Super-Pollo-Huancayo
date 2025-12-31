@@ -8,6 +8,8 @@ DROP PROCEDURE IF EXISTS sp_verificar_codigo_correo;
 DROP PROCEDURE IF EXISTS sp_verificar_validacion_correo;
 DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
 DROP PROCEDURE IF EXISTS sp_listar_usuarios;
+DROP PROCEDURE IF EXISTS sp_contar_usuario_id;
+DROP PROCEDURE IF EXISTS sp_actualizar_datos_usuario;
 
 DELIMITER //
 
@@ -239,6 +241,40 @@ BEGIN
       AND u.id_usuario <> p_id_usuario
     ORDER BY u.id_usuario DESC
     LIMIT p_limite OFFSET p_desplazamiento;
+END //
+
+CREATE PROCEDURE sp_contar_usuario_id(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT COUNT(*) AS total_usuarios FROM usuarios WHERE id_usuario = p_id_usuario;
+END //
+
+CREATE PROCEDURE sp_actualizar_datos_usuario(
+    IN p_id_usuario INT,
+    IN p_nombre_usuario VARCHAR(50),
+    IN p_apellido_usuario VARCHAR(50),
+    IN p_telefono_usuario VARCHAR(15)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE usuarios
+    SET 
+        nombre_usuario = p_nombre_usuario,
+        apellido_usuario = p_apellido_usuario,
+        telefono_usuario = p_telefono_usuario
+    WHERE id_usuario = p_id_Usuario;
+
+    COMMIT;
+
+    SELECT 'Datos de usuario actualizado correctamente' AS mensaje;
 END //
 
 DELIMITER ;
