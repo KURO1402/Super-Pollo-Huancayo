@@ -132,6 +132,22 @@ const actualizarClaveUsuarioModel = async (idUsuario, clave) => {
     }
 };
 
+const eliminarUsuarioModel = async (idUsuario, estado) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute("CALL sp_actualizar_estado_usuario(?, ?)", [idUsuario, estado]);
+
+        return result[0][0]?.mensaje;
+        
+    } catch (err) {
+        console.log(err.message);
+        throw new Error("Error al eliminar el usaurio en la base de datos.");
+    } finally {
+        if (conexion) conexion.release
+    }
+};
+
 module.exports = {
     obtenerUsuariosModel,
     contarUsuarioPorIdModel,
@@ -139,5 +155,6 @@ module.exports = {
     obtenerClaveUsuarioPorIdModel,
     actualizarDatosUsuarioModel,
     actualizarCorreoUsuarioModel,
-    actualizarClaveUsuarioModel
+    actualizarClaveUsuarioModel,
+    eliminarUsuarioModel
 }

@@ -10,9 +10,11 @@ DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
 DROP PROCEDURE IF EXISTS sp_listar_usuarios;
 DROP PROCEDURE IF EXISTS sp_contar_usuario_id;
 DROP PROCEDURE IF EXISTS sp_obtener_usuario_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_clave_usuario_por_id;
 DROP PROCEDURE IF EXISTS sp_actualizar_datos_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_correo_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_clave_usuario;
+DROP PROCEDURE IF EXISTS sp_actualizar_estado_usuario;
 
 DELIMITER //
 
@@ -356,6 +358,37 @@ BEGIN
     COMMIT;
 
     SELECT 'Contraseña actualizada correctamente' AS mensaje;
+END //
+
+CREATE PROCEDURE sp_actualizar_estado_usuario(
+    IN p_id_usuario INT,
+    IN p_nuevo_estado TINYINT(1)
+)
+BEGIN
+    DECLARE v_mensaje VARCHAR(100);
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE usuarios
+    SET estado_usuario = p_nuevo_estado
+    WHERE id_usuario = p_id_usuario;
+
+    IF p_nuevo_estado = 0 THEN
+        SET v_mensaje = 'Usuario eliminado correctamente.';
+    ELSEIF p_nuevo_estado = 1 THEN
+        SET v_mensaje = 'Usuario recuperado correctamente.';
+    ELSE
+        SET v_mensaje = 'Estado del usuario actualizado correctamente.';
+    END IF;
+
+    COMMIT;
+    SELECT v_mensaje AS mensaje;
 END //
 
 DELIMITER ;

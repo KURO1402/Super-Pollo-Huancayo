@@ -8,7 +8,8 @@ const {
     obtenerUsuarioPorIdModel,
     obtenerClaveUsuarioPorIdModel,
     actualizarCorreoUsuarioModel,
-    actualizarClaveUsuarioModel
+    actualizarClaveUsuarioModel,
+    eliminarUsuarioModel
 } = require('./usuario_model');
 const { validarActualizarUsuario, validarActualizarCorreoUsuario } = require('./usuario_validacion');
 
@@ -127,9 +128,33 @@ const actualizarClaveUsuarioService = async (datos, idUsuario) => {
     };
 };
 
+const eliminarUsuarioService = async (idUsuario) => {
+    if (!idUsuario || isNaN(Number(idUsuario))) {
+        throw crearError('Se necesita un ID de usuario válido.', 400)
+    }
+
+    const idUsuarioNumerico = Number(idUsuario);
+
+    const usuarios = await obtenerUsuarioPorIdModel(idUsuarioNumerico);
+
+    if (!usuarios || usuarios.length === 0) {
+        throw crearError('El usuario especificado no existe', 404)
+    }
+    if(usuarios.id_rol == 3 || usuarios.nombre_rol == 'administrador') {
+        throw crearError('No puedes eliminar a este usuario', 403);
+    }
+
+    const respuesta = await eliminarUsuarioModel(idUsuarioNumerico, 0);
+    return {
+        ok: true,
+        mensaje: respuesta
+    }
+};
+
 module.exports = {
     obtenerUsuariosService,
     actualizarDatosUsuarioService,
     actualizarCorreoUsuarioService,
-    actualizarClaveUsuarioService
+    actualizarClaveUsuarioService,
+    eliminarUsuarioService
 }
