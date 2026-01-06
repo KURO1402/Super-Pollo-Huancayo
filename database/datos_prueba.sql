@@ -40,3 +40,38 @@ INSERT INTO usuario_rol (
 (3, 8, CURRENT_DATE, 1),
 (3, 9, CURRENT_DATE, 1),
 (3, 10, CURRENT_DATE, 1);
+
+INSERT INTO caja (saldo_inicial, monto_actual, saldo_final, fecha_caja, estado_caja) VALUES
+(500.00, 1200.00, 1200.00, '2025-12-01 08:00:00', 'cerrada'),
+(800.00, 1500.00, 1500.00, '2025-12-10 08:15:00', 'cerrada'),
+(1000.00, 1800.00, 1800.00, '2025-12-20 09:00:00', 'cerrada');
+
+INSERT INTO eventos_caja (tipo_evento, fecha_evento, id_caja, id_usuario) VALUES
+('apertura', '2025-12-01 08:00:00', 1, 1),
+('cierre',   '2025-12-01 20:00:00', 1, 1),
+
+('apertura', '2025-12-10 08:15:00', 2, 1),
+('cierre',   '2025-12-10 21:00:00', 2, 1),
+
+('apertura', '2025-12-20 09:00:00', 3, 1),
+('cierre',   '2025-12-20 22:00:00', 3, 1);
+
+INSERT INTO movimientos_caja
+(tipo_movimiento, fecha_movimiento, monto_movimiento, descripcion_mov_caja, id_caja, id_usuario)
+VALUES
+('ingreso', '2025-12-01 10:30:00', 300.00, 'Venta del día', 1, 1),
+('egreso',  '2025-12-01 15:00:00', 100.00, 'Compra de insumos', 1, 1),
+
+('ingreso', '2025-12-10 12:00:00', 500.00, 'Pago de clientes', 2, 1),
+('egreso',  '2025-12-10 18:30:00', 200.00, 'Pago de servicios', 2, 1),
+
+('ingreso', '2025-12-20 14:00:00', 800.00, 'Ventas varias', 3, 1),
+('egreso',  '2025-12-20 19:00:00', 300.00, 'Gastos operativos', 3, 1);
+
+INSERT INTO arqueos_caja
+(fecha_arqueo, monto_fisico, monto_tarjeta, monto_billetera_digital, otros, diferencia, estado_caja, id_caja, id_usuario)
+VALUES
+('2025-12-01 19:50:00', 700.00, 400.00, 100.00, 0.00, 0.00, 'cuadra', 1, 1),
+('2025-12-10 20:45:00', 900.00, 500.00, 100.00, 0.00, 0.00, 'cuadra', 2, 1),
+('2025-12-20 21:50:00', 1200.00, 500.00, 100.00, 0.00, 0.00, 'cuadra', 3, 1);
+

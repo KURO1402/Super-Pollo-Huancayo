@@ -15,6 +15,7 @@ app.use(express.json());
 
 const autenticacionRoutes = require('./src/modules/autenticacion/autenticacion_routes');
 const usuarioRoutes = require('./src/modules/usuarios/usuario_routes');
+const cajaRoutes = require('./src/modules/caja/caja_routes');
 
 app.get('/', (req, res) => {
   res.send("Super-pollo");
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', autenticacionRoutes);
 app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/caja', cajaRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

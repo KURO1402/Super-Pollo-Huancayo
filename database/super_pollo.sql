@@ -46,4 +46,54 @@ CREATE TABLE usuario_rol (
     fecha_inicio DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_fin DATE DEFAULT NULL,
     rol_activo TINYINT(1) DEFAULT 1
-)
+);
+
+-- Tabla para registro de cajas
+CREATE TABLE caja (
+    id_caja INT AUTO_INCREMENT PRIMARY KEY,
+    saldo_inicial DECIMAL(10,2) NOT NULL,
+    monto_actual DECIMAL(10,2) NOT NULL,
+    saldo_final DECIMAL(10,2) DEFAULT NULL,
+    fecha_caja DATETIME NOT NULL,
+    estado_caja ENUM('abierta', 'cerrada') NOT NULL
+);
+
+-- Tabla para eventos de apertura y cierre de caja
+CREATE TABLE eventos_caja (
+    id_evento_caja INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_evento ENUM('apertura', 'cierre') NOT NULL,
+    fecha_evento DATETIME NOT NULL,
+    id_caja INT NOT NULL,
+    id_usuario INT NOT NULL,
+    FOREIGN KEY (id_caja) REFERENCES caja(id_caja),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+);
+
+-- Tabla para movimientos(ingresos y egresos) de caja
+CREATE TABLE movimientos_caja (
+    id_movimiento_caja INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_movimiento ENUM('ingreso', 'egreso') NOT NULL,
+    fecha_movimiento DATETIME NOT NULL,
+    monto_movimiento DECIMAL(10,2) NOT NULL,
+    descripcion_mov_caja TEXT,
+    id_caja INT NOT NULL,
+    id_usuario INT NOT NULL,
+    FOREIGN KEY (id_caja) REFERENCES caja(id_caja),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+);
+
+-- Tabla para registros de arqueos de caja
+CREATE TABLE arqueos_caja (
+    id_arqueo INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_arqueo DATETIME NOT NULL,
+    monto_fisico DECIMAL(10,2) NOT NULL,
+    monto_tarjeta DECIMAL(10,2) NOT NULL,
+    monto_billetera_digital DECIMAL(10,2) NOT NULL,
+    otros DECIMAL(10,2) DEFAULT 0.00,
+    diferencia DECIMAL(10,2) NOT NULL,
+    estado_caja ENUM('cuadra', 'sobra', 'falta') NOT NULL,
+    id_caja INT NOT NULL,
+    id_usuario INT NOT NULL,
+    FOREIGN KEY (id_caja) REFERENCES caja(id_caja),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+);
