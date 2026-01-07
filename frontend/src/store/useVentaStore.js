@@ -1,0 +1,127 @@
+import { create } from "zustand";
+
+export const useVentaStore = create((set, get) => ({ 
+    detalle: [],
+    cantidades: {},
+
+    porcentajeIGV: 18, 
+    TASA_IGV: 1.18,
+
+    obtenerId: (producto) => {
+        return producto.idProducto || producto.id;
+    },
+
+    setCantidad: (id, cantidad) => set((state) => ({
+        cantidades: {
+            ...state.cantidades,
+            [id]: cantidad,
+        }
+    })),
+
+    actualizarCantidad: (id, nuevaCantidad) => set((state) => ({
+        detalle: state.detalle.map((item) => {
+            const itemId = item.idProducto || item.id;
+            return itemId === id ? { ...item, cantidad: nuevaCantidad } : item;
+        })
+    })),
+
+    agregarProducto: (producto) => {
+        const { detalle, cantidades, obtenerId } = get(); 
+        const productoId = obtenerId(producto);
+        const cantidad = cantidades[productoId] || 1;
+        const productoExistente = detalle.find(item => {
+            const itemId = item.idProducto || item.id;
+            return itemId === productoId;
+        });
+        
+        if (productoExistente) {
+            set({
+                detalle: detalle.map((item) => {
+                    const itemId = item.idProducto || item.id;
+                    return itemId === productoId 
+                        ? { ...item, cantidad: item.cantidad + cantidad }
+                        : item
+                }),
+            })
+        } else { 
+            const nuevoProducto = {
+                ...producto,
+                idProducto: productoId, 
+                id: productoId,
+                cantidad: cantidad
+            };
+            set({ detalle: [...detalle, nuevoProducto] }); 
+        }
+        set ({ cantidades: { ...cantidades, [productoId]: 0 } }); 
+    },                                     
+    
+    removerProducto : (id) => set((state) =>({ 
+        detalle: state.detalle.filter((item) => {
+            const itemId = item.idProducto || item.id;
+            return itemId !== id;
+        }) 
+    })), 
+
+    limpiarVenta: () => set({
+        detalle: [],
+        cantidades: {}
+    }),
+
+    calcularMontosProducto: (producto, cantidad) => {
+        const precioConIGV = Number(producto.precio);
+        const valorUnitario = precioConIGV / get().TASA_IGV;
+
+        const subtotal = valorUnitario * cantidad;
+        const total = precioConIGV * cantidad;
+        const igv = total - subtotal;
+
+        return {
+            valor_unitario: Number(valorUnitario.toFixed(2)),
+            subtotal: Number(subtotal.toFixed(2)),
+            igv: Number(igv.toFixed(2)),
+            total: Number(total.toFixed(2))
+        };
+    },
+
+    subtotal: () => {
+        const { detalle, TASA_IGV } = get();
+        const totalConIGV = detalle.reduce((acumulador, item) => 
+            acumulador + (item.precio * item.cantidad), 0);
+        
+        const baseImponible = totalConIGV / TASA_IGV;
+        return Number(baseImponible.toFixed(2));
+    },
+
+    impuesto: () => {
+        const { detalle, TASA_IGV } = get();
+        const totalConIGV = detalle.reduce((acumulador, item) => 
+            acumulador + (item.precio * item.cantidad), 0);
+        
+        const baseImponible = totalConIGV / TASA_IGV;
+        const igv = totalConIGV - baseImponible;
+        return Number(igv.toFixed(2));
+    },
+
+    total: () => {
+        const { detalle } = get();
+        return Number(detalle.reduce((acumulador, item) => 
+            acumulador + (item.precio * item.cantidad), 0).toFixed(2));
+    },
+
+    calcularMontosTotales: () => {
+        const { detalle, porcentajeIGV } = get();
+        
+        const montoTotal = detalle.reduce((suma, producto) => 
+            suma + Number(producto.precio * producto.cantidad || 0), 0);
+
+        const totalGravada = Number((montoTotal / (1 + porcentajeIGV / 100)).toFixed(2));
+        const totalIGV = Number((montoTotal - totalGravada).toFixed(2));
+
+        return {
+            totalGravada,
+            totalIGV,
+            porcentajeIGV,
+            total: Number(montoTotal.toFixed(2))
+        };
+    }
+}));
