@@ -13,8 +13,7 @@ const {
     obtenerArqueosPorCajaModel
 } = require('./caja_model')
 const { 
-    validarDatosAbrirCaja, 
-    validarDatosCerrarCaja, 
+    validarDatosAbrirCaja,
     validarDatosIngresoCaja, 
     validarDatosEgresoCaja, 
     validarDatosArqueoCaja 
@@ -36,8 +35,32 @@ const crearCajaService = async (datos, idUsuario) => {
         idCaja: idGenerado,
         mensaje: 'Caja creada exitosamente'
     };
+};
+
+const cerrarCajaService = async (idUsuario) => {
+    if (typeof idUsuario !== 'number' || idUsuario <= 0) {
+        throw crear_error('El id de usuario tiene que ser válido', 400);
+    }
+
+    const cajaAbierta = await consultarCajaAbiertaModel();
+    if(!cajaAbierta){
+        throw crear_error('No existe ninguna caja abierta', 409)
+    }
+
+    const arqueosCaja = await obtenerArqueosPorCajaModel(cajaAbierta.id_caja);
+    if(arqueosCaja.length === 0){
+        throw crear_error('Primero necesita realizar minimo un arqueo de caja', 403)
+    }
+
+    const respuesta= await cerrarCajaModel(cajaAbierta.id_caja, idUsuario, cajaAbierta.monto_actual);
+
+    return {
+        ok: true,
+        mensaje: respuesta
+    };
 }
 
 module.exports = {
-    crearCajaService
+    crearCajaService,
+    cerrarCajaService
 }

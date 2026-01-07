@@ -2,7 +2,7 @@ USE super_pollo_hyo;
 
 /* ELIMINAR PROCEDIMIENTOS ALMACENADOS DEL MODULO DE CAJA SI YA EXISTEN */
 DROP PROCEDURE IF EXISTS sp_crear_caja_con_evento;
-DROP PROCEDURE IF EXISTS sp_cerrar_caja_con_evento;
+DROP PROCEDURE IF EXISTS sp_cerrar_caja_registrar_evento;
 DROP PROCEDURE IF EXISTS sp_consultar_caja_abierta;
 DROP PROCEDURE IF EXISTS sp_registrar_ingreso_caja;
 DROP PROCEDURE IF EXISTS sp_registrar_egreso_caja;
@@ -66,14 +66,13 @@ BEGIN
 END //
 
 -- Procedimiento de cierre de caja con evento de cierre
-CREATE PROCEDURE sp_cerrar_caja_con_evento(
-    IN p_id_usuario INT
+CREATE PROCEDURE sp_cerrar_caja_registrar_evento(
+    IN p_id_caja INT,
+    IN p_id_usuario INT,
+    IN p_saldo_final DECIMAL(10,2)
 )
 BEGIN
-    DECLARE v_id_caja INT;
-    DECLARE v_saldo_final DECIMAL(10,2);
     DECLARE v_fecha_actual DATETIME;
-
     -- Manejo de errores: rollback automático si algo falla
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -81,35 +80,25 @@ BEGIN
         RESIGNAL;
     END;
 
-    -- Obtener fecha actual
     SET v_fecha_actual = NOW();
-
-    -- Buscar la caja abierta
-    SELECT id_caja, monto_actual INTO v_id_caja, v_saldo_final
-    FROM caja
-    WHERE estado_caja = 'abierta'
-    LIMIT 1;
-
-    -- Validar si existe caja abierta
-    IF v_id_caja IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No existe una caja abierta. No se puede cerrar ninguna.';
-    END IF;
 
     -- Iniciar transacción
     START TRANSACTION;
-
+    
     -- Cerrar la caja (actualizar saldo_final y estado)
     UPDATE caja
-    SET saldo_final = v_saldo_final, estado_caja = 'cerrada'
-    WHERE id_caja = v_id_caja;
-
+    SET saldo_final = p_saldo_final, 
+        estado_caja = 'cerrada'
+    WHERE id_caja = p_id_caja;
+    
     -- Registrar el evento de cierre
     INSERT INTO eventos_caja (tipo_evento, fecha_evento, id_caja, id_usuario)
-    VALUES ('cierre', v_fecha_actual, v_id_caja, p_id_usuario);
-
+    VALUES ('cierre', v_fecha_actual, p_id_caja, p_id_usuario);
+    
     -- Confirmar transacción
     COMMIT;
+
+    SELECT 'Caja cerrada correctamente' AS mensaje;
 END //
 
 -- Procedimiento de consultar caja abierta
@@ -118,10 +107,7 @@ BEGIN
     -- Buscar caja con estado "abierta"
     SELECT 
         id_caja,
-        saldo_inicial,
-        monto_actual,
-        fecha_caja,
-        estado_caja
+        monto_actual
     FROM caja
     WHERE estado_caja = 'abierta'
     ORDER BY fecha_caja DESC
@@ -440,7 +426,7 @@ BEGIN
         ac.diferencia,
         ac.estado_caja,
         DATE_FORMAT(c.fecha_caja, '%d/%m/%Y') AS fecha_caja,
-        CONCAT(u.nombresUsuario, ' ', u.apellidosUsuario) AS nombre_usuario
+        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
     FROM arqueos_caja ac
     INNER JOIN caja c ON ac.id_caja = c.id_caja
     INNER JOIN usuarios u ON ac.id_usuario = u.id_usuario

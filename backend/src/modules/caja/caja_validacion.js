@@ -1,4 +1,3 @@
-const { consultarCajaAbiertaModel, obtenerArqueosPorCajaModel } = require('./caja_model')
 const { contarUsuarioPorIdModel } = require('../usuarios/usuario_model')
 const crear_error = require('../../utilidades/crear_error');
 
@@ -15,30 +14,7 @@ const validarDatosAbrirCaja = (datos) => {
     if (montoInicial < 0) {
         throw crear_error('El monto inicial debe ser un número mayor o igual a 0', 400);
     }
-}
-
-const validarDatosCerrarCaja = async (usuarioId) => {
-    if (typeof usuarioId !== 'number' || usuarioId <= 0) {
-        throw crear_error('El id de usuario tiene que ser válido y numérico', 400);
-    }
-
-    const caja = await consultarCajaAbiertaModel();
-    if (caja.length === 0) {
-        throw crear_error('No hay una caja abierta para cerrar.', 400);
-    }
-    
-    const cajaData = caja[0];
-    const idCaja = cajaData.idCaja;
-    const arqueos = await obtenerArqueosPorCajaModel(idCaja);
-    if (arqueos.length === 0) {
-        throw crear_error('No se puede cerrar la caja sin antes hacer un arqueo.', 400);
-    }
-
-    const usuariosCoincidentes = await contarUsuarioPorIdModel(usuarioId);
-    if (usuariosCoincidentes === 0) {
-        throw crear_error('Usuario inexistente', 400);
-    }
-}
+};
 
 const validarDatosIngresoCaja = async (datos, usuarioId) => {
     if(!datos || typeof datos !== 'object') {
@@ -133,7 +109,6 @@ const validarDatosArqueoCaja = async (datos, usuarioId) => {
 
 module.exports = { 
     validarDatosAbrirCaja, 
-    validarDatosCerrarCaja, 
     validarDatosIngresoCaja,
     validarDatosEgresoCaja,
     validarDatosArqueoCaja 

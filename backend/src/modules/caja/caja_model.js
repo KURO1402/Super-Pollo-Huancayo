@@ -14,13 +14,13 @@ const crearCajaModel = async (montoInicial, usuarioId) => {
     }      
 };
 
-const cerrarCajaModel = async (usuarioId) => {
+const cerrarCajaModel = async (cajaId, usuarioId, montoFinal) => {
     let conexion;
 
     try {
         conexion = await pool.getConnection();
-        const [result] = await conexion.query('CALL sp_cerrar_caja_con_evento(?)', [usuarioId]);
-        return result;
+        const [result] = await conexion.query('CALL sp_cerrar_caja_registrar_evento(?, ?, ?)', [cajaId, usuarioId, montoFinal]);
+        return result[0][0]?.mensaje;
     } catch (err) {
         throw new Error('Error al cerrar la caja en la base de datos');
     } finally {
@@ -33,7 +33,7 @@ const consultarCajaAbiertaModel = async () => {
     try {
         conexion = await pool.getConnection();
         const [rows] = await conexion.query('CALL sp_consultar_caja_abierta()');
-        return rows[0]; 
+        return rows[0][0]; 
     } catch (err) {
         throw new Error('Error al consultar la caja abierta en la base de datos');
     } finally {
@@ -142,6 +142,7 @@ const obtenerArqueosPorCajaModel = async (cajaId) => {
         const [rows] = await conexion.query('CALL sp_obtener_arqueos_por_caja(?)', [cajaId]);
         return rows[0];
     } catch (err) {
+        console.log(err.message)
         throw new Error('Error al obtener los arqueos de la caja en la base de datos');
     } finally {
         if (conexion) conexion.release();
