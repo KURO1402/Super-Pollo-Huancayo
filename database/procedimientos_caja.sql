@@ -252,6 +252,7 @@ END //
 -- Procedimiento para registrar un arqueo de caja
 CREATE PROCEDURE sp_registrar_arqueo_caja(
     IN p_id_usuario INT,
+    IN p_id_caja INT,
     IN p_monto_fisico DECIMAL(10,2),
     IN p_monto_tarjeta DECIMAL(10,2),
     IN p_monto_billetera DECIMAL(10,2),
@@ -260,8 +261,6 @@ CREATE PROCEDURE sp_registrar_arqueo_caja(
     IN p_estado_arqueo ENUM('cuadra', 'sobra', 'falta')
 )
 BEGIN
-    DECLARE v_id_caja INT;
-    DECLARE v_fecha_actual DATETIME;
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -269,20 +268,7 @@ BEGIN
         RESIGNAL;
     END;
 
-    SET v_fecha_actual = NOW();
-
     START TRANSACTION;
-
-    -- 1️⃣ Buscar la caja abierta
-    SELECT id_caja INTO v_id_caja
-    FROM caja
-    WHERE estado_caja = 'abierta'
-    LIMIT 1;
-
-    IF v_id_caja IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No hay una caja abierta actualmente';
-    END IF;
 
     INSERT INTO arqueos_caja (
         fecha_arqueo,
@@ -296,14 +282,14 @@ BEGIN
         id_usuario
     )
     VALUES (
-        v_fecha_actual,
+        NOW(),
         p_monto_fisico,
         p_monto_tarjeta,
         p_monto_billetera,
         p_monto_otros,
         p_diferencia,
         p_estado_arqueo,
-        v_id_caja,
+        p_id_caja,
         p_id_usuario
     );
 

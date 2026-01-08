@@ -67,13 +67,13 @@ const registrarEgresoCajaModel = async (monto, descripcion, usuarioId) => {
     }
 };
 
-const registrarArqueoCajaModel = async (montos, diferencia, estadoArqueo, usuarioId) => {
+const registrarArqueoCajaModel = async (montos, diferencia, estadoArqueo, idUsuario, idCaja) => {
     let conexion;
     try {
-        const { montoFisico, montoTarjeta, montoBilleteraDigital, otros } = montos;
+        const { montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros } = montos;
         conexion = await pool.getConnection();
-        const [result] = await conexion.query('CALL sp_registrar_arqueo_caja(?, ?, ?, ?, ?, ?, ?)', [usuarioId, montoFisico, montoTarjeta, montoBilleteraDigital, otros, diferencia, estadoArqueo]);
-        return result;
+        const [result] = await conexion.query('CALL sp_registrar_arqueo_caja(?, ?, ?, ?, ?, ?, ?, ?)', [idUsuario, idCaja, montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros, diferencia, estadoArqueo]);
+        return result[0][0]?.mensaje;
     } catch (err) {
         throw new Error('Error al registrar el arqueo de caja en la base de datos');
     } finally {

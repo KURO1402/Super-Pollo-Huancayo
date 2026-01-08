@@ -2,6 +2,7 @@ const {
   crearCajaService,
   registrarIngresoCajaService,
   registrarEgresoCajaService,
+  registrarArqueoCajaService,
   cerrarCajaService
 } = require('./caja_service');
 
@@ -50,6 +51,21 @@ const registrarEgresoCajaController = async (req, res) => {
   }
 };
 
+const registrarArqueoCajaController = async (req, res) => {
+    try {
+      const { id_usuario } = req.usuario;
+      const resultado = await registrarArqueoCajaService(req.body, id_usuario);
+      res.status(200).json(resultado);
+    } catch (err) {
+      const statusCode = err.status || 500;
+
+      return res.status(statusCode).json({
+        ok: false,
+        mensaje: err.message || "Error interno del servidor",
+      });
+    }
+};
+
 const cerrarCajaController = async (req, res) => {
   try {
     const { id_usuario } = req.usuario;
@@ -69,5 +85,6 @@ module.exports = {
   crearCajaController,
   registrarIngresoCajaController,
   registrarEgresoCajaController,
+  registrarArqueoCajaController,
   cerrarCajaController
 }

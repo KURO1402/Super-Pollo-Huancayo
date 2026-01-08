@@ -30,37 +30,27 @@ const validarDatosMovimientosCaja = (datos) => {
     }
 };
 
-const validarDatosArqueoCaja = async (datos, usuarioId) => {
+const validarDatosArqueoCaja = (datos) => {
     if(!datos || typeof datos !== 'object') {
         throw crear_error('Se necesitan datos como el dinero físico de caja', 400);
     }
     
-    const { montoFisico, montoTarjeta, montoBilleteraDigital, otros } = datos;
+    const { montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros } = datos;
 
     if (montoFisico == undefined || typeof montoFisico !== 'number' || montoFisico < 0) {
-        throw crear_error('Se necesita el monto físico de caja y que sea un número válido', 400);
+        throw crear_error('Se necesita el monto físico de caja', 400);
     }
     
     if (montoTarjeta === undefined || typeof montoTarjeta !== 'number' || montoTarjeta < 0) {
-        throw crear_error('Se necesita el monto de tarjeta y que sea un número válido', 400);
+        throw crear_error('Se necesita el monto de tarjeta', 400);
     }
 
     if (montoBilleteraDigital === undefined || typeof montoBilleteraDigital !== 'number' || montoBilleteraDigital < 0) {
-        throw crear_error('Se necesita el monto de billetera digital y que sea un número válido', 400);
+        throw crear_error('Se necesita el monto de billetera digital', 400);
     }
 
-    if (otros === undefined || typeof otros !== 'number' || otros < 0) {
-        throw crear_error('Se necesita el monto de otros y que sea un número válido', 400);
-    }
-
-    const usuariosCoincidentes = await contarUsuarioPorIdModel(usuarioId);
-    if (usuariosCoincidentes === 0) {
-        throw crear_error('Usuario inexistente', 400);
-    }
-
-    const cajas = await consultarCajaAbiertaModel();
-    if (cajas.length === 0) {
-        throw crear_error('No hay ninguna caja abierta para registrar el arqueo', 400);
+    if (montoOtros === undefined || typeof montoOtros !== 'number' || montoOtros < 0) {
+        throw crear_error('Se necesita el monto de otros metodos de pago', 400);
     }
 };
 

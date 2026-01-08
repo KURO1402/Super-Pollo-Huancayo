@@ -86,7 +86,34 @@ const registrarEgresoCajaService = async (datos, idUsuario) => {
         ok: true,
         mensaje: resultado
     };
-}
+};
+
+const registrarArqueoCajaService = async (datos, idUsuario) => {
+
+    validarDatosArqueoCaja(datos);
+    const usuariosCoincidentes = await contarUsuarioPorIdModel(idUsuario);
+    if (usuariosCoincidentes === 0) {
+        throw crear_error('Usuario inexistente', 400);
+    }
+
+    const caja = await consultarCajaAbiertaModel();
+    if (!caja) {
+        throw crear_error('No hay ninguna caja abierta para registrar el arqueo', 400);
+    }
+
+    const { montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros } = datos;
+
+    const montoTotal = montoFisico + montoTarjeta + montoBilleteraDigital + montoOtros;
+    const diferencia = montoTotal - caja.monto_actual;
+    const estadoArqueo = diferencia === 0 ? 'cuadra' : diferencia > 0 ? 'sobra' : 'falta';
+
+    const resultado = await registrarArqueoCajaModel(datos, diferencia, estadoArqueo, idUsuario, caja.id_caja);
+
+    return {
+        ok: true,
+        mensaje: resultado
+    };
+};
 
 const cerrarCajaService = async (idUsuario) => {
     if (typeof idUsuario !== 'number' || idUsuario <= 0) {
@@ -115,5 +142,6 @@ module.exports = {
     crearCajaService,
     registrarIngresoCajaService,
     registrarEgresoCajaService,
+    registrarArqueoCajaService,
     cerrarCajaService
 }
