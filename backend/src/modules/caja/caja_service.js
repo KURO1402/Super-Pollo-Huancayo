@@ -14,18 +14,18 @@ const {
 } = require('./caja_model')
 const { 
     validarDatosAbrirCaja,
-    validarDatosIngresoCaja, 
-    validarDatosEgresoCaja, 
+    validarDatosMovimientosCaja, 
     validarDatosArqueoCaja 
 } = require('./caja_validacion');
+
+const { contarUsuarioPorIdModel } = require('../usuarios/usuario_model');
 
 const crearCajaService = async (datos, idUsuario) => {
     validarDatosAbrirCaja(datos);
     const { montoInicial } = datos;
-    cajas = await consultarCajaAbiertaModel();
-
-    if (cajas.length > 0) {
-        throw crear_error('Ya hay una caja abierta. No se puede abrir otra.', 400);
+    const caja = await consultarCajaAbiertaModel();
+    if (caja) {
+        throw crear_error('Ya hay una caja abierta. No se puede abrir otra.', 409);
     }
 
     const idGenerado = await crearCajaModel(montoInicial, idUsuario);
@@ -36,6 +36,57 @@ const crearCajaService = async (datos, idUsuario) => {
         mensaje: 'Caja creada exitosamente'
     };
 };
+
+const registrarIngresoCajaService = async (datos, idUsuario) => {
+
+    validarDatosMovimientosCaja(datos);
+    const { monto, descripcion } = datos;
+
+    const usuariosCoincidentes = await contarUsuarioPorIdModel(idUsuario);
+    if (usuariosCoincidentes === 0) {
+        throw crear_error('Usuario inexistente', 400);
+    }
+
+    const caja = await consultarCajaAbiertaModel();
+    if (!caja) {
+        throw crear_error('No se puede registrar un ingreso si no hay una caja abierta.', 400);
+    }
+
+    const resultado = await registrarIngresoCajaModel(monto, descripcion, idUsuario);
+
+    return {
+        ok: true,
+        mensaje: resultado
+    };
+};
+
+const registrarEgresoCajaService = async (datos, idUsuario) => {
+
+    validarDatosMovimientosCaja(datos);
+    const { monto, descripcion } = datos;
+
+    const usuariosCoincidentes = await contarUsuarioPorIdModel(idUsuario);
+    if (usuariosCoincidentes === 0) {
+        throw crear_error('Usuario inexistente', 400);
+    }
+
+    const caja = await consultarCajaAbiertaModel();
+
+    if (!caja) {
+        throw crear_error('No se puede registrar un egreso si no hay una caja abierta.', 400);
+    }
+
+    if (caja.monto_actual < monto) {
+        throw Object.assign(new Error("No hay suficiente saldo en la caja para realizar el egreso."), { status: 400 });
+    }
+
+    const resultado = await registrarEgresoCajaModel(monto, descripcion, idUsuario);
+
+    return {
+        ok: true,
+        mensaje: resultado
+    };
+}
 
 const cerrarCajaService = async (idUsuario) => {
     if (typeof idUsuario !== 'number' || idUsuario <= 0) {
@@ -62,5 +113,7 @@ const cerrarCajaService = async (idUsuario) => {
 
 module.exports = {
     crearCajaService,
+    registrarIngresoCajaService,
+    registrarEgresoCajaService,
     cerrarCajaService
 }

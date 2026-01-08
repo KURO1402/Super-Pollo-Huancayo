@@ -16,62 +16,19 @@ const validarDatosAbrirCaja = (datos) => {
     }
 };
 
-const validarDatosIngresoCaja = async (datos, usuarioId) => {
+const validarDatosMovimientosCaja = (datos) => {
     if(!datos || typeof datos !== 'object') {
-        throw crear_error('Se necesitan datos como monto y descripción para registrar un ingreso a caja', 400);
+        throw crear_error('Se necesitan datos como monto y descripción para registrar un movimiento en caja', 400);
     }
-
     const { monto, descripcion } = datos;
-
-    if (!monto || !descripcion) {
-        throw crear_error('Se necesita un monto y una descripción válidos', 400);
+    if(!monto || typeof monto !== 'number' || monto <= 0){
+        throw crear_error('Se necesita un monto valido', 400);
     }
 
-    if (typeof monto !== 'number' || monto <= 0) {
-        throw crear_error('El monto debe ser un número mayor a 0', 400);
+    if(!descripcion || typeof descripcion !== 'string' || !descripcion.trim()){
+        throw crear_error('Se necesita una descripción válida')
     }
-
-    const usuariosCoincidentes = await contarUsuarioPorIdModel(usuarioId);
-    if (usuariosCoincidentes === 0) {
-        throw crear_error('Usuario inexistente', 400);
-    }
-
-    const cajas = await consultarCajaAbiertaModel();
-    if (cajas.length === 0) {
-        throw crear_error('No se puede registrar un ingreso si no hay una caja abierta.', 400);
-    }
-}
-
-const validarDatosEgresoCaja = async (datos, usuarioId) => {
-    if(!datos || typeof datos !== 'object') {
-        throw crear_error('Se necesitan datos como monto y descripción para registrar un egreso a caja', 400);
-    }
-    
-    const { monto, descripcion } = datos;
-
-    if (!monto || !descripcion) {
-        throw crear_error('Se necesita un monto y una descripción válidos', 400);
-    }
-
-    if (typeof monto !== 'number' || monto <= 0) {
-        throw crear_error('El monto debe ser un número mayor a 0', 400);
-    }
-
-    const usuariosCoincidentes = await contarUsuarioPorIdModel(usuarioId);
-    if (usuariosCoincidentes === 0) {
-        throw crear_error('Usuario inexistente', 400);
-    }
-
-    const cajas = await consultarCajaAbiertaModel();
-    if (cajas.length === 0) {
-        throw crear_error('No se puede registrar un egreso si no hay una caja abierta.', 400);
-    }
-
-    const caja = cajas[0];
-    if (caja.montoActual < monto) {
-        throw crear_error('No hay suficiente saldo en la caja para realizar el egreso.', 400);
-    }
-}
+};
 
 const validarDatosArqueoCaja = async (datos, usuarioId) => {
     if(!datos || typeof datos !== 'object') {
@@ -109,7 +66,6 @@ const validarDatosArqueoCaja = async (datos, usuarioId) => {
 
 module.exports = { 
     validarDatosAbrirCaja, 
-    validarDatosIngresoCaja,
-    validarDatosEgresoCaja,
+    validarDatosMovimientosCaja,
     validarDatosArqueoCaja 
 };

@@ -41,10 +41,9 @@ const consultarCajaAbiertaModel = async () => {
     }
 }
 
-const registrarIngresoCajaModel = async (datos, usuarioId) => {
+const registrarIngresoCajaModel = async (monto, descripcion, usuarioId) => {
     let conexion;
     try {
-        const { monto, descripcion } = datos;
         conexion = await pool.getConnection();
         const [rows] = await conexion.query('CALL sp_registrar_ingreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
         return rows[0][0]?.mensaje;
@@ -55,10 +54,9 @@ const registrarIngresoCajaModel = async (datos, usuarioId) => {
     }
 };
 
-const registrarEgresoCajaModel = async (datos, usuarioId) => {
+const registrarEgresoCajaModel = async (monto, descripcion, usuarioId) => {
     let conexion;
     try {
-        const { monto, descripcion } = datos;
         conexion = await pool.getConnection();
         const [rows] = await conexion.query('CALL sp_registrar_egreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
         return rows[0][0]?.mensaje;

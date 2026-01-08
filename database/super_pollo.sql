@@ -75,7 +75,7 @@ CREATE TABLE movimientos_caja (
     tipo_movimiento ENUM('ingreso', 'egreso') NOT NULL,
     fecha_movimiento DATETIME NOT NULL,
     monto_movimiento DECIMAL(10,2) NOT NULL,
-    descripcion_mov_caja TEXT,
+    descripcion_mov_caja TEXT NOT NULL,
     id_caja INT NOT NULL,
     id_usuario INT NOT NULL,
     FOREIGN KEY (id_caja) REFERENCES caja(id_caja),
