@@ -309,7 +309,7 @@ BEGIN
         mc.monto_movimiento,
         DATE_FORMAT(mc.fecha_movimiento, '%d/%m/%Y') AS fecha,
         DATE_FORMAT(mc.fecha_movimiento, '%H:%i') AS hora,
-        CONCAT(u.nombresUsuario, ' ', u.apellidosUsuario) AS nombre_usuario
+        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
     FROM movimientos_caja mc
     INNER JOIN usuarios u ON mc.id_usuario = u.id_usuario
     WHERE mc.id_caja = p_id_caja
@@ -329,7 +329,7 @@ BEGIN
         mc.monto_movimiento,
         DATE_FORMAT(mc.fecha_movimiento, '%d/%m/%Y') AS fecha,
         DATE_FORMAT(mc.fecha_movimiento, '%H:%i') AS hora,
-        CONCAT(u.nombresUsuario, ' ', u.apellidosUsuario) AS nombre_usuario
+        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
     FROM movimientos_caja mc
     INNER JOIN usuarios u ON mc.id_usuario = u.id_usuario
     ORDER BY mc.fecha_movimiento DESC
@@ -345,7 +345,7 @@ BEGIN
     SELECT 
         c.id_caja,
         DATE_FORMAT(c.fecha_caja, '%d/%m/%Y') AS fecha,
-        CONCAT(u.nombresUsuario, ' ', u.apellidosUsuario) AS nombre_usuario,
+        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario,
         c.saldo_inicial,
         c.monto_actual,
         c.saldo_final,
@@ -387,7 +387,7 @@ BEGIN
         ac.diferencia,
         ac.estado_caja,
         DATE_FORMAT(c.fecha_caja, '%d/%m/%Y') AS fecha_caja,
-        CONCAT(u.nombresUsuario, ' ', u.apellidosUsuario) AS nombre_usuario
+        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
     FROM arqueos_caja ac
     INNER JOIN caja c ON ac.id_caja = c.id_caja
     INNER JOIN usuarios u ON ac.id_usuario = u.id_usuario

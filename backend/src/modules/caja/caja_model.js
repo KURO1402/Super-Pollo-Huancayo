@@ -114,6 +114,7 @@ const obtenerMovimientosPorCajaModel = async (cajaId) => {
         const [rows] = await conexion.query('CALL sp_obtener_movimientos_por_caja(?)', [cajaId]);
         return rows[0];
     } catch (err) {
+        console.log(err.message)
         throw new Error('Error al obtener los movimientos de la caja en la base de datos');
     } finally {
         if (conexion) conexion.release();
