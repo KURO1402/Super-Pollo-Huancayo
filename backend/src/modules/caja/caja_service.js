@@ -6,10 +6,8 @@ const {
     registrarIngresoCajaModel,
     registrarEgresoCajaModel,
     registrarArqueoCajaModel,
-    obtenerMovimientosPorCajaModel,
-    obtenerMovimientosCajaModel,
     obtenerCajasModel,
-    obtenerArqueosCaja,
+    obtenerMovimientosPorCajaModel,
     obtenerArqueosPorCajaModel
 } = require('./caja_model')
 const { 
@@ -138,6 +136,23 @@ const cerrarCajaService = async (idUsuario) => {
     };
 };
 
+const obtenerCajasService = async (limit, offset) => {
+
+    const limite = parseInt(limit) || 10;
+    const desplazamiento = parseInt(offset) || 0;
+
+    const cajas = await obtenerCajasModel(limite, desplazamiento);
+
+    if(!cajas || cajas.length === 0){
+        throw crear_error('No existen cajas disponibles', 404);
+    }
+
+    return {
+        ok: true,
+        cajas
+    }
+};
+
 const obtenerMovimientosPorCajaService = async (cajaId) => {
 
     const movimientos = await obtenerMovimientosPorCajaModel(cajaId);
@@ -152,45 +167,14 @@ const obtenerMovimientosPorCajaService = async (cajaId) => {
     };
 };
 
-const obtenerMovimientosCajaService = async (limit, offset) => {
-
-    const limite = parseInt(limit) || 10;
-
-    const desplazamiento = parseInt(offset) || 0;
-
-    const movimientos = await obtenerMovimientosCajaModel(limite, desplazamiento);
-
-    if (!movimientos || movimientos.length === 0) {
-        throw crear_error('No se encontraron movimientos de caja', 404);
-    }
-    
-    return{ 
-        ok: true,
-        movimientos
-    };
-};
-
-const obtenerCajasService = async (limit, offset) => {
-    const cajas = await obtenerCajasModel(limit, offset);
-    if (cajas.length === 0) {
-        throw Object.assign(new Error("No se encontraron registros"), { status: 404 });
-    }
-    return cajas;
-};
-
-const obtenerArqueosCajaService = async (limit, offset) => {
-    const arqueos = await obtenerArqueosCaja(limit, offset);
-    if (arqueos.length === 0) {
-        throw Object.assign(new Error("No se encontraron registros"), { status: 404 });
-    }
-    return arqueos;
-};
-
 const obtenerArqueosPorCajaService = async (cajaId) => {
+
     const arqueos = await obtenerArqueosPorCajaModel(cajaId);
+
     if (arqueos.length === 0) {
-        throw Object.assign(new Error("No se encontraron registros"), { status: 404 });
+        throw crear_error('No se encontraron registros', 404);
     }
+
     return arqueos;
 };
 
@@ -200,6 +184,7 @@ module.exports = {
     registrarEgresoCajaService,
     registrarArqueoCajaService,
     cerrarCajaService,
-    obtenerMovimientosCajaService,
-    obtenerMovimientosPorCajaService
+    obtenerCajasService,
+    obtenerMovimientosPorCajaService,
+    obtenerArqueosPorCajaService
 }

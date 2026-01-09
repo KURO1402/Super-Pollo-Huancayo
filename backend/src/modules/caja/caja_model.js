@@ -4,7 +4,7 @@ const crearCajaModel = async (montoInicial, usuarioId) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [result] = await conexion.query('CALL sp_crear_caja_con_evento(?, ?)', [montoInicial, usuarioId]);
+        const [result] = await conexion.execute('CALL sp_crear_caja_con_evento(?, ?)', [montoInicial, usuarioId]);
         return result[0][0]?.id_caja;
     } catch (err) {
         console.log(err.message)
@@ -19,7 +19,7 @@ const cerrarCajaModel = async (cajaId, usuarioId, montoFinal) => {
 
     try {
         conexion = await pool.getConnection();
-        const [result] = await conexion.query('CALL sp_cerrar_caja_registrar_evento(?, ?, ?)', [cajaId, usuarioId, montoFinal]);
+        const [result] = await conexion.execute('CALL sp_cerrar_caja_registrar_evento(?, ?, ?)', [cajaId, usuarioId, montoFinal]);
         return result[0][0]?.mensaje;
     } catch (err) {
         throw new Error('Error al cerrar la caja en la base de datos');
@@ -32,7 +32,7 @@ const consultarCajaAbiertaModel = async () => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_consultar_caja_abierta()');
+        const [rows] = await conexion.execute('CALL sp_consultar_caja_abierta()');
         return rows[0][0]; 
     } catch (err) {
         throw new Error('Error al consultar la caja abierta en la base de datos');
@@ -45,7 +45,7 @@ const registrarIngresoCajaModel = async (monto, descripcion, usuarioId) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_registrar_ingreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
+        const [rows] = await conexion.execute('CALL sp_registrar_ingreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
         return rows[0][0]?.mensaje;
     } catch (err) {
         throw new Error('Error al registrar el ingreso en caja en la base de datos');
@@ -58,7 +58,7 @@ const registrarEgresoCajaModel = async (monto, descripcion, usuarioId) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_registrar_egreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
+        const [rows] = await conexion.execute('CALL sp_registrar_egreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
         return rows[0][0]?.mensaje;
     } catch (err) {
         throw new Error('Error al registrar el egreso en caja en la base de datos');
@@ -70,10 +70,15 @@ const registrarEgresoCajaModel = async (monto, descripcion, usuarioId) => {
 const registrarArqueoCajaModel = async (montos, diferencia, estadoArqueo, idUsuario, idCaja) => {
     let conexion;
     try {
+
         const { montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros } = montos;
+
         conexion = await pool.getConnection();
-        const [result] = await conexion.query('CALL sp_registrar_arqueo_caja(?, ?, ?, ?, ?, ?, ?, ?)', [idUsuario, idCaja, montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros, diferencia, estadoArqueo]);
+
+        const [result] = await conexion.execute('CALL sp_registrar_arqueo_caja(?, ?, ?, ?, ?, ?, ?, ?)', [idUsuario, idCaja, montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros, diferencia, estadoArqueo]);
+
         return result[0][0]?.mensaje;
+
     } catch (err) {
         throw new Error('Error al registrar el arqueo de caja en la base de datos');
     } finally {
@@ -84,34 +89,24 @@ const registrarArqueoCajaModel = async (montos, diferencia, estadoArqueo, idUsua
 const obtenerCajasModel = async (limit, offset) => {
     let conexion;
     try {
-        conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_obtener_cajas_cerradas(?, ?)', [limit, offset]);
-        return rows[0];
-    } catch (err) {
-        throw new Error('Error al obtener las cajas cerradas en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
 
-const obtenerMovimientosCajaModel = async (limit, offset) => {
-    let conexion;
-    try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_obtener_ultimos_movimientos_caja(?, ?)', [limit, offset]);
+
+        const [rows] = await conexion.execute('CALL sp_listar_cajas(?, ?)', [limit, offset]);
+
         return rows[0];
     } catch (err) {
-        throw new Error('Error al obtener los últimos movimientos de caja en la base de datos');
+        throw new Error('Error al listar detalles de caja de la base de datos');
     } finally {
-        if (conexion) conexion.release();
+        if(conexion) conexion.release();
     }
-};
+}
 
 const obtenerMovimientosPorCajaModel = async (cajaId) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_obtener_movimientos_por_caja(?)', [cajaId]);
+        const [rows] = await conexion.execute('CALL sp_obtener_movimientos_por_caja(?)', [cajaId]);
         return rows[0];
     } catch (err) {
         console.log(err.message)
@@ -121,24 +116,11 @@ const obtenerMovimientosPorCajaModel = async (cajaId) => {
     }
 };
 
-const obtenerArqueosCaja = async (limit, offset) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_obtener_arqueos_caja(?,?)', [limit, offset]);
-        return rows[0];
-    } catch (err) {
-        throw new Error('Error al obtener los arqueos de la caja en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
 const obtenerArqueosPorCajaModel = async (cajaId) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.query('CALL sp_obtener_arqueos_por_caja(?)', [cajaId]);
+        const [rows] = await conexion.execute('CALL sp_obtener_arqueos_por_caja(?)', [cajaId]);
         return rows[0];
     } catch (err) {
         console.log(err.message)
@@ -149,6 +131,7 @@ const obtenerArqueosPorCajaModel = async (cajaId) => {
 };
 
 
+
 module.exports = { 
     crearCajaModel, 
     cerrarCajaModel, 
@@ -156,9 +139,7 @@ module.exports = {
     registrarIngresoCajaModel,
     registrarEgresoCajaModel,
     registrarArqueoCajaModel,
-    obtenerMovimientosPorCajaModel,
-    obtenerMovimientosCajaModel,
     obtenerCajasModel,
-    obtenerArqueosCaja,
+    obtenerMovimientosPorCajaModel,
     obtenerArqueosPorCajaModel
 }

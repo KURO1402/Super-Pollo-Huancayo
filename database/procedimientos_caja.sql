@@ -8,9 +8,7 @@ DROP PROCEDURE IF EXISTS sp_registrar_ingreso_caja;
 DROP PROCEDURE IF EXISTS sp_registrar_egreso_caja;
 DROP PROCEDURE IF EXISTS sp_registrar_arqueo_caja;
 DROP PROCEDURE IF EXISTS sp_obtener_movimientos_por_caja;
-DROP PROCEDURE IF EXISTS sp_obtener_ultimos_movimientos_caja;
-DROP PROCEDURE IF EXISTS sp_obtener_cajas_cerradas;
-DROP PROCEDURE IF EXISTS sp_obtener_arqueos_caja;
+DROP PROCEDURE IF EXISTS sp_listar_cajas;
 DROP PROCEDURE IF EXISTS sp_obtener_arqueos_por_caja;
 
 /* CREAR PROCEDIMIENTOS ALMACENADOS DEL MODULO DE CAJA */
@@ -316,82 +314,22 @@ BEGIN
     ORDER BY mc.fecha_movimiento DESC;
 END //
 
--- Procedimiento para obtener los movimientos de la caja abierta por partes
-CREATE PROCEDURE sp_obtener_ultimos_movimientos_caja(
+-- Procedimiento para obtener detalles de las cajas cerradas por partes
+CREATE PROCEDURE sp_listar_cajas (
     IN p_limit INT,
     IN p_offset INT
 )
 BEGIN
     SELECT
-        mc.id_movimiento_caja,
-        mc.tipo_movimiento,
-        mc.descripcion_mov_caja,
-        mc.monto_movimiento,
-        DATE_FORMAT(mc.fecha_movimiento, '%d/%m/%Y') AS fecha,
-        DATE_FORMAT(mc.fecha_movimiento, '%H:%i') AS hora,
-        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
-    FROM movimientos_caja mc
-    INNER JOIN usuarios u ON mc.id_usuario = u.id_usuario
-    ORDER BY mc.fecha_movimiento DESC
-    LIMIT p_limit OFFSET p_offset;
-END //
-
--- Procedimiento para obtener detalles de las cajas cerradas por partes
-CREATE PROCEDURE sp_obtener_cajas_cerradas(
-    IN p_limit INT,
-    IN p_offset INT
-)
-BEGIN
-    SELECT 
         c.id_caja,
-        DATE_FORMAT(c.fecha_caja, '%d/%m/%Y') AS fecha,
-        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario,
         c.saldo_inicial,
         c.monto_actual,
         c.saldo_final,
-        c.estado_caja,
-        ac.monto_fisico,
-        ac.monto_tarjeta,
-        ac.monto_billetera_digital,
-        ac.otros,
-        (ac.monto_fisico + ac.monto_tarjeta + ac.monto_billetera_digital + IFNULL(ac.otros, 0)) AS monto_total,
-        ac.diferencia,
-        ac.estado_caja AS estado_arqueo
+        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_caja,
+        DATE_FORMAT(c.fecha_caja, '%H:%i:%s') AS hora_caja,
+        c.estado_caja
     FROM caja c
-    INNER JOIN (
-        SELECT id_caja, MAX(id_arqueo) AS ultimo_arqueo
-        FROM arqueos_caja
-        GROUP BY id_caja
-    ) ult ON c.id_caja = ult.id_caja
-    INNER JOIN arqueos_caja ac ON ac.id_arqueo = ult.ultimo_arqueo
-    INNER JOIN usuarios u ON ac.id_usuario = u.id_usuario
-    WHERE c.estado_caja = 'cerrada'
     ORDER BY c.fecha_caja DESC
-    LIMIT p_limit OFFSET p_offset;
-END //
-
--- Procedimiento para obtener los arqueos de cajas anteriores
-CREATE PROCEDURE sp_obtener_arqueos_caja(
-    IN p_limit INT,
-    IN p_offset INT
-)
-BEGIN
-    SELECT 
-        ac.id_arqueo,
-        DATE_FORMAT(ac.fecha_arqueo, '%H:%i') AS hora_arqueo,
-        DATE_FORMAT(ac.fecha_arqueo, '%d/%m/%Y') AS fecha_arqueo,
-        ac.monto_fisico,
-        ac.monto_tarjeta,
-        ac.monto_billetera_digital,
-        ac.otros,
-        ac.diferencia,
-        ac.estado_caja,
-        DATE_FORMAT(c.fecha_caja, '%d/%m/%Y') AS fecha_caja,
-        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
-    FROM arqueos_caja ac
-    INNER JOIN caja c ON ac.id_caja = c.id_caja
-    INNER JOIN usuarios u ON ac.id_usuario = u.id_usuario
-    ORDER BY ac.fecha_arqueo DESC
     LIMIT p_limit OFFSET p_offset;
 END //
 

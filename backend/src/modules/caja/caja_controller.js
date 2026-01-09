@@ -4,8 +4,9 @@ const {
   registrarEgresoCajaService,
   registrarArqueoCajaService,
   cerrarCajaService,
-  obtenerMovimientosCajaService,
-  obtenerMovimientosPorCajaService
+  obtenerCajasService,
+  obtenerMovimientosPorCajaService,
+  obtenerArqueosPorCajaService
 } = require('./caja_service');
 
 const crearCajaController = async (req, res) => {
@@ -83,44 +84,30 @@ const cerrarCajaController = async (req, res) => {
   }
 };
 
+const obtenerCajasController = async (req, res) => {
+  try {
+    const { limit, offset } = req.query;
+
+    const resultado = await obtenerCajasService(limit, offset);
+
+    return res.status(200).json(resultado);
+
+  } catch (err) {
+    const statusCode = err.status || 500;
+
+    res.status(statusCode).json({
+      ok: false,
+      mensaje: err.message || 'Error interno del servidor'
+    })
+  }
+};
+
 const obtenerMovimientosPorCajaController = async (req, res) => {
   const { idCaja } = req.params;
 
   try {
     const resultado = await obtenerMovimientosPorCajaService(idCaja);
     res.status(200).json(resultado);
-  } catch (err) {
-    const statusCode = err.status || 500;
-
-    return res.status(statusCode).json({
-      ok: false,
-      mensaje: err.message || "Error interno del servidor",
-    });
-  }
-};
-
-const obtenerMovimientosCajaController = async (req, res) => {
-  try {
-    const { limit, offset} = req.query;
-    const movimientos = await obtenerMovimientosCajaService(limit, offset);
-    res.status(200).json(movimientos);
-  } catch (err) {
-    const statusCode = err.status || 500;
-
-    return res.status(statusCode).json({
-      ok: false,
-      mensaje: err.message || "Error interno del servidor",
-    });
-  }
-};
-
-const obtenerArqueosCajaController = async (req, res) => {
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = parseInt(req.query.offset) || 0;
-
-  try {
-    const arqueos = await obtenerArqueosCajaService(limit, offset);
-    res.status(200).json(arqueos);
   } catch (err) {
     const statusCode = err.status || 500;
 
@@ -153,6 +140,7 @@ module.exports = {
   registrarEgresoCajaController,
   registrarArqueoCajaController,
   cerrarCajaController,
-  obtenerMovimientosCajaController,
-  obtenerMovimientosPorCajaController
+  obtenerCajasController,
+  obtenerMovimientosPorCajaController,
+  obtenerArqueosPorCajaController
 }
