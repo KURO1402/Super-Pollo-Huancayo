@@ -1,3 +1,4 @@
+CREATE DATABASE super_pollo_hyo;
 USE super_pollo_hyo;
 
 -- Tablas con más dependencias (hijas)

@@ -5,7 +5,11 @@ const {
  actualizarDatosInsumoModel,
  actualizarEstadoInsumoModel,
  contarInsumosPorIdModel,
- contarInsumosPorNombre2Model
+ contarInsumosPorNombre2Model,
+ obtenerInsumosModel,
+ obtenerInsumosPaginacionModel,
+ obtenerInsumoIDModel,
+ obtenerStockActualModel
 } = require('./insumos_model');
 
 const {
@@ -89,9 +93,53 @@ const eliminarInsumoService = async (idInsumo) => {
     };
 };
 
+const obtenerInsumosService = async () => {
+    const insumos = await obtenerInsumosModel();
+
+    if(!insumos || insumos.length === 0){
+        throw crearError('No existen insumos.', 404)
+    }
+
+    return {
+        ok: true,
+        insumos
+    }
+};
+
+const obtenerInsumosPaginacionService= async (limit, offset) => {
+    const limite = parseInt(limit) || 10;
+    const desplazamiento = parseInt(offset) || 0;
+    const insumos = await obtenerInsumosPaginacionModel(limite, desplazamiento);
+
+    if(!insumos || insumos.length === 0){
+        throw crearError('No existen insumos.', 404)
+    }
+
+    return {
+        ok: true,
+        insumos
+    }
+};
+
+const obtenerInsumoIDService = async (idInsumo) => {
+
+    const insumo = await obtenerInsumoIDModel(idInsumo);
+
+    if (!insumo) {
+        throw crearError('Insumo no encontrado.', 404);
+    }
+
+    return {
+        ok: true,
+        insumo
+    };
+};
 
 module.exports = {
     insertarInsumoService,
     actualizarDatosInsumoService,
-    eliminarInsumoService
+    eliminarInsumoService,
+    obtenerInsumosService,
+    obtenerInsumosPaginacionService,
+    obtenerInsumoIDService
 }

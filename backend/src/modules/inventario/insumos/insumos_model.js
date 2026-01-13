@@ -104,11 +104,12 @@ const obtenerInsumosModel = async () => {
     try {
         conexion = await pool.getConnection();
         
-        const [rows] = await conexion.execute('CALL obtenerInsumos()');
+        const [rows] = await conexion.execute('CALL sp_obtener_insumos()');
         
         return rows[0];
     } catch (err) {
-        throw new Error('Error al obtener los insumos');
+        console.log(err.message)
+        throw new Error('Error al obtener los insumos de la base de datos');
     } finally {
         if (conexion) conexion.release();
     }
@@ -120,7 +121,7 @@ const obtenerInsumosPaginacionModel = async (limit, offset) => {
         conexion = await pool.getConnection();
 
         const [rows] = await conexion.execute(
-            'CALL obtenerInsumosPaginacion(?, ?)',
+            'CALL sp_obtener_insumos_paginacion(?, ?)',
             [limit, offset]
         );
 
@@ -136,28 +137,16 @@ const obtenerInsumoIDModel = async (id) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-    const [rows] = await pool.execute('CALL obtenerInsumoPorID(?)', [id]);
+    const [rows] = await pool.execute('CALL sp_obtener_insumo_por_id(?)', [id]);
     return rows[0][0]; 
     } catch (err) {
-        throw new Error('Error al obtener al insumo');
+        console.log(err.message)
+        throw new Error('Error al obtener al insumo de la base de datos');
     } finally {
         if (conexion) conexion.release();
     }
 };
 
-const obtenerConteoInsumosPorNombreModel = async (nombreInsumo) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection(); 
-        const [rows] = await conexion.execute('CALL obtenerConteoInsumosPorNombre(?)', [nombreInsumo]);
-        
-        return rows[0][0].cantidadInsumos; 
-    } catch (err) {
-        throw new Error('Error al obtener el conteo de insumos');
-    } finally {
-        if (conexion) conexion.release(); 
-    }
-};
 
 const obtenerStockActualModel = async (idInsumo) => {
     const [rows] = await pool.query('CALL obtenerStockActual(?)', [idInsumo]);
@@ -176,6 +165,5 @@ module.exports = {
     obtenerInsumosModel,
     obtenerInsumosPaginacionModel,
     obtenerInsumoIDModel,
-    obtenerConteoInsumosPorNombreModel,
     obtenerStockActualModel
 };

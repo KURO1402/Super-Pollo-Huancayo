@@ -1,4 +1,4 @@
-USE super_pollo;
+USE super_pollo_hyo;
 -- ELIMINAR PROCEDIMIENTOS
 
 DROP PROCEDURE IF EXISTS sp_insertar_insumo;
