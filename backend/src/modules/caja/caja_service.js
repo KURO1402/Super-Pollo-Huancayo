@@ -1,4 +1,4 @@
-const crear_error = require('../../utilidades/crear_error');
+const crearError = require('../../utilidades/crear_error');
 const {
     crearCajaModel,
     cerrarCajaModel,
@@ -23,7 +23,7 @@ const crearCajaService = async (datos, idUsuario) => {
     const { montoInicial } = datos;
     const caja = await consultarCajaAbiertaModel();
     if (caja) {
-        throw crear_error('Ya hay una caja abierta. No se puede abrir otra.', 409);
+        throw crearError('Ya hay una caja abierta. No se puede abrir otra.', 409);
     }
 
     const idGenerado = await crearCajaModel(montoInicial, idUsuario);
@@ -42,12 +42,12 @@ const registrarIngresoCajaService = async (datos, idUsuario) => {
 
     const usuariosCoincidentes = await contarUsuarioPorIdModel(idUsuario);
     if (usuariosCoincidentes === 0) {
-        throw crear_error('Usuario inexistente', 400);
+        throw crearError('Usuario inexistente', 400);
     }
 
     const caja = await consultarCajaAbiertaModel();
     if (!caja) {
-        throw crear_error('No se puede registrar un ingreso si no hay una caja abierta.', 400);
+        throw crearError('No se puede registrar un ingreso si no hay una caja abierta.', 400);
     }
 
     const resultado = await registrarIngresoCajaModel(monto, descripcion, idUsuario);
@@ -65,13 +65,13 @@ const registrarEgresoCajaService = async (datos, idUsuario) => {
 
     const usuariosCoincidentes = await contarUsuarioPorIdModel(idUsuario);
     if (usuariosCoincidentes === 0) {
-        throw crear_error('Usuario inexistente', 400);
+        throw crearError('Usuario inexistente', 400);
     }
 
     const caja = await consultarCajaAbiertaModel();
 
     if (!caja) {
-        throw crear_error('No se puede registrar un egreso si no hay una caja abierta.', 400);
+        throw crearError('No se puede registrar un egreso si no hay una caja abierta.', 400);
     }
 
     if (caja.monto_actual < monto) {
@@ -91,12 +91,12 @@ const registrarArqueoCajaService = async (datos, idUsuario) => {
     validarDatosArqueoCaja(datos);
     const usuariosCoincidentes = await contarUsuarioPorIdModel(idUsuario);
     if (usuariosCoincidentes === 0) {
-        throw crear_error('Usuario inexistente', 400);
+        throw crearError('Usuario inexistente', 400);
     }
 
     const caja = await consultarCajaAbiertaModel();
     if (!caja) {
-        throw crear_error('No hay ninguna caja abierta para registrar el arqueo', 400);
+        throw crearError('No hay ninguna caja abierta para registrar el arqueo', 400);
     }
 
     const { montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros } = datos;
@@ -115,17 +115,17 @@ const registrarArqueoCajaService = async (datos, idUsuario) => {
 
 const cerrarCajaService = async (idUsuario) => {
     if (typeof idUsuario !== 'number' || idUsuario <= 0) {
-        throw crear_error('El id de usuario tiene que ser válido', 400);
+        throw crearError('El id de usuario tiene que ser válido', 400);
     }
 
     const cajaAbierta = await consultarCajaAbiertaModel();
     if(!cajaAbierta){
-        throw crear_error('No existe ninguna caja abierta', 409)
+        throw crearError('No existe ninguna caja abierta', 409)
     }
 
     const arqueosCaja = await obtenerArqueosPorCajaModel(cajaAbierta.id_caja);
     if(arqueosCaja.length === 0){
-        throw crear_error('Primero necesita realizar minimo un arqueo de caja', 403)
+        throw crearError('Primero necesita realizar minimo un arqueo de caja', 403)
     }
 
     const respuesta= await cerrarCajaModel(cajaAbierta.id_caja, idUsuario, cajaAbierta.monto_actual);
@@ -144,7 +144,7 @@ const obtenerCajasService = async (limit, offset) => {
     const cajas = await obtenerCajasModel(limite, desplazamiento);
 
     if(!cajas || cajas.length === 0){
-        throw crear_error('No existen cajas disponibles', 404);
+        throw crearError('No existen cajas disponibles', 404);
     }
 
     return {
@@ -158,7 +158,7 @@ const obtenerMovimientosPorCajaService = async (cajaId) => {
     const movimientos = await obtenerMovimientosPorCajaModel(cajaId);
 
     if (movimientos.length === 0) {
-        throw crear_error('No se encontraron movimientos para la caja especificada', 404);
+        throw crearError('No se encontraron movimientos para la caja especificada', 404);
     }
 
     return {
@@ -172,7 +172,7 @@ const obtenerArqueosPorCajaService = async (cajaId) => {
     const arqueos = await obtenerArqueosPorCajaModel(cajaId);
 
     if (arqueos.length === 0) {
-        throw crear_error('No se encontraron registros', 404);
+        throw crearError('No se encontraron registros', 404);
     }
 
     return arqueos;

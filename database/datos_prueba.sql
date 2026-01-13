@@ -75,3 +75,34 @@ VALUES
 ('2025-12-10 20:45:00', 900.00, 500.00, 100.00, 0.00, 0.00, 'cuadra', 2, 1),
 ('2025-12-20 21:50:00', 1200.00, 500.00, 100.00, 0.00, 0.00, 'cuadra', 3, 1);
 
+INSERT INTO categorias_producto (nombre_categoria) 
+VALUES ('Pollos a la Brasa'), ('Bebidas'), ('Postres'), ('Guarniciones');
+
+INSERT INTO insumos (nombre_insumo, stock_insumo, unidad_medida, estado_insumo) 
+VALUES 
+('Pollo entero marinado', 50.00, 'unidades', 1),
+('Papa cortada amarilla', 120.00, 'kg', 1),
+('Aceite vegetal', 40.00, 'litros', 1),
+('Carbón vegetal', 100.00, 'kg', 1),
+('Crema de Ají Pollero', 15.00, 'litros', 1);
+
+INSERT INTO productos (nombre_producto, descripcion_producto, precio_producto, usa_insumos, estado_producto, id_categoria) 
+VALUES 
+('1/4 de Pollo a la Brasa', 'Incluye papas fritas y ensalada', 25.50, 1, 1, 1),
+('1 Pollo a la Brasa Solo', 'Solo el pollo marinado a la brasa', 65.00, 1, 1, 1),
+('Inca Kola 1.5L', 'Gaseosa tamaño mediano', 10.50, 0, 1, 2),
+('Crema Volteada', 'Postre casero de la casa', 12.00, 0, 1, 3);
+
+INSERT INTO cantidad_insumo_producto (id_producto, id_insumo, cantidad_uso) 
+VALUES 
+(1, 1, 0.25), -- 1/4 de pollo usa 0.25 unidades de un pollo entero
+(1, 2, 0.40), -- 1/4 de pollo usa 400 gramos de papa (0.40 kg)
+(2, 1, 1.00), -- 1 Pollo entero usa 1.00 unidad de insumo pollo
+(2, 4, 1.50); -- Cocinar 1 pollo usa aprox 1.5kg de carbón
+
+-- Asumiendo id_usuario = 1 (el administrador o almacenero)
+INSERT INTO movimientos_stock (cantidad_movimiento, tipo_movimiento, detalle_movimiento, id_insumo, id_usuario) 
+VALUES 
+(100.00, 'entrada', 'Compra semanal de pollo fresco', 1, 1),
+(50.00, 'entrada', 'Ingreso de sacos de papa', 2, 1),
+(2.50, 'salida', 'Papas en mal estado (merma)', 2, 1);

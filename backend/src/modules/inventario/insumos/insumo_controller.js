@@ -1,0 +1,63 @@
+const {
+    insertarInsumoService,
+    actualizarDatosInsumoService,
+    eliminarInsumoService
+} = require('./insumo_service');
+
+const insertarInsumoController = async (req, res) => {
+    try {
+
+        const resultado = await insertarInsumoService(req.body);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const actualizarDatosInsumoController = async (req, res) => {
+    try {
+        const {idInsumo} = req.params;
+        const resultado = await actualizarDatosInsumoService(idInsumo, req.body);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const eliminarInsumoController = async (req, res) => {
+    try {
+        const { idInsumo } = req.params;
+
+        const resultado = await eliminarInsumoService(Number(idInsumo));
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+module.exports = {
+    insertarInsumoController,
+    actualizarDatosInsumoController,
+    eliminarInsumoController
+}
