@@ -1,0 +1,69 @@
+@import "tailwindcss";
+@import 'react-toastify/dist/ReactToastify.css';
+
+@theme {
+  --color-amarillo: #ffa10a;
+  --color-rojo: #d00000;
+  --color-azul-primario: #021627;
+  --color-azul-secundario: #010b14;
+
+  --font-sans: "Roboto", sans-serif;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+.fondo-madera-oscuro {
+  background-image: url('/Fondo_madera_oscuro.png');
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  min-height: 50vh;
+}
+
+@media (min-width: 1024px) {
+  .fondo-madera-oscuro {
+    width: 100vw;
+    height: 85vh;
+    min-height: auto;
+  }
+}
+
+.fondo-cortando-pollo {
+  background-image: url('/Fondo_cortando_pollo_1.png');
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  min-height: 50vh;
+}
+
+@media (min-width: 1024px) {
+  .fondo-cortando-pollo {
+    width: 100vw;
+    height: 87vh;
+    min-height: auto;
+  }
+}
+
+.fc-toolbar-title {
+  @apply text-slate-800 dark:text-slate-100 font-bold text-xl sm:text-2xl uppercase tracking-wide border-l-4 border-blue-500 pl-3;
+}
+
+.fc-button {
+  @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl border border-white/20 dark:border-gray-600/30 hover:bg-blue-500 hover:text-white transition-all duration-300 font-medium shadow-lg hover:shadow-xl;
+}
+
+.fc-button-active {
+  @apply bg-blue-500/90 text-white backdrop-blur-md border-blue-400 font-semibold shadow-xl;
+}
+
+.fc-button:disabled {
+  @apply bg-gray-200/50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 backdrop-blur-sm cursor-not-allowed shadow-none;
+}
+
+.fc-daygrid-day {
+  @apply border border-gray-200 dark:border-gray-700 dark:text-white bg-white dark:bg-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:z-10;
+}
+
+.fc-day-today {
+  @apply bg-gradient-to-br from-blue-100 to-blue-200 dark:text-white dark:from-blue-900/40 dark:to-blue-800/40 font-semibold shadow-inner animate-pulse border-2 border-blue-400 dark:border-blue-500;
+}
