@@ -9,11 +9,14 @@ const {
  obtenerInsumosModel,
  obtenerInsumosPaginacionModel,
  obtenerInsumoIDModel,
- obtenerStockActualModel
+ obtenerInsumoNombreModel,
+ obtenerStockActualModel,
+ registrarMovimientoStockModel
 } = require('./insumos_model');
 
 const {
-    validarDatosInsumo
+    validarDatosInsumo,
+    validarDatosMovimiento
 } = require('./insumo_validacion');
 const crearError = require('../../../utilidades/crear_error');
 
@@ -41,7 +44,7 @@ const insertarInsumoService = async (datos) => {
 
     return {
         ok: true,
-        mensaje: respuesta
+        mensaje: respuesta   
     }
 };
 
@@ -61,7 +64,7 @@ const actualizarDatosInsumoService = async (idInsumo, datos) => {
         throw crearError('Se necesita la unidad de medida del insumo.', 400);
     }
 
-    totalInsumos = await contarInsumosPorIdModel(idInsumo);
+    const totalInsumos = await contarInsumosPorIdModel(idInsumo);
     if(totalInsumos === 0){
         throw crearError('Insumo no existente.', 404);
     }
@@ -135,11 +138,73 @@ const obtenerInsumoIDService = async (idInsumo) => {
     };
 };
 
+const obtenerInsumoNombreService = async (nombre) => {
+
+    const insumos = await obtenerInsumoNombreModel(nombre);
+
+    if (!insumos) {
+        throw crearError('Insumo no encontrado.', 404);
+    }
+
+    return {
+        ok: true,
+        insumos
+    };
+};
+
+//Servicos para movimientos de stock
+const registrarEntradaStockService = async (datos, idUsuario) => {
+    validarDatosMovimiento(datos);
+    const { idInsumo, cantidadMovimiento, detalleMovimiento } = datos;
+
+    const totalInsumos = await contarInsumosPorIdModel(idInsumo);
+    if(totalInsumos === 0){
+        throw crearError('Insumo no existente.', 404);
+    }
+    
+    const detalle = detalleMovimiento || null;
+
+    const respuesta = await registrarMovimientoStockModel(idInsumo, cantidadMovimiento, 'entrada', detalle, idUsuario);
+
+    return {
+        ok: true,
+        mensaje: respuesta
+    }
+};
+
+const registrarSalidaStockService = async (datos, idUsuario) => {
+    validarDatosMovimiento(datos);
+    const { idInsumo, cantidadMovimiento, detalleMovimiento } = datos;
+
+    const totalInsumos = await contarInsumosPorIdModel(idInsumo);
+    if(totalInsumos === 0){
+        throw crearError('Insumo no existente.', 404);
+    }
+
+    const stockActual = await obtenerStockActualModel(idInsumo);
+
+    if(cantidadMovimiento > stockActual){
+        throw crearError('Stock insuficiente para realizar el descuento del insumo', 409)
+    }
+
+    const detalle = detalleMovimiento || null;
+
+    const respuesta = await registrarMovimientoStockModel(idInsumo, cantidadMovimiento, 'salida', detalle, idUsuario);
+
+    return {
+        ok: true,
+        mensaje: respuesta
+    }
+}
+
 module.exports = {
     insertarInsumoService,
     actualizarDatosInsumoService,
     eliminarInsumoService,
     obtenerInsumosService,
     obtenerInsumosPaginacionService,
-    obtenerInsumoIDService
+    obtenerInsumoIDService,
+    obtenerInsumoNombreService,
+    registrarEntradaStockService,
+    registrarSalidaStockService
 }

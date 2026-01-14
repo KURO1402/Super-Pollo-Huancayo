@@ -11,6 +11,8 @@ DROP PROCEDURE IF EXISTS sp_contar_insumos_por_nombre_2;
 DROP PROCEDURE IF EXISTS sp_obtener_insumos;
 DROP PROCEDURE IF EXISTS sp_obtener_insumos_paginacion;
 DROP PROCEDURE IF EXISTS sp_obtener_insumo_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_insumo_por_nombre;
+DROP PROCEDURE IF EXISTS sp_optener_stock_actual_insumo;
 DROP PROCEDURE IF EXISTS sp_eliminar_insumo;
 DROP PROCEDURE IF EXISTS sp_registrar_movimiento_stock;
 DROP PROCEDURE IF EXISTS sp_obtener_movimientos;
@@ -207,6 +209,31 @@ BEGIN
       AND estado_insumo = 1;
 END //
 
+CREATE PROCEDURE sp_obtener_insumo_por_nombre(
+    IN p_nombre_insumo VARCHAR(100)
+)
+BEGIN
+    SELECT
+        id_insumo,
+        nombre_insumo,
+        stock_insumo,
+        unidad_medida
+    FROM insumos
+    WHERE nombre_insumo LIKE CONCAT('%', p_nombre_insumo, '%')
+      AND estado_insumo = 1
+    ORDER BY id_insumo DESC;
+END //
+
+CREATE PROCEDURE sp_optener_stock_actual_insumo (
+    IN p_id_insumo INT
+)
+BEGIN 
+    SELECT 
+        stock_insumo
+    FROM insumos
+    WHERE id_insumo = p_id_insumo;
+END //
+
 CREATE PROCEDURE sp_eliminar_insumo(
     IN p_id_insumo INT
 )
@@ -214,8 +241,7 @@ BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Error al eliminar insumo';
+        RESIGNAL;
     END;
 
     START TRANSACTION;
@@ -227,8 +253,8 @@ BEGIN
     COMMIT;
 END //
 
--- MOVIMIENTOS DE STOCK
 
+-- MOVIMIENTOS DE STOCK
 CREATE PROCEDURE sp_registrar_movimiento_stock(
     IN p_id_insumo INT,
     IN p_cantidad DECIMAL(5,2),
@@ -240,8 +266,7 @@ BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Error al registrar movimiento';
+        RESIGNAL;
     END;
 
     START TRANSACTION;
@@ -271,6 +296,7 @@ BEGIN
     END IF;
 
     COMMIT;
+    SELECT CONCAT(p_tipo_movimiento, ' registrado correctamente') AS mensaje;
 END //
 
 CREATE PROCEDURE sp_obtener_movimientos(

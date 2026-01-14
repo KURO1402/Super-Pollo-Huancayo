@@ -4,7 +4,10 @@ const {
     eliminarInsumoService,
     obtenerInsumosService,
     obtenerInsumosPaginacionService,
-    obtenerInsumoIDService
+    obtenerInsumoIDService,
+    obtenerInsumoNombreService,
+    registrarEntradaStockService,
+    registrarSalidaStockService
 } = require('./insumo_service');
 
 const insertarInsumoController = async (req, res) => {
@@ -110,7 +113,58 @@ const obtenerInsumoIDController = async (req, res) => {
             mensaje: err.message || 'Error interno del servidor',
         });
     }
-}
+};
+
+const obtenerInsumoNombreController = async (req, res) => {
+    try {
+        const { nombre } = req.query;
+        const resultado = await obtenerInsumoNombreService(nombre);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const registrarEntradaStockController = async (req, res) => {
+    try {
+        const { id_usuario } = req.usuario;
+        const resultado = await registrarEntradaStockService(req.body, id_usuario);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const registrarSalidaStockController = async (req, res) => {
+    try {
+        const { id_usuario } = req.usuario;
+        const resultado = await registrarSalidaStockService(req.body, id_usuario);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
 
 module.exports = {
     insertarInsumoController,
@@ -118,5 +172,8 @@ module.exports = {
     eliminarInsumoController,
     obtenerInsumosController,
     obtenerInsumosPaginacionController,
-    obtenerInsumoIDController
+    obtenerInsumoIDController,
+    obtenerInsumoNombreController,
+    registrarEntradaStockController,
+    registrarSalidaStockController
 }

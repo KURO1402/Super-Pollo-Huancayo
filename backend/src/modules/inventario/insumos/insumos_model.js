@@ -137,8 +137,8 @@ const obtenerInsumoIDModel = async (id) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-    const [rows] = await pool.execute('CALL sp_obtener_insumo_por_id(?)', [id]);
-    return rows[0][0]; 
+        const [rows] = await pool.execute('CALL sp_obtener_insumo_por_id(?)', [id]);
+        return rows[0][0]; 
     } catch (err) {
         console.log(err.message)
         throw new Error('Error al obtener al insumo de la base de datos');
@@ -147,12 +147,51 @@ const obtenerInsumoIDModel = async (id) => {
     }
 };
 
+const obtenerInsumoNombreModel = async (nombre=null) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await pool.execute('CALL sp_obtener_insumo_por_nombre(?)', [nombre]);
+        return rows[0]; 
+    } catch (err) {
+        console.log(err.message)
+        throw new Error('Error al obtener al insumo de la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
 
 const obtenerStockActualModel = async (idInsumo) => {
-    const [rows] = await pool.query('CALL obtenerStockActual(?)', [idInsumo]);
-    const stockActual = rows[0][0].stockActual;
-    return stockActual;
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_optener_stock_actual_insumo(?)', [idInsumo]);
+
+        return result[0][0]?.stock_insumo;
+    } catch (err) {
+        throw new Error('Error al obtener stock del insumo de la base de datos.');
+    } finally {
+        if (conexion) conexion.release();
+    }
 };
+
+//Modelo para stock
+const registrarMovimientoStockModel = async (idInsumo , cantidad, tipoMovimiento, detalleMovimiento, idUsuario) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_registrar_movimiento_stock(?, ?, ?, ?, ?)',
+            [idInsumo , cantidad, tipoMovimiento, detalleMovimiento, idUsuario]);
+
+        return result[0][0]?.mensaje;    
+    
+    } catch (err) {
+        throw new Error('Error al obtener movimientos de stock de la base de datos.');
+    } finally {
+        if (conexion) conexion.release();
+    }
+}
 
 module.exports = {
     insertarInsumoModel,
@@ -165,5 +204,7 @@ module.exports = {
     obtenerInsumosModel,
     obtenerInsumosPaginacionModel,
     obtenerInsumoIDModel,
-    obtenerStockActualModel
+    obtenerInsumoNombreModel,
+    obtenerStockActualModel,
+    registrarMovimientoStockModel
 };
