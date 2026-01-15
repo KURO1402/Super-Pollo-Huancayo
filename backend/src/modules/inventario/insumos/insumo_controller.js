@@ -7,7 +7,9 @@ const {
     obtenerInsumoIDService,
     obtenerInsumoNombreService,
     registrarEntradaStockService,
-    registrarSalidaStockService
+    registrarSalidaStockService,
+    obtenerMovimientosStockService,
+    obtenerMovimientosStockFechaService
 } = require('./insumo_service');
 
 const insertarInsumoController = async (req, res) => {
@@ -166,6 +168,25 @@ const registrarSalidaStockController = async (req, res) => {
     }
 };
 
+const obtenerMovimientosStockController = async (req, res) => {
+    try {
+        const resultado = await obtenerMovimientosStockService(req.query);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        console.log(err.message)
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+
+
 module.exports = {
     insertarInsumoController,
     actualizarDatosInsumoController,
@@ -175,5 +196,6 @@ module.exports = {
     obtenerInsumoIDController,
     obtenerInsumoNombreController,
     registrarEntradaStockController,
-    registrarSalidaStockController
+    registrarSalidaStockController,
+    obtenerMovimientosStockController
 }

@@ -184,14 +184,68 @@ const registrarMovimientoStockModel = async (idInsumo , cantidad, tipoMovimiento
         const [result] = await conexion.execute('CALL sp_registrar_movimiento_stock(?, ?, ?, ?, ?)',
             [idInsumo , cantidad, tipoMovimiento, detalleMovimiento, idUsuario]);
 
-        return result[0][0]?.mensaje;    
+        return result[0][0];    
     
     } catch (err) {
         throw new Error('Error al obtener movimientos de stock de la base de datos.');
     } finally {
         if (conexion) conexion.release();
     }
-}
+};
+
+const contarMovimientosStockFiltrosModel = async (
+    fechaInicio = null,
+    fechaFin = null,
+    tipoMovimiento = null,
+    idInsumo = null
+) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute(
+            'CALL sp_contar_movimientos_stock_filtros(?, ?, ?, ?)',
+            [fechaInicio, fechaFin, tipoMovimiento, idInsumo]
+        );
+
+        return result[0][0]?.total_registros ?? 0;
+
+    } catch (err) {
+        console.error(err.message);
+        throw new Error('Error al contar movimientos de stock');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
+const obtenerMovimientosStockFiltrosModel = async (fechaInicio = null,
+    fechaFin = null,
+    tipoMovimiento = null,
+    idInsumo = null,
+    limit,
+    offset
+) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [rows] = await conexion.execute(
+            'CALL sp_obtener_movimientos_stock_filtros(?, ?, ?, ?, ?, ?)',
+            [fechaInicio, fechaFin, tipoMovimiento, idInsumo, limit, offset]
+        );
+
+        return rows[0];
+
+    } catch (err) {
+        console.error(err.message);
+        throw new Error('Error al obtener movimientos de stock');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
 
 module.exports = {
     insertarInsumoModel,
@@ -206,5 +260,7 @@ module.exports = {
     obtenerInsumoIDModel,
     obtenerInsumoNombreModel,
     obtenerStockActualModel,
-    registrarMovimientoStockModel
+    registrarMovimientoStockModel,
+    contarMovimientosStockFiltrosModel,
+    obtenerMovimientosStockFiltrosModel
 };
