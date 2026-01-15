@@ -1,14 +1,10 @@
-import axios from 'axios';
-
-const API = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL,
-    withCredentials: true,
-})
+import API from "./axiosConfiguracion";
 
 export const registrarUsuario = async (datos) => {
     try {
-        const respuesta = await API.post('/autenticacion/registrar', datos);
-        return respuesta.data; 
+        console.log(datos);
+        const respuesta = await API.post('/auth/registro', datos);
+        return respuesta.data;
     } catch (error) {
         throw error;
     }
@@ -25,16 +21,16 @@ export const loginUsuario = async (datos) => {
 
 export const generarCodigoVerificacion = async (correo) => {
     try {
-        const respuesta = await API.post('/autenticacion/generar-codigo', { correo });
+        const respuesta = await API.post('auth/enviar-codigo-verificacion', { correo });
         return respuesta.data;
     } catch (error) {
         throw error;
     }
 }
 
-export const validarCodigoVerificacion = async (datos) => {
+export const validarCodigoVerificacion = async (codigo) => {
     try {
-        const respuesta = await API.post('/autenticacion/validar-codigo', datos);
+        const respuesta = await API.post('/auth/verificar-codigo', codigo);
         return respuesta.data;
     } catch (error) {
         throw error;

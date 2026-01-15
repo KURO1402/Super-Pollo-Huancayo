@@ -1,14 +1,14 @@
 import * as yup from 'yup'; 
 
 export const registroValidacion = yup.object().shape({
-  nombresUsuario: yup
+  nombreUsuario: yup
     .string() 
     .required('Los nombres son obligatorios') 
     .min(2, 'Los nombres deben tener al menos 2 caracteres') 
     .max(50, 'Los nombres no pueden exceder 50 caracteres')
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Los nombres solo pueden contener letras'),
   
-  apellidosUsuario: yup
+  apellidoUsuario: yup
     .string()
     .required('Los apellidos son obligatorios')
     .min(2, 'Los apellidos deben tener al menos 2 caracteres')
@@ -21,7 +21,7 @@ export const registroValidacion = yup.object().shape({
     .email('Ingresa un correo electrónico válido')
     .max(100, 'El correo no puede exceder 100 caracteres'),
 
-  clave: yup
+  claveUsuario: yup
   .string()
   .required('La contraseña es obligatoria')
   .min(8, 'La contraseña debe tener al menos 8 caracteres')
@@ -51,7 +51,7 @@ export const registroValidacion = yup.object().shape({
   confirmarClave: yup
     .string()
     .required('Debes confirmar tu contraseña')
-    .oneOf([yup.ref('clave')], 'Las contraseñas no coinciden'),
+    .oneOf([yup.ref('claveUsuario')], 'Las contraseñas no coinciden'),
   
   telefonoUsuario: yup
     .string()

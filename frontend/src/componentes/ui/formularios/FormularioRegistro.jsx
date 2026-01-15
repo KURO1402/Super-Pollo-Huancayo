@@ -25,6 +25,7 @@ const FormularioRegistro = ({ alEnviar, estaCargando = false }) => {
   });
 
   const manejarEnvioFormulario = async (datos) => {
+    console.log("datos en el registro: ", datos)
     try {
       await alEnviar(datos);
       await trigger();
@@ -36,23 +37,23 @@ const FormularioRegistro = ({ alEnviar, estaCargando = false }) => {
     <form onSubmit={handleSubmit(manejarEnvioFormulario)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <CampoEntrada
-          id="nombresUsuario"
-          nombre="nombresUsuario"
+          id="nombreUsuario"
+          nombre="nombreUsuario"
           etiqueta="Nombres"
           marcadorPosicion="Ingresa tus nombres"
           icono={FaUser}
           registro={register}
-          error={errors.nombresUsuario}
+          error={errors.nombreUsuario}
         />
 
         <CampoEntrada
-          id="apellidosUsuario"
-          nombre="apellidosUsuario"
+          id="apellidoUsuario"
+          nombre="apellidoUsuario"
           etiqueta="Apellidos"
           marcadorPosicion="Ingresa tus apellidos"
           icono={FaUser}
           registro={register}
-          error={errors.apellidosUsuario}
+          error={errors.apellidoUsuario}
         />
       </div>
 
@@ -69,14 +70,14 @@ const FormularioRegistro = ({ alEnviar, estaCargando = false }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <CampoEntrada
-          id="clave"
-          nombre="clave"
+          id="claveUsuario"
+          nombre="claveUsuario"
           tipo="password"
           etiqueta="Contraseña"
           marcadorPosicion="Crea una contraseña"
           icono={FaLock}
           registro={register}
-          error={errors.clave}
+          error={errors.claveUsuario}
         />
 
         <CampoEntrada
