@@ -1,3 +1,4 @@
+const cache = require('../../../config/node_cache');
 const {
     insertarInsumoModel,
     contarInsumosPorNombreModel,
@@ -21,6 +22,7 @@ const {
     validarDatosMovimiento
 } = require('./insumo_validacion');
 const crearError = require('../../../utilidades/crear_error');
+const limpiarCachePorPrefijo = require('../../../utilidades/limpiar_cache')
 
 const insertarInsumoService = async (datos) => {
     validarDatosInsumo(datos);
@@ -167,7 +169,7 @@ const registrarEntradaStockService = async (datos, idUsuario) => {
     const detalle = detalleMovimiento || null;
 
     const respuesta = await registrarMovimientoStockModel(idInsumo, cantidadMovimiento, 'entrada', detalle, idUsuario);
-
+    limpiarCachePorPrefijo('movimientos_stock:');
     return {
         ok: true,
         mensaje: 'Entrada registrada correctamente',
@@ -193,7 +195,7 @@ const registrarSalidaStockService = async (datos, idUsuario) => {
     const detalle = detalleMovimiento || null;
 
     const respuesta = await registrarMovimientoStockModel(idInsumo, cantidadMovimiento, 'salida', detalle, idUsuario);
-
+    limpiarCachePorPrefijo('movimientos_stock:');
     return {
         ok: true,
         mensaje: 'Salida registrada correctamente',
@@ -202,45 +204,54 @@ const registrarSalidaStockService = async (datos, idUsuario) => {
 };
 
 const obtenerMovimientosStockService = async (querys) => {
-    let {limit,offset,fechaInicio,fechaFin,tipoMovimiento,insumo} = querys;
+    let { limit, offset, fechaInicio, fechaFin, tipoMovimiento, insumo } = querys;
 
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
 
     const hoy = new Date().toISOString().split('T')[0];
 
-
-    if (fechaInicio && !fechaFin) {
-        fechaFin = hoy;
-    }
-
-    if (!fechaInicio && fechaFin) {
-        fechaInicio = fechaFin;
-    }
+    if (fechaInicio && !fechaFin) fechaFin = hoy;
+    if (!fechaInicio && fechaFin) fechaInicio = fechaFin;
 
     if (fechaInicio && fechaFin) {
         if (new Date(fechaFin) < new Date(fechaInicio)) {
-            throw crearError('La fecha fin no puede ser menor que la fecha inicio',400);
+            throw crearError('La fecha fin no puede ser menor que la fecha inicio', 400);
         }
     }
 
+    const cacheKey = `movimientos_stock:count:${fechaInicio || 'null'}:${fechaFin || 'null'}:${tipoMovimiento || 'null'}:${insumo || 'null'}`;
+
+    const cachedTotal = cache.get(cacheKey);
+
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit');
+        const movimientos = await obtenerMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo, limite, desplazamiento)
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            movimientos
+        };
+    }
+
+    console.log('Cache miss');
 
     const totalRegistros = await contarMovimientosStockFiltrosModel(fechaInicio,fechaFin,tipoMovimiento,insumo);
 
-    const movimientos = await obtenerMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo, limite,desplazamiento);
-
-    if (!movimientos || movimientos.length === 0) {
+    if (totalRegistros === 0) {
         throw crearError('No se encontraron movimientos de stock', 404);
     }
+
+    cache.set(cacheKey, totalRegistros);
+
+    const movimientos = await obtenerMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo, limite, desplazamiento);
 
     return {
         ok: true,
         cantidad_filas: totalRegistros,
-        movimientos
+        movimientos,
     };
 };
-
-
 
 
 module.exports = {
