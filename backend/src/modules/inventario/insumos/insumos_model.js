@@ -208,7 +208,7 @@ const contarMovimientosStockFiltrosModel = async (
             [fechaInicio, fechaFin, tipoMovimiento, idInsumo]
         );
 
-        return result[0][0]?.total_registros ?? 0;
+        return result[0][0]?.total_registros;
 
     } catch (err) {
         console.error(err.message);

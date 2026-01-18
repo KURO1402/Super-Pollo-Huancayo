@@ -2,7 +2,6 @@ const {
     obtenerRolesService,
     obtenerUsuariosService,
     obtenerUsuarioPorIdService,
-    buscarUsuariosPorValorService,
     actualizarDatosUsuarioService,
     actualizarCorreoUsuarioService,
     actualizarClaveUsuarioService,
@@ -26,10 +25,10 @@ const obtenerRolesController = async (req, res) => {
 
 const obtenerUsuariosController = async (req, res) => {
     try {
-        const { limit, offset} = req.query;
+        const { limit, offset, rol, valor} = req.query;
         const { id_usuario } = req.usuario;
 
-        const resultado = await obtenerUsuariosService(limit, offset, id_usuario);
+        const resultado = await obtenerUsuariosService(limit, offset, id_usuario, rol, valor);
 
         return res.status(200).json(resultado);
         
@@ -166,7 +165,6 @@ module.exports = {
     obtenerRolesController,
     obtenerUsuariosController,
     obtenerUsuarioPorIdController,
-    buscarUsuariosPorValorController,
     actualizarDatosUsuarioController,
     actualizarCorreoUsuarioController,
     actualizarClaveUsuarioController,

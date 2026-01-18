@@ -1,13 +1,15 @@
 const bcrypt = require('bcryptjs');
+const cache = require('../../config/node_cache');
 
 const crearError = require('../../utilidades/crear_error');
 const {
     obtenerRolesModel,
+    contarUsuariosModel,
     obtenerUsuariosModel,
     contarUsuarioPorIdModel,
-    buscarUsuariosPorValorModel,
     actualizarDatosUsuarioModel,
     obtenerUsuarioPorIdModel,
+    obtenerHistorialRolesUsuarioModel,
     obtenerClaveUsuarioPorIdModel,
     actualizarCorreoUsuarioModel,
     actualizarClaveUsuarioModel,
@@ -31,21 +33,51 @@ const obtenerRolesService = async () => {
     };
 };
 
-const obtenerUsuariosService = async (limit, offset, idUsuario) => {
+const obtenerUsuariosService = async (limit, offset, idUsuario, idRol, valor) => {
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
 
-    const usuarios = await obtenerUsuariosModel(limite, desplazamiento, idUsuario);
+    const valorBusqueda = valor?.trim() || null;
 
-    if (!usuarios || usuarios.length === 0) {
+    const cacheKey = `usuarios:count:${idUsuario}:${idRol ?? 'null'}:${valorBusqueda ?? 'null'}`;
+
+
+    const cachedTotal = cache.get(cacheKey);
+
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit usuarios');
+
+        const usuarios = await obtenerUsuariosModel(limite,desplazamiento,idUsuario,idRol, valorBusqueda);
+
+        if (!usuarios || usuarios.length === 0) {
+            throw crearError('No se encontraron usuarios', 404);
+        }
+
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            usuarios
+        };
+    }
+
+    console.log('Cache miss usuarios');
+
+    const totalUsuarios = await contarUsuariosModel(idUsuario, idRol, valorBusqueda);
+
+    if (totalUsuarios === 0) {
         throw crearError('No se encontraron usuarios', 404);
     }
+    cache.set(cacheKey, totalUsuarios);
+
+    const usuarios = await obtenerUsuariosModel(limite, desplazamiento, idUsuario, idRol, valorBusqueda);
 
     return {
         ok: true,
+        cantidad_filas: totalUsuarios,
         usuarios
-    }
+    };
 };
+
 
 const obtenerUsuarioPorIdService = async (id) => {
     if (!id || isNaN(Number(id))) {
@@ -53,6 +85,8 @@ const obtenerUsuarioPorIdService = async (id) => {
     }
 
     const usuario = await obtenerUsuarioPorIdModel(Number(id));
+    const historialRoles = await obtenerHistorialRolesUsuarioModel(Number(id));
+    usuario.roles = historialRoles;
 
     if (!usuario) {
         crearError('El usuario no existe.', 404);
@@ -64,27 +98,6 @@ const obtenerUsuarioPorIdService = async (id) => {
     };
 };
 
-const buscarUsuariosPorValorService = async (valor, idUsuario) => {
-
-    if (!valor || typeof valor !== 'string') {
-        throw crearError('Se requiere un valor de búsqueda válido.', 400);
-    }
-
-    if (!idUsuario || typeof idUsuario != 'number') {
-        throw crearError('Se requiere un ID de usuario válido.', 400);
-    }
-
-    const usuarios = await buscarUsuariosPorValorModel(valor.trim(), idUsuario);
-
-    if (!usuarios || usuarios.length === 0) {
-        throw crearError('No se encontraron usuarios.', 404);
-    }
-
-    return {
-        ok: true,
-        usuarios
-    };
-};
 
 const actualizarDatosUsuarioService = async (datos, idUsuario) => {
     const idUsuarioNumerico = Number(idUsuario)
@@ -244,11 +257,12 @@ const actualizarRolUsuarioService = async (datos, idUsuario, idActual) => {
         throw crearError('No puedes actualizar el rol de este usuario', 403);
     }
 
-    const respuesta = await actualizarRolUsuarioModel(idUsuario, nuevoRol);
+    const resultado = await actualizarRolUsuarioModel(idUsuario, nuevoRol);
 
     return {
         ok: true,
-        mensaje: respuesta
+        mensaje: 'Rol actualizado correctamente',
+        resultado
     };
 };
 
@@ -256,7 +270,6 @@ module.exports = {
     obtenerRolesService,
     obtenerUsuariosService,
     obtenerUsuarioPorIdService,
-    buscarUsuariosPorValorService,
     actualizarDatosUsuarioService,
     actualizarCorreoUsuarioService,
     actualizarClaveUsuarioService,

@@ -22,7 +22,7 @@ const {
     validarDatosMovimiento
 } = require('./insumo_validacion');
 const crearError = require('../../../utilidades/crear_error');
-const limpiarCachePorPrefijo = require('../../../utilidades/limpiar_cache')
+const limpiarCachePorPrefijo = require('../../../utilidades/limpiar_cache');
 
 const insertarInsumoService = async (datos) => {
     validarDatosInsumo(datos);
