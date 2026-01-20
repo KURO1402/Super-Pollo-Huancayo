@@ -1,13 +1,14 @@
 const pool = require('../../../config/conexion_DB');
 
-const insertarInsumoModel = async (nombreInsumo, stockIncial, unidadMedida) => {
+const insertarInsumoModel = async (nombreInsumo, stockIncial, unidadMedida, idUsuario) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [result] = await pool.query('CALL sp_insertar_insumo(?, ?, ?)', [nombreInsumo, stockIncial, unidadMedida]);
+        const [result] = await pool.query('CALL sp_insertar_insumo(?, ?, ?, ?)', [nombreInsumo, stockIncial, unidadMedida, idUsuario]);
         return result[0][0];
         
     } catch (err) {
+        console.log(err.message);
         throw new Error('Error al insertar insumo en la base de datos.');
     } finally {
         if (conexion) conexion.release();
@@ -28,12 +29,12 @@ const contarInsumosPorNombreModel = async (nombreInsumo) => {
     }
 };
 
-const recuperarInsumoModel  = async (idInsumo, unidadMedida, estadoInsumo) => {
+const recuperarInsumoModel  = async (idInsumo, unidadMedida, estadoInsumo, stockInsumo, idUsuario) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [result] = await pool.query('CALL sp_recuperar_insumo(?, ?, ?)', [idInsumo, unidadMedida, estadoInsumo]);
-        return result[0][0]?.mensaje;
+        const [result] = await pool.query('CALL sp_recuperar_insumo(?, ?, ?, ?, ?)', [idInsumo, unidadMedida, estadoInsumo, stockInsumo, idUsuario]);
+        return result[0][0];
         
     } catch (err) {
         console.log(err.message)
@@ -48,7 +49,7 @@ const actualizarDatosInsumoModel = async (idInsumo, nombreInsumo, unidadMedida) 
     try {
         conexion = await pool.getConnection();
         const [result] = await pool.query('CALL sp_actualizar_insumo_datos(?, ?, ?)', [idInsumo, nombreInsumo, unidadMedida]);
-        return result[0][0]?.mensaje;
+        return result[0][0];
 
     } catch (err) {
         throw new Error('Error al actualizar datos del insumo en la base de datos.');
@@ -99,37 +100,35 @@ const contarInsumosPorNombre2Model = async (nombreInsumo, idInsumo) => {
     }
 };
 
-const obtenerInsumosModel = async () => {
+const obtenerInsumosModel = async (limit, offset, nombreInsumo = null, nivelStock = null) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        
-        const [rows] = await conexion.execute('CALL sp_obtener_insumos()');
-        
-        return rows[0];
+
+        const [rows] = await conexion.execute('CALL sp_obtener_insumos(?, ?, ?, ?)', [limit, offset, nombreInsumo, nivelStock]);
+
+        return rows[0]; 
     } catch (err) {
-        console.log(err.message)
-        throw new Error('Error al obtener los insumos de la base de datos');
+        throw new Error('Error al obtener insumos de la base de datos.');
     } finally {
         if (conexion) conexion.release();
     }
 };
 
-const obtenerInsumosPaginacionModel = async (limit, offset) => {
-    let conexion;
+const contarInsumosModel = async (nombreInsumo = null, nivelStock = null) => {
+    let conexion; 
     try {
         conexion = await pool.getConnection();
 
-        const [rows] = await conexion.execute(
-            'CALL sp_obtener_insumos_paginacion(?, ?)',
-            [limit, offset]
-        );
+        const [result] = await conexion.execute('CALL sp_contar_insumos(?, ?)', [nombreInsumo, nivelStock]);
 
-        return rows[0]; 
+        return result[0][0]?.total_registros;
+
     } catch (err) {
-        throw new Error('Error al obtener insumos con paginación');
+        console.log(err.message)
+        throw new Error('Error al contar insumos en la base de datos.')
     } finally {
-        if (conexion) conexion.release();
+        if(conexion) conexion.release();
     }
 };
 
@@ -139,20 +138,6 @@ const obtenerInsumoIDModel = async (id) => {
         conexion = await pool.getConnection();
         const [rows] = await pool.execute('CALL sp_obtener_insumo_por_id(?)', [id]);
         return rows[0][0]; 
-    } catch (err) {
-        console.log(err.message)
-        throw new Error('Error al obtener al insumo de la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-const obtenerInsumoNombreModel = async (nombre=null) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [rows] = await pool.execute('CALL sp_obtener_insumo_por_nombre(?)', [nombre]);
-        return rows[0]; 
     } catch (err) {
         console.log(err.message)
         throw new Error('Error al obtener al insumo de la base de datos');
@@ -256,9 +241,8 @@ module.exports = {
     contarInsumosPorIdModel,
     contarInsumosPorNombre2Model,
     obtenerInsumosModel,
-    obtenerInsumosPaginacionModel,
+    contarInsumosModel,
     obtenerInsumoIDModel,
-    obtenerInsumoNombreModel,
     obtenerStockActualModel,
     registrarMovimientoStockModel,
     contarMovimientosStockFiltrosModel,

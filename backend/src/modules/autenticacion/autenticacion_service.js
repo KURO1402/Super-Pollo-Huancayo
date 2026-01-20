@@ -13,6 +13,7 @@ const {
 } = require('./autenticacion_model');
 const { validarRegistroUsuario } = require('./autenticacion_validacion');
 const enviarCorreoVerificacion = require('../../utilidades/helpers/enviar_codigo_correo');
+const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
 
 const registroUsuarioService = async (datos) => {
   validarRegistroUsuario(datos);
@@ -49,7 +50,7 @@ const registroUsuarioService = async (datos) => {
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRATION || '20h' }
   );
-
+  limpiarCachePorPrefijo('usuarios:');
   return {
     usuario: nuevoUsuario,
     accessToken,

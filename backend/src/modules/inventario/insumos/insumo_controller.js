@@ -3,19 +3,18 @@ const {
     actualizarDatosInsumoService,
     eliminarInsumoService,
     obtenerInsumosService,
-    obtenerInsumosPaginacionService,
     obtenerInsumoIDService,
-    obtenerInsumoNombreService,
     registrarEntradaStockService,
     registrarSalidaStockService,
-    obtenerMovimientosStockService,
-    obtenerMovimientosStockFechaService
+    obtenerMovimientosStockService
 } = require('./insumo_service');
 
 const insertarInsumoController = async (req, res) => {
     try {
 
-        const resultado = await insertarInsumoService(req.body);
+        const {id_usuario} = req.usuario;
+
+        const resultado = await insertarInsumoService(req.body, id_usuario);
 
         return res.status(200).json(resultado);
 
@@ -64,28 +63,11 @@ const eliminarInsumoController = async (req, res) => {
     }
 };
 
+
 const obtenerInsumosController = async (req, res) => {
     try {
-
-        const resultado = await obtenerInsumosService();
-
-        return res.status(200).json(resultado);
-
-    } catch (err) {
-        console.log(err.message)
-        const statusCode = err.status || 500;
-
-        return res.status(statusCode).json({
-            ok: false,
-            mensaje: err.message || 'Error interno del servidor',
-        });
-    }
-};
-
-const obtenerInsumosPaginacionController = async (req, res) => {
-    try {
-        const { limit, offset } = req.query;
-        const resultado = await obtenerInsumosPaginacionService(limit, offset);
+        const { limit, offset, insumo, nivelStock } = req.query;
+        const resultado = await obtenerInsumosService(limit, offset, insumo, nivelStock);
 
         return res.status(200).json(resultado);
 
@@ -104,23 +86,6 @@ const obtenerInsumoIDController = async (req, res) => {
     try {
         const { idInsumo } = req.params;
         const resultado = await obtenerInsumoIDService(idInsumo);
-
-        return res.status(200).json(resultado);
-
-    } catch (err) {
-        const statusCode = err.status || 500;
-
-        return res.status(statusCode).json({
-            ok: false,
-            mensaje: err.message || 'Error interno del servidor',
-        });
-    }
-};
-
-const obtenerInsumoNombreController = async (req, res) => {
-    try {
-        const { nombre } = req.query;
-        const resultado = await obtenerInsumoNombreService(nombre);
 
         return res.status(200).json(resultado);
 
@@ -192,9 +157,7 @@ module.exports = {
     actualizarDatosInsumoController,
     eliminarInsumoController,
     obtenerInsumosController,
-    obtenerInsumosPaginacionController,
     obtenerInsumoIDController,
-    obtenerInsumoNombreController,
     registrarEntradaStockController,
     registrarSalidaStockController,
     obtenerMovimientosStockController

@@ -1,4 +1,5 @@
 const crearError = require('../../utilidades/crear_error');
+const cache = require('../../config/node_cache');
 const {
     crearCajaModel,
     cerrarCajaModel,
@@ -6,17 +7,20 @@ const {
     registrarIngresoCajaModel,
     registrarEgresoCajaModel,
     registrarArqueoCajaModel,
+    contarCajasModel,
     obtenerCajasModel,
     obtenerMovimientosPorCajaModel,
+    contarMovimientosPorCajaModel,
     obtenerArqueosPorCajaModel
 } = require('./caja_model')
-const { 
+const {
     validarDatosAbrirCaja,
-    validarDatosMovimientosCaja, 
-    validarDatosArqueoCaja 
+    validarDatosMovimientosCaja,
+    validarDatosArqueoCaja
 } = require('./caja_validacion');
 
 const { contarUsuarioPorIdModel } = require('../usuarios/usuario_model');
+const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
 
 const crearCajaService = async (datos, idUsuario) => {
     validarDatosAbrirCaja(datos);
@@ -26,12 +30,14 @@ const crearCajaService = async (datos, idUsuario) => {
         throw crearError('Ya hay una caja abierta. No se puede abrir otra.', 409);
     }
 
-    const idGenerado = await crearCajaModel(montoInicial, idUsuario);
+    const resultado = await crearCajaModel(montoInicial, idUsuario);
+
+    limpiarCachePorPrefijo('cajas:');
 
     return {
         ok: true,
-        idCaja: idGenerado,
-        mensaje: 'Caja creada exitosamente'
+        mensaje: 'Caja creada exitosamente',
+        caja: resultado
     };
 };
 
@@ -50,11 +56,15 @@ const registrarIngresoCajaService = async (datos, idUsuario) => {
         throw crearError('No se puede registrar un ingreso si no hay una caja abierta.', 400);
     }
 
-    const resultado = await registrarIngresoCajaModel(monto, descripcion, idUsuario);
+    const movimiento = await registrarIngresoCajaModel(monto, descripcion, idUsuario);
+
+    limpiarCachePorPrefijo('cajas:');
+    limpiarCachePorPrefijo('movimientos_caja:');
 
     return {
         ok: true,
-        mensaje: resultado
+        mensaje: 'Ingreso registrado en caja exitosamente',
+        movimiento
     };
 };
 
@@ -78,11 +88,15 @@ const registrarEgresoCajaService = async (datos, idUsuario) => {
         throw Object.assign(new Error("No hay suficiente saldo en la caja para realizar el egreso."), { status: 400 });
     }
 
-    const resultado = await registrarEgresoCajaModel(monto, descripcion, idUsuario);
+    const movimiento = await registrarEgresoCajaModel(monto, descripcion, idUsuario);
+
+    limpiarCachePorPrefijo('cajas:');
+    limpiarCachePorPrefijo('movimientos_caja:');
 
     return {
         ok: true,
-        mensaje: resultado
+        mensaje: 'Egreso registrado en caja exitosamente',
+        movimiento
     };
 };
 
@@ -107,6 +121,8 @@ const registrarArqueoCajaService = async (datos, idUsuario) => {
 
     const resultado = await registrarArqueoCajaModel(datos, diferencia, estadoArqueo, idUsuario, caja.id_caja);
 
+    limpiarCachePorPrefijo('cajas:');
+
     return {
         ok: true,
         mensaje: resultado
@@ -119,16 +135,18 @@ const cerrarCajaService = async (idUsuario) => {
     }
 
     const cajaAbierta = await consultarCajaAbiertaModel();
-    if(!cajaAbierta){
+    if (!cajaAbierta) {
         throw crearError('No existe ninguna caja abierta', 409)
     }
 
     const arqueosCaja = await obtenerArqueosPorCajaModel(cajaAbierta.id_caja);
-    if(arqueosCaja.length === 0){
+    if (arqueosCaja.length === 0) {
         throw crearError('Primero necesita realizar minimo un arqueo de caja', 403)
     }
 
-    const respuesta= await cerrarCajaModel(cajaAbierta.id_caja, idUsuario, cajaAbierta.monto_actual);
+    const respuesta = await cerrarCajaModel(cajaAbierta.id_caja, idUsuario, cajaAbierta.monto_actual);
+
+    limpiarCachePorPrefijo('cajas:');
 
     return {
         ok: true,
@@ -136,33 +154,93 @@ const cerrarCajaService = async (idUsuario) => {
     };
 };
 
-const obtenerCajasService = async (limit, offset) => {
-
+const obtenerCajasService = async (limit, offset, fechaInicio, fechaFin) => {
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
 
-    const cajas = await obtenerCajasModel(limite, desplazamiento);
+    if ((fechaInicio && !fechaFin) || (!fechaInicio && fechaFin)) {
+        throw crearError('Se necesitan ambas fechas para el filtrado', 400);
+    }
 
-    if(!cajas || cajas.length === 0){
-        throw crearError('No existen cajas disponibles', 404);
+    const cacheKey = `cajas:count:${fechaInicio || 'null'}:${fechaFin || 'null'}`;
+
+    const cachedTotal = cache.get(cacheKey);
+
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit');
+
+        const cajas = await obtenerCajasModel(limite, desplazamiento, fechaInicio, fechaFin);
+        if (!cajas || cajas.length === 0) {
+            throw crearError('No se encontraron cajas', 404);
+        }
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            cajas
+        };
+    }
+
+    console.log('Cache miss');
+
+    const totalCajas = await contarCajasModel(fechaInicio, fechaFin);
+
+    cache.set(cacheKey, totalCajas);
+
+    const cajas = await obtenerCajasModel(limite, desplazamiento, fechaInicio, fechaFin);
+
+    if (!cajas || cajas.length === 0) {
+        throw crearError('No se encontraron cajas', 404);
     }
 
     return {
         ok: true,
+        cantidad_filas: totalCajas,
         cajas
-    }
+    };
 };
 
-const obtenerMovimientosPorCajaService = async (cajaId) => {
+const obtenerMovimientosPorCajaService = async (cajaId, tipoMovimiento, limit, offset) => {
 
-    const movimientos = await obtenerMovimientosPorCajaModel(cajaId);
+    if (tipoMovimiento !== undefined && (tipoMovimiento !== 'ingreso' && tipoMovimiento !== 'egreso')) {
+        throw crearError(`El tipo de movimiento solo puede ser 'ingreso' o 'egreso'`, 400);
+    }
 
-    if (movimientos.length === 0) {
+
+    const limite = parseInt(limit) || 10;
+    const desplazamiento = parseInt(offset) || 0;
+
+    const cacheKey = `movimientos_caja:count:${tipoMovimiento || 'null'}`;
+    const cachedTotal = cache.get(cacheKey);
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit');
+
+        const movimientos = await obtenerMovimientosPorCajaModel(cajaId, tipoMovimiento, limite, desplazamiento);
+        
+        if (!movimientos || movimientos.length === 0) {
+            throw crearError('No se encontraron movimientos para la caja especificada', 404);
+        }
+
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            movimientos
+        };
+    }
+    console.log('Cache miss');
+
+    const totalMovimientos = await contarMovimientosPorCajaModel(cajaId, tipoMovimiento);
+
+    cache.set(cacheKey, totalMovimientos);
+
+    const movimientos = await obtenerMovimientosPorCajaModel(cajaId, tipoMovimiento, limite, desplazamiento);
+
+    if (!movimientos || movimientos.length === 0) {
         throw crearError('No se encontraron movimientos para la caja especificada', 404);
     }
 
     return {
         ok: true,
+        cantidad_filas: totalMovimientos,
         movimientos
     };
 };
@@ -172,7 +250,7 @@ const obtenerArqueosPorCajaService = async (cajaId) => {
     const arqueos = await obtenerArqueosPorCajaModel(cajaId);
 
     if (arqueos.length === 0) {
-        throw crearError('No se encontraron registros', 404);
+        throw crearError('No se encontraron arqueos para la caja especificada', 404);
     }
 
     return arqueos;

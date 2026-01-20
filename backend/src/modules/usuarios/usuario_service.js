@@ -20,6 +20,7 @@ const {
 const { validarActualizarUsuario, validarActualizarCorreoUsuario } = require('./usuario_validacion');
 
 const { seleccionarTotalUsuarioPorCorreoModel, validarVerificacionCorreo } = require('../autenticacion/autenticacion_model');
+const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
 
 const obtenerRolesService = async () => {
     const roles = await obtenerRolesModel();
@@ -39,7 +40,7 @@ const obtenerUsuariosService = async (limit, offset, idUsuario, idRol, valor) =>
 
     const valorBusqueda = valor?.trim() || null;
 
-    const cacheKey = `usuarios:count:${idUsuario}:${idRol ?? 'null'}:${valorBusqueda ?? 'null'}`;
+    const cacheKey = `usuarios:count:${idUsuario}:${idRol || null}:${valorBusqueda || null}`;
 
 
     const cachedTotal = cache.get(cacheKey);
@@ -71,6 +72,9 @@ const obtenerUsuariosService = async (limit, offset, idUsuario, idRol, valor) =>
 
     const usuarios = await obtenerUsuariosModel(limite, desplazamiento, idUsuario, idRol, valorBusqueda);
 
+    if (!usuarios || usuarios.length === 0) {
+        throw crearError('No se encontraron usuarios', 404);
+    }
     return {
         ok: true,
         cantidad_filas: totalUsuarios,
@@ -113,6 +117,9 @@ const actualizarDatosUsuarioService = async (datos, idUsuario) => {
         throw crearError('El usuario especificado no existe', 404);
     }
     const respuesta = await actualizarDatosUsuarioModel(datos, idUsuarioNumerico);
+    
+    limpiarCachePorPrefijo('usuarios:');
+
     return {
         ok: true,
         mensaje: respuesta
@@ -145,6 +152,8 @@ const actualizarCorreoUsuarioService = async (datos, idUsuario) => {
     }
 
     const respuesta = await actualizarCorreoUsuarioModel(idUsuarioNumerico, nuevoCorreo);
+
+    limpiarCachePorPrefijo('usuarios:');
 
     return {
         ok: true,
@@ -213,6 +222,9 @@ const eliminarUsuarioService = async (idUsuario) => {
     }
 
     const respuesta = await eliminarUsuarioModel(idUsuarioNumerico, 0);
+
+    limpiarCachePorPrefijo('usuarios:');
+
     return {
         ok: true,
         mensaje: respuesta
@@ -258,6 +270,8 @@ const actualizarRolUsuarioService = async (datos, idUsuario, idActual) => {
     }
 
     const resultado = await actualizarRolUsuarioModel(idUsuario, nuevoRol);
+
+    limpiarCachePorPrefijo('usuarios:');
 
     return {
         ok: true,

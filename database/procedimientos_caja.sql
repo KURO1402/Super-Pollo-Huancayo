@@ -8,6 +8,8 @@ DROP PROCEDURE IF EXISTS sp_registrar_ingreso_caja;
 DROP PROCEDURE IF EXISTS sp_registrar_egreso_caja;
 DROP PROCEDURE IF EXISTS sp_registrar_arqueo_caja;
 DROP PROCEDURE IF EXISTS sp_obtener_movimientos_por_caja;
+DROP PROCEDURE IF EXISTS sp_contar_movimientos_por_caja;
+DROP PROCEDURE IF EXISTS sp_contar_cajas;
 DROP PROCEDURE IF EXISTS sp_listar_cajas;
 DROP PROCEDURE IF EXISTS sp_obtener_arqueos_por_caja;
 
@@ -23,44 +25,63 @@ BEGIN
     DECLARE v_id_caja INT;
     DECLARE v_fecha_actual DATETIME;
 
-    -- Manejo de errores: rollback automático si algo falla
+    -- Manejo de errores
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
         RESIGNAL;
     END;
 
-    -- Validar que no exista una caja abierta antes de iniciar transacción
+    -- Validar que no exista una caja abierta
     IF EXISTS (SELECT 1 FROM caja WHERE estado_caja = 'abierta') THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Ya existe una caja abierta. No se puede crear otra.';
     END IF;
 
-    -- Obtener fecha actual
     SET v_fecha_actual = NOW();
 
-    -- Iniciar transacción
     START TRANSACTION;
 
-    -- Crear la caja (saldo inicial = monto actual al inicio)
+    -- Crear caja
     INSERT INTO caja (saldo_inicial, monto_actual, saldo_final, fecha_caja, estado_caja)
     VALUES (p_saldo_inicial, p_saldo_inicial, NULL, v_fecha_actual, 'abierta');
 
     SET v_id_caja = LAST_INSERT_ID();
 
-    -- Registrar evento de apertura
+    -- Evento apertura
     INSERT INTO eventos_caja (tipo_evento, fecha_evento, id_caja, id_usuario)
     VALUES ('apertura', v_fecha_actual, v_id_caja, p_id_usuario);
 
-    -- Registrar movimiento de ingreso por saldo inicial
-    INSERT INTO movimientos_caja (tipo_movimiento, fecha_movimiento, monto_movimiento, descripcion_mov_caja, id_caja, id_usuario)
-    VALUES ('ingreso', v_fecha_actual, p_saldo_inicial, 'Saldo inicial de apertura', v_id_caja, p_id_usuario);
+    -- Movimiento inicial
+    INSERT INTO movimientos_caja (
+        tipo_movimiento,
+        fecha_movimiento,
+        monto_movimiento,
+        descripcion_mov_caja,
+        id_caja,
+        id_usuario
+    )
+    VALUES (
+        'ingreso',
+        v_fecha_actual,
+        p_saldo_inicial,
+        'Saldo inicial de apertura',
+        v_id_caja,
+        p_id_usuario
+    );
 
-    -- Confirmar cambios
     COMMIT;
 
-    -- Devolver el id generado
-    SELECT v_id_caja AS id_caja;
+    SELECT
+        c.id_caja,
+        c.saldo_inicial,
+        c.monto_actual,
+        IFNULL(c.saldo_final, '--') AS saldo_final,
+        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_caja,
+        DATE_FORMAT(c.fecha_caja, '%H:%i:%s') AS hora_caja,
+        c.estado_caja
+    FROM caja c
+    WHERE c.id_caja = v_id_caja;
 END //
 
 -- Procedimiento de cierre de caja con evento de cierre
@@ -122,8 +143,8 @@ BEGIN
     DECLARE v_id_caja INT;
     DECLARE v_monto_actual DECIMAL(10,2);
     DECLARE v_fecha_actual DATETIME;
+    DECLARE v_id_movimiento INT;
 
-    -- Manejo de errores
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
@@ -131,26 +152,23 @@ BEGIN
         SET MESSAGE_TEXT = 'Error al registrar el ingreso en caja';
     END;
 
-    -- Obtener fecha actual
     SET v_fecha_actual = NOW();
 
     START TRANSACTION;
 
-    -- Verificar que exista una caja abierta
     SELECT id_caja, monto_actual
     INTO v_id_caja, v_monto_actual
     FROM caja
     WHERE estado_caja = 'abierta'
     ORDER BY fecha_caja DESC
     LIMIT 1
-    FOR UPDATE; -- bloquea la fila hasta finalizar
+    FOR UPDATE;
 
     IF v_id_caja IS NULL THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'No hay ninguna caja abierta para registrar el ingreso';
     END IF;
 
-    -- Insertar el movimiento
     INSERT INTO movimientos_caja (
         tipo_movimiento,
         fecha_movimiento,
@@ -168,14 +186,25 @@ BEGIN
         p_id_usuario
     );
 
-    -- Actualizar la caja
+    SET v_id_movimiento = LAST_INSERT_ID();
+
     UPDATE caja
     SET monto_actual = v_monto_actual + p_monto
     WHERE id_caja = v_id_caja;
 
     COMMIT;
 
-    SELECT 'Ingreso registrado exitosamente' AS mensaje;
+    SELECT 
+        mc.id_movimiento_caja,
+        mc.tipo_movimiento,
+        mc.descripcion_mov_caja,
+        mc.monto_movimiento,
+        DATE_FORMAT(mc.fecha_movimiento, '%d-%m-%Y') AS fecha,
+        DATE_FORMAT(mc.fecha_movimiento, '%H:%i:%s') AS hora,
+        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
+    FROM movimientos_caja mc
+    INNER JOIN usuarios u ON mc.id_usuario = u.id_usuario
+    WHERE mc.id_movimiento_caja = v_id_movimiento;
 END //
 
 -- Procedimiento para registrar un egreso en caja
@@ -188,40 +217,36 @@ BEGIN
     DECLARE v_id_caja INT;
     DECLARE v_monto_actual DECIMAL(10,2);
     DECLARE v_fecha_actual DATETIME;
+    DECLARE v_id_movimiento INT;
 
-    -- Manejo de errores
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
         RESIGNAL;
     END;
 
-    -- Obtener fecha actual
     SET v_fecha_actual = NOW();
 
     START TRANSACTION;
 
-    -- Verificar que exista una caja abierta
     SELECT id_caja, monto_actual
     INTO v_id_caja, v_monto_actual
     FROM caja
     WHERE estado_caja = 'abierta'
     ORDER BY fecha_caja DESC
     LIMIT 1
-    FOR UPDATE; -- bloquea la fila para evitar condiciones de carrera
+    FOR UPDATE;
 
     IF v_id_caja IS NULL THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'No hay ninguna caja abierta para registrar el egreso';
     END IF;
 
-    -- Validar saldo suficiente
     IF v_monto_actual < p_monto THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Saldo insuficiente en caja para realizar el egreso';
     END IF;
 
-    -- Insertar el movimiento
     INSERT INTO movimientos_caja (
         tipo_movimiento,
         fecha_movimiento,
@@ -239,12 +264,25 @@ BEGIN
         p_id_usuario
     );
 
+    SET v_id_movimiento = LAST_INSERT_ID();
+
     UPDATE caja
     SET monto_actual = v_monto_actual - p_monto
     WHERE id_caja = v_id_caja;
 
     COMMIT;
-    SELECT 'Egreso registrado exitosamente' AS mensaje;
+
+    SELECT 
+        mc.id_movimiento_caja,
+        mc.tipo_movimiento,
+        mc.descripcion_mov_caja,
+        mc.monto_movimiento,
+        DATE_FORMAT(mc.fecha_movimiento, '%d-%m-%Y') AS fecha,
+        DATE_FORMAT(mc.fecha_movimiento, '%H:%i:%s') AS hora,
+        CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
+    FROM movimientos_caja mc
+    INNER JOIN usuarios u ON mc.id_usuario = u.id_usuario
+    WHERE mc.id_movimiento_caja = v_id_movimiento;
 END //
 
 -- Procedimiento para registrar un arqueo de caja
@@ -297,7 +335,10 @@ END //
 
 -- Procedimiento para obtener los movimientos de una caja específica
 CREATE PROCEDURE sp_obtener_movimientos_por_caja(
-    IN p_id_caja INT
+    IN p_id_caja INT,
+    IN p_tipo_movimiento VARCHAR(50),
+    IN p_limit INT,
+    IN p_offset INT
 )
 BEGIN
     SELECT 
@@ -305,33 +346,67 @@ BEGIN
         mc.tipo_movimiento,
         mc.descripcion_mov_caja,
         mc.monto_movimiento,
-        DATE_FORMAT(mc.fecha_movimiento, '%d/%m/%Y') AS fecha,
-        DATE_FORMAT(mc.fecha_movimiento, '%H:%i') AS hora,
+        DATE_FORMAT(mc.fecha_movimiento, '%d-%m-%Y') AS fecha,
+        DATE_FORMAT(mc.fecha_movimiento, '%H:%i:%s') AS hora,
         CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
     FROM movimientos_caja mc
-    INNER JOIN usuarios u ON mc.id_usuario = u.id_usuario
+    INNER JOIN usuarios u 
+        ON mc.id_usuario = u.id_usuario
     WHERE mc.id_caja = p_id_caja
-    ORDER BY mc.fecha_movimiento DESC;
+      AND (p_tipo_movimiento IS NULL 
+           OR mc.tipo_movimiento = p_tipo_movimiento)
+    ORDER BY mc.fecha_movimiento DESC
+    LIMIT p_limit OFFSET p_offset;
+END //
+
+CREATE PROCEDURE sp_contar_movimientos_por_caja(
+    IN p_id_caja INT,
+    IN p_tipo_movimiento VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS total_registros
+    FROM movimientos_caja mc
+    WHERE mc.id_caja = p_id_caja
+      AND (p_tipo_movimiento IS NULL 
+           OR mc.tipo_movimiento = p_tipo_movimiento);
 END //
 
 -- Procedimiento para obtener detalles de las cajas cerradas por partes
+CREATE PROCEDURE sp_contar_cajas (
+    IN p_fechaInicio DATE,
+    IN p_fechaFin DATE
+)
+BEGIN
+    SELECT COUNT(*) AS total_registros
+    FROM caja c
+    WHERE
+        (p_fechaInicio IS NULL OR DATE(c.fecha_caja) >= p_fechaInicio)
+        AND (p_fechaFin IS NULL OR DATE(c.fecha_caja) <= p_fechaFin);
+END //
+
 CREATE PROCEDURE sp_listar_cajas (
     IN p_limit INT,
-    IN p_offset INT
+    IN p_offset INT,
+    IN p_fechaInicio DATE,
+    IN p_fechaFin DATE
 )
 BEGIN
     SELECT
         c.id_caja,
         c.saldo_inicial,
         c.monto_actual,
-        c.saldo_final,
-        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_caja,
-        DATE_FORMAT(c.fecha_caja, '%H:%i:%s') AS hora_caja,
+        IFNULL(c.saldo_final, '--') AS saldo_final,
+        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_apertura,
+        DATE_FORMAT(c.fecha_caja, '%H:%i:%s') AS hora_apertura,
         c.estado_caja
     FROM caja c
+    WHERE
+        (p_fechaInicio IS NULL OR DATE(c.fecha_caja) >= p_fechaInicio)
+        AND (p_fechaFin IS NULL OR DATE(c.fecha_caja) <= p_fechaFin)
     ORDER BY c.fecha_caja DESC
     LIMIT p_limit OFFSET p_offset;
-END //
+END // 
 
 -- Procedimiento para obtener los arqueos de la caja abierta
 CREATE PROCEDURE sp_obtener_arqueos_por_caja(
@@ -341,8 +416,8 @@ BEGIN
     -- Retornar los arqueos asociados a esa caja
     SELECT 
         ac.id_arqueo,
-        DATE_FORMAT(ac.fecha_arqueo, '%H:%i') AS hora_arqueo,
-        DATE_FORMAT(ac.fecha_arqueo, '%d/%m/%Y') AS fecha_arqueo,
+        DATE_FORMAT(ac.fecha_arqueo, '%H:%i:%s') AS hora_arqueo,
+        DATE_FORMAT(ac.fecha_arqueo, '%d-%m-%Y') AS fecha_arqueo,
         ac.monto_fisico,
         ac.monto_tarjeta,
         ac.monto_billetera_digital,
