@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS arqueos_caja;
 DROP TABLE IF EXISTS movimientos_caja;
 DROP TABLE IF EXISTS eventos_caja;
 DROP TABLE IF EXISTS usuario_rol;
+DROP TABLE IF EXISTS imagenes_producto;
 
 -- Tablas intermedias
 DROP TABLE IF EXISTS productos;
@@ -149,6 +150,15 @@ CREATE TABLE productos (
     estado_producto TINYINT(1) NOT NULL DEFAULT 1,
     id_categoria INT NOT NULL,
     FOREIGN KEY (id_categoria) REFERENCES categorias_producto(id_categoria)
+);
+
+-- Tabla para imagenes
+CREATE TABLE imagenes_producto (
+    id_imagen_producto INT AUTO_INCREMENT PRIMARY KEY,
+    url_imagen VARCHAR(300),
+    public_id VARCHAR(100),
+    id_producto INT,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
 );
 
 -- Tabla para relacionar uno o mas insumos a un producto
