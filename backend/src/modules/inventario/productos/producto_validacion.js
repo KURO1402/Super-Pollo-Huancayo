@@ -23,7 +23,7 @@ const validarDatosProducto = (datos) => {
         throw crearError('Especifique si el producto va a usar inventario de insumos', 400);
     }
 
-    if (usaInsumos === 1 && !insumos && !Array.isArray(insumos) || insumos.length === 0) {
+    if (usaInsumos === 1 && (!insumos && !Array.isArray(insumos) || insumos.length === 0)) {
         throw crearError('Al activar inventario de insumos, debe especificar los insumos correspondientes.', 400);
     }
 
