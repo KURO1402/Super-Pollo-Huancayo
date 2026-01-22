@@ -17,6 +17,7 @@ const agregarProductoController = async (req, res) => {
         const file = req.file;
 
         const resultado = await agregarProductoService(datos, file);
+        
         return res.status(200).json(resultado);
     } catch (err) {
         console.log(err.message)

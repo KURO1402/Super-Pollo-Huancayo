@@ -3,7 +3,8 @@ USE super_pollo_hyo;
 DROP PROCEDURE IF EXISTS sp_contar_productos_nombre_act_ina;
 DROP PROCEDURE IF EXISTS sp_contar_categoria_por_id;
 
-DROP PROCEDURE IF EXISTS sp_crear_producto;
+DROP PROCEDURE IF EXISTS sp_registrar_producto_con_imagen;
+DROP PROCEDURE IF EXISTS sp_registrar_cantidad_insumo_producto;
 
 
 DELIMITER //
@@ -32,17 +33,68 @@ END //
 
 
 -- Procedimientos de productos
-/*CREATE PROCEDURE sp_crear_producto(
+CREATE PROCEDURE sp_registrar_producto_con_imagen (
     IN p_nombre_producto VARCHAR(100),
     IN p_descripcion_producto TEXT,
-    IN p_precio_producto DECIMAL(5, 2),
+    IN p_precio_producto DECIMAL(5,2),
     IN p_usa_insumos TINYINT(1),
     IN p_id_categoria INT,
     IN p_url_imagen VARCHAR(300),
     IN p_public_id VARCHAR(100)
 )
 BEGIN
-    INSERT INTO productos()
-END //*/
+    DECLARE v_id_producto INT;
+
+    INSERT INTO productos (
+        nombre_producto,
+        descripcion_producto,
+        precio_producto,
+        usa_insumos,
+        id_categoria
+    ) VALUES (
+        p_nombre_producto,
+        p_descripcion_producto,
+        p_precio_producto,
+        p_usa_insumos,
+        p_id_categoria
+    );
+
+    SET v_id_producto = LAST_INSERT_ID();
+
+    INSERT INTO imagenes_producto (
+        url_imagen,
+        public_id,
+        id_producto
+    ) VALUES (
+        p_url_imagen,
+        p_public_id,
+        v_id_producto
+    );
+
+    SELECT 
+        p.id_producto,
+        p.nombre_producto,
+        p.descripcion_producto,
+        p.precio_producto
+    FROM productos p
+    WHERE p.id_producto = v_id_producto;
+END //
+
+CREATE PROCEDURE sp_registrar_cantidad_insumo_producto (
+    IN p_id_producto INT,
+    IN p_id_insumo INT,
+    IN p_cantidad_uso DECIMAL(5,2)
+)
+BEGIN
+    INSERT INTO cantidad_insumo_producto (
+        id_producto,
+        id_insumo,
+        cantidad_uso
+    ) VALUES (
+        p_id_producto,
+        p_id_insumo,
+        p_cantidad_uso
+    );
+END //
 
 DELIMITER ;

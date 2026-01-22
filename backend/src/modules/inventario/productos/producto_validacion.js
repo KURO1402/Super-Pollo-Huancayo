@@ -23,8 +23,15 @@ const validarDatosProducto = (datos) => {
         throw crearError('Especifique si el producto va a usar inventario de insumos', 400);
     }
 
-    if (usaInsumos === 1 && (!insumos && !Array.isArray(insumos) || insumos.length === 0)) {
-        throw crearError('Al activar inventario de insumos, debe especificar los insumos correspondientes.', 400);
+    if (usaInsumos === 1) {
+        if (!insumos || !Array.isArray(insumos) || insumos.length === 0) { 
+            throw crearError('Al activar inventario de insumos, debe especificar los insumos y cantidad de uso correspondientes.', 400); 
+        }
+        insumos.forEach((insumo) => {
+            if(!insumo || typeof insumo !== 'object' || typeof insumo.idInsumo !== 'number'|| insumo.idInsumo <= 0 || typeof insumo.idInsumo !== 'number' ||  insumo.cantidadUso <=  0){
+                throw crearError('Se necesitan que especifique cada insumo y su cantidad de uso', 400);
+            }
+        });
     }
 
     if(!idCategoria || typeof idCategoria !== 'number'){

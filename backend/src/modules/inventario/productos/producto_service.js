@@ -1,13 +1,17 @@
+const cloudinary = require('../../../config/cloudinary_config');
+const fs = require('fs');
+
 const { validarDatosProducto } = require('./producto_validacion');
 
 const {
     contarProductosNombreActInaModel,
-    contarCategoriasPorIdModel
+    contarCategoriasPorIdModel, 
+    registraProductoModel
 } = require('./producto_model');
 
 const crearError = require('../../../utilidades/crear_error');
 
-const agregarProductoService = async (datos) => {
+const agregarProductoService = async (datos, file) => {
     validarDatosProducto(datos);
     const { nombreProducto, descripcionProducto, precioProducto, usaInsumos, insumos, idCategoria } = datos;
     const coincidenciasNombre = await contarProductosNombreActInaModel(nombreProducto);
@@ -24,9 +28,25 @@ const agregarProductoService = async (datos) => {
         throw crearError('La categoria especificada no existe', 400);
     }
 
-    
+    if(usaInsumos === 1){
+        insumos
+    }
 
-    return datos;
+    let cloudinaryResult;
+    try {
+        cloudinaryResult = await cloudinary.uploader.upload(file.path, { folder: 'superpollo' });
+    } catch (err) {
+        throw Object.assign(new Error("No se pudo subir la imagen a Cloudinary"), { status: 500 });
+    }
+
+    const producto = await registraProductoModel(nombreProducto, descripcionProducto, precioProducto, usaInsumos, insumos, idCategoria, cloudinaryResult.secure_url, cloudinaryResult.public_id);
+    fs.unlinkSync(file.path); 
+
+    return {
+        ok: true,
+        mensaje: 'Producto insertado correctamente',
+        producto
+    };
 };
 
 
