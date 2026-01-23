@@ -15,7 +15,7 @@ export const DetalleVenta = () => {
 
   useEffect(() => {
     const nuevosInputs = {};
-    detalle.forEach((item) => {
+    detalle?.forEach((item) => {
       const itemId = obtenerId(item);
       nuevosInputs[itemId] = item.cantidad.toString();
     });
@@ -80,14 +80,14 @@ export const DetalleVenta = () => {
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
           Detalle de Venta
         </h2>
-        {detalle.length > 0 && (
+        {detalle?.length > 0 && (
           <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">
             {detalle.length} {detalle.length === 1 ? 'producto' : 'productos'}
           </span>
         )}
       </div>
 
-      {detalle.length === 0 ? (
+      {detalle?.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 px-4">
           <FiShoppingCart size={48} className="text-gray-400 dark:text-gray-600 mb-4" />
           <p className="text-base font-medium text-gray-600 dark:text-gray-400 mb-2">
@@ -121,7 +121,7 @@ export const DetalleVenta = () => {
                 </tr>
               </thead>
               <tbody>
-                {detalle.map((item, index) => {
+                {detalle?.map((item, index) => {
                   const itemId = obtenerId(item);
                   const nombre = item.nombreProducto || item.nombre;
                   const precio = item.precioProducto || item.precio;
@@ -224,7 +224,7 @@ export const DetalleVenta = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">Items:</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {detalle.reduce((acc, item) => acc + item.cantidad, 0)}
+                    {detalle?.reduce((acc, item) => acc + item.cantidad, 0)}
                   </span>
                 </div>
               </div>

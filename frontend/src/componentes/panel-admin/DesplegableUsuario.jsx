@@ -6,7 +6,7 @@ import { useAutenticacionStore } from "../../store/useAutenticacionStore";
 
 export default function DesplegableUsuario() {
   const [estaAbierto, setEstaAbierto] = useState(false);
-  const { usuario, logout } = useAutenticacionStore(); 
+  const { usuario, logout } = useAutenticacionStore();
 
   function alternarDesplegable() {
     setEstaAbierto(!estaAbierto);
@@ -22,10 +22,10 @@ export default function DesplegableUsuario() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11 bg-red-600 flex items-center justify-center text-white font-bold text-xl">
-          {usuario.nombresUsuario ? usuario.nombresUsuario.charAt(0).toUpperCase() : ''}
+          {usuario.nombre_usuario ? usuario.nombre_usuario.charAt(0).toUpperCase() : ''}
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">{usuario.nombresUsuario}</span>
+        <span className="block mr-1 font-medium text-theme-sm">{usuario.nombre_usuario}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             estaAbierto ? "rotate-180" : ""
@@ -49,11 +49,11 @@ export default function DesplegableUsuario() {
       <Desplegable
         estaAbierto={estaAbierto}
         onClose={cerrarDesplegable}
-        className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+        className="absolute right-0 mt-4.25 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {usuario.nombresUsuario} {" "} {usuario.apellidosUsuario}
+            {usuario.nombre_usuario} {" "} {usuario.apellido_usuario}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             Rol: { usuario.idRol === 1 ? "Superadministrador": "Administrador"}
@@ -82,7 +82,7 @@ export default function DesplegableUsuario() {
               <FiCalendar size={20}/>
               Calendario
             </DesplegableItem>
-          </li>
+          </li> 
           <li>
             <DesplegableItem
               onItemClick={cerrarDesplegable}

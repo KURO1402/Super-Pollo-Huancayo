@@ -81,7 +81,7 @@ const AppRutas = () => {
 
         {
             path: '/admin',
-            element: <RutaPrivadaConRol rolesPermitidos={[ROLES.SUPERADMIN, ROLES.ADMIN]} redirectTo="/" />,
+            element: <RutaPrivadaConRol rolesPermitidos={[ROLES.COLABORADOR, ROLES.ADMINISTRADOR]} redirectTo="/" />,
             children: [
                 {
                 element: <EstructuraBaseAdmin />,

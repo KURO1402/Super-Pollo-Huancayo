@@ -1,18 +1,18 @@
 export const ROLES = {
-  SUPERADMIN: 1,
-  ADMIN: 2,
-  USUARIO: 3,
+  USUARIO: 1, // anterior era superdaministrador 
+  COLABORADOR: 2, // antes era administrador
+  ADMINISTRADOR: 3, // antes era usuario
 };
 
 export const NOMBRES_ROLES = {
-  [ROLES.SUPERADMIN]: 'Super Administrador',
-  [ROLES.ADMIN]: 'Administrador',
-  [ROLES.USUARIO]: 'Usuario',
+  [ROLES.USUARIO]: 'usuario',
+  [ROLES.COLABORADOR]: 'colaborador',
+  [ROLES.ADMINISTRADOR]: 'administrador',
 };
 
 export const PERMISOS = {
 
-  [ROLES.SUPERADMIN]: {
+  [ROLES.ADMINISTRADOR]: {
 
     accesoPanelAdmin: true,
     dashboard: true,
@@ -39,7 +39,7 @@ export const PERMISOS = {
     perfil: true,
   },
 
-  [ROLES.ADMIN]: {
+  [ROLES.COLABORADOR]: {
 
     accesoPanelAdmin: true,
     dashboard: false,
@@ -87,9 +87,9 @@ export const PERMISOS = {
 };
 
 export const RUTAS_REDIRECCION = {
-  [ROLES.SUPERADMIN]: '/admin',
-  [ROLES.ADMIN]: '/admin/generar-venta',
-  [ROLES.USUARIO]: '/usuario',
+  [ROLES.USUARIO]: '/usuario', 
+  [ROLES.COLABORADOR]: '/admin/generar-venta',
+  [ROLES.ADMINISTRADOR]: '/admin',
 };
 
 

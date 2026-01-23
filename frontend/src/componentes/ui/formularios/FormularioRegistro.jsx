@@ -25,7 +25,6 @@ const FormularioRegistro = ({ alEnviar, estaCargando = false }) => {
   });
 
   const manejarEnvioFormulario = async (datos) => {
-    console.log("datos en el registro: ", datos)
     try {
       await alEnviar(datos);
       await trigger();

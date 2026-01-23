@@ -6,6 +6,10 @@ const RutaPrivadaConRol = ({ rolesPermitidos, redirectTo }) => {
   const usuario = useAutenticacionStore((state) => state.usuario);
   const location = useLocation();
 
+  if ( usuario === undefined){
+    return <div>Loading ...</div>
+  }
+
   if (!usuario) {
 
     return (
@@ -17,9 +21,9 @@ const RutaPrivadaConRol = ({ rolesPermitidos, redirectTo }) => {
     );
   }
 
-  if (!rolesPermitidos.includes(usuario.idRol)) {
+  if (!rolesPermitidos.includes(usuario.id_rol)) {
 
-    const rutaCorrecta = redirectTo || obtenerRutaRedireccion(usuario.idRol);
+    const rutaCorrecta = redirectTo || obtenerRutaRedireccion(usuario.id_rol);
     return <Navigate to={rutaCorrecta} replace />;
   }
 

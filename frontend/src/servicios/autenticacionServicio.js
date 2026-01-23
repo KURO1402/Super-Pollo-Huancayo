@@ -2,7 +2,6 @@ import API from "./axiosConfiguracion";
 
 export const registrarUsuario = async (datos) => {
     try {
-        console.log(datos);
         const respuesta = await API.post('/auth/registro', datos);
         return respuesta.data;
     } catch (error) {
@@ -12,7 +11,7 @@ export const registrarUsuario = async (datos) => {
 
 export const loginUsuario = async (datos) => {
     try {
-        const respuesta = await API.post('/autenticacion/login', datos);
+        const respuesta = await API.post('/auth/login', datos);
         return respuesta.data;
     } catch (error) {
         throw error;

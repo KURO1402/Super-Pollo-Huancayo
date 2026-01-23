@@ -55,8 +55,8 @@ const NuevaReservacion = () => {
 
   // Verificar si puede avanzar desde el Paso 1
   const puedeAvanzarDesdeP1 = valores.fecha && valores.hora && valores.personas >= 2;
-  console.log("Datos del formulario:", getValues());
-  console.log("Puede avanzar desde P1:", puedeAvanzarDesdeP1);
+/*   console.log("Datos del formulario:", getValues());
+  console.log("Puede avanzar desde P1:", puedeAvanzarDesdeP1); */
 
   // Verificar si puede avanzar desde el Paso 2
   const puedeAvanzarDesdeP2 = verificarPaso2();

@@ -27,11 +27,11 @@ const Cabecera = () => {
   };
 
   const renderSeccionUsuario = () => {
-    if (usuario && usuario.idRol === ROLES.USUARIO) {
+    if (usuario && usuario.id_rol === ROLES.USUARIO) {
       return <DropdownUsuario usuario={usuario} />;
     }
 
-    if (usuario && usuario.idRol !== ROLES.USUARIO) {
+    if (usuario && usuario.id_rol !== ROLES.USUARIO) {
       return <DropdownAdmin usuario={usuario} />;
     }
 

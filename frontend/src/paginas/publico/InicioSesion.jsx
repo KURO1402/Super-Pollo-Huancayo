@@ -8,7 +8,7 @@ import { obtenerRutaRedireccion } from '../../constantes/roles';
 const InicioSesion = ()=> {
   const { login, carga, error, limpiarError, usuario } = useAutenticacionStore(); 
   const navigate = useNavigate(); 
-  const location = useLocation(); 
+  const location = useLocation();
 
   const manejarEnvioInicioSesion = async (datosFormulario) => {
     const usuarioLogueado = await login(datosFormulario);
