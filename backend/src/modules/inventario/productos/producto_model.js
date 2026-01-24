@@ -1,5 +1,6 @@
 const pool = require('../../../config/conexion_DB');
 
+//Modelos para validaciones
 const contarProductosNombreActInaModel = async (nombreProducto) => {
     let conexion;
     try {
@@ -8,7 +9,7 @@ const contarProductosNombreActInaModel = async (nombreProducto) => {
 
         return result[0][0];
     } catch (err) {
-        throw new Error('Error al contar productos en la abse de datos');
+        throw new Error('Error al contar productos en la base de datos');
     } finally {
         if(conexion) conexion.release();
     }
@@ -28,6 +29,35 @@ const contarCategoriasPorIdModel = async (idCategoria) => {
     }
 };
 
+const contarProductosPorIdModel = async (idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_contar_productos_por_id(?)', [idProducto]);
+
+        return result[0][0]?.total_registros;
+    } catch (err) {
+        throw new Error('Error al contar productos en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    }
+};
+
+const contarProductosNombreV2Model = async (nombreProducto, idProducto) =>{
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_contar_nombre_producto_edit_v2(?, ?)', [nombreProducto, idProducto]);
+
+        return result[0][0];
+    } catch (err) {
+        throw new Error('Error al contar productos en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    }
+}
+
+//Modelo para productos
 const registraProductoModel = async ( nombre, descripcion, precio, usaInsumo, insumos, categoria, urlImagen, publicId ) => {
     let conexion;
 
@@ -61,11 +91,26 @@ const registraProductoModel = async ( nombre, descripcion, precio, usaInsumo, in
     }
 };
 
+const actualizarDatosProductoModel = async (idProducto, nombre, descripcion, precio, categoria) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_actualizar_datos_producto(?, ?, ?, ?, ?)', [idProducto, nombre, descripcion, precio, categoria]);
 
+        return result[0][0];
+    } catch (err) {
+        throw new Error('Error al aactualizar producto en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    }
+};
 
 
 module.exports = {
     contarProductosNombreActInaModel,
     contarCategoriasPorIdModel,
-    registraProductoModel
+    contarProductosPorIdModel,
+    contarProductosNombreV2Model,
+    registraProductoModel,
+    actualizarDatosProductoModel
 }

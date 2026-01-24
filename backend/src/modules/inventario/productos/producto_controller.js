@@ -1,5 +1,6 @@
 const {
-    agregarProductoService
+    agregarProductoService,
+    actualizarDatosProductoService
 } = require('./producto_service');
 
 const agregarProductoController = async (req, res) => {
@@ -20,7 +21,6 @@ const agregarProductoController = async (req, res) => {
         
         return res.status(200).json(resultado);
     } catch (err) {
-        console.log(err.message)
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -30,6 +30,25 @@ const agregarProductoController = async (req, res) => {
     }
 }
 
+const actualizarDatosProductoController = async (req, res) => {
+    try {
+        const {idProducto} = req.params;
+
+        const resultado = await actualizarDatosProductoService(req.body, idProducto);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
 module.exports = {
-    agregarProductoController
+    agregarProductoController,
+    actualizarDatosProductoController
 }
