@@ -15,7 +15,8 @@ const {
     agregarCantidadInsumoProductoModel,
     actualizarCantidadInsumoProductoModel,
     eliminarCantidadInsumoProductoModel,
-    actualizarEstadoProductoModel
+    actualizarEstadoProductoModel,
+    insertarImagenProductoModel
 } = require('./producto_model');
 
 const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
@@ -47,7 +48,7 @@ const agregarProductoService = async (datos, file) => {
     try {
         cloudinaryResult = await cloudinary.uploader.upload(file.path, { folder: 'superpollo' });
     } catch (err) {
-        throw Object.assign(new Error("No se pudo subir la imagen a Cloudinary"), { status: 500 });
+        throw crearError('No se pudo subir la imagen a Cloudinary', 500);
     }
 
     fs.unlinkSync(file.path); 
@@ -244,6 +245,35 @@ const habilitarProductoService = async (idProducto) => {
     };
 };
 
+const insertarImagenProductoService = async (idProducto, file) => {
+    if (!idProducto || idProducto.trim() === '' || isNaN(Number(idProducto))) {
+        throw crearError('Producto no válido', 400);
+    }
+
+    const productoID = Number(idProducto);
+    const productoExistente = await contarProductosPorIdModel(productoID);
+    if(!productoExistente || productoExistente === 0){
+        throw crearError('Producto especificado no existente', 400);
+    }
+
+    let cloudinaryResult;
+    try {
+        cloudinaryResult = await cloudinary.uploader.upload(file.path, { folder: 'superpollo' });
+    } catch (err) {
+        throw crearError('No se pudo subir la imagen a Cloudinary', 500);
+    }
+    
+    fs.unlinkSync(file.path); 
+
+    const imagen = await insertarImagenProductoModel(cloudinaryResult.secure_url, cloudinaryResult.public_id, productoID);
+
+    return {
+        ok: true,
+        mensaje: 'Imagen insertada correctamente',
+        imagen
+    };
+}
+
 module.exports = {
     agregarProductoService,
     actualizarDatosProductoService,
@@ -251,5 +281,6 @@ module.exports = {
     actualizarCantidadInsumoProductoService,
     eliminarCantidadInsumoProductoService,
     deshabilitarProductoService,
-    habilitarProductoService
+    habilitarProductoService,
+    insertarImagenProductoService
 }

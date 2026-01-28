@@ -192,6 +192,22 @@ const actualizarEstadoProductoModel = async (idProducto, estadoProducto) => {
     }
 };
 
+const insertarImagenProductoModel = async (url, publicId, idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_insertar_imagen_producto(?, ?, ?)', [url, publicId, idProducto]);
+
+        return result[0][0];
+
+    } catch (err) {
+        throw new Error('Error al insertar imagen del producto en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    }
+};
+
 
 module.exports = {
     contarProductosNombreActInaModel,
@@ -205,5 +221,6 @@ module.exports = {
     agregarCantidadInsumoProductoModel,
     actualizarCantidadInsumoProductoModel,
     eliminarCantidadInsumoProductoModel,
-    actualizarEstadoProductoModel
+    actualizarEstadoProductoModel,
+    insertarImagenProductoModel
 }

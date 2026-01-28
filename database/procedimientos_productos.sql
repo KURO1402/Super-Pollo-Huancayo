@@ -14,6 +14,7 @@ DROP PROCEDURE IF EXISTS sp_agregar_cantidad_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_actualizar_cantidad_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_eliminar_cantidad_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_actualizar_estado_producto;
+DROP PROCEDURE IF EXISTS sp_insertar_imagen_producto;
 
 
 DELIMITER //
@@ -327,6 +328,40 @@ BEGIN
 
     SELECT v_mensaje AS mensaje;
 
+END //
+
+CREATE PROCEDURE sp_insertar_imagen_producto (
+    IN p_url_imagen VARCHAR(300),
+    IN p_public_id VARCHAR(100),
+    IN p_id_producto INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    INSERT INTO imagenes_producto (
+        url_imagen,
+        public_id,
+        id_producto
+    )
+    VALUES (
+        p_url_imagen,
+        p_public_id,
+        p_id_producto
+    );
+
+    COMMIT;
+
+    SELECT
+        id_imagen_producto,
+        url_imagen
+    FROM imagenes_producto
+    WHERE id_producto = p_id_producto;
 END //
 
 DELIMITER ;
