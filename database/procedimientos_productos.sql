@@ -4,10 +4,14 @@ DROP PROCEDURE IF EXISTS sp_contar_productos_nombre_act_ina;
 DROP PROCEDURE IF EXISTS sp_contar_categoria_por_id;
 DROP PROCEDURE IF EXISTS sp_contar_productos_por_id;
 DROP PROCEDURE IF EXISTS sp_contar_nombre_producto_edit_v2;
+DROP PROCEDURE IF EXISTS sp_contar_insumo_producto;
 
 DROP PROCEDURE IF EXISTS sp_registrar_producto_con_imagen;
 DROP PROCEDURE IF EXISTS sp_registrar_cantidad_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_actualizar_datos_producto;
+DROP PROCEDURE IF EXISTS sp_agregar_cantidad_insumo_producto;
+DROP PROCEDURE IF EXISTS sp_actualizar_cantidad_insumo_producto;
+DROP PROCEDURE IF EXISTS sp_eliminar_cantidad_insumo_producto;
 
 
 DELIMITER //
@@ -55,6 +59,17 @@ BEGIN
     FROM productos
     WHERE nombre_producto = p_nombre_producto
       AND id_producto <> p_id_producto;
+END //
+
+CREATE PROCEDURE sp_contar_insumo_producto (
+    IN p_id_producto INT,
+    IN p_id_insumo INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM cantidad_insumo_producto
+    WHERE id_producto = p_id_producto
+      AND id_insumo = p_id_insumo;
 END //
 
 
@@ -158,5 +173,117 @@ BEGIN
     FROM productos p
     WHERE p.id_producto = p_id_producto;
 END //
+
+CREATE PROCEDURE sp_agregar_cantidad_insumo_producto (
+    IN p_id_producto INT,
+    IN p_id_insumo INT,
+    IN p_cantidad_uso DECIMAL(5,2)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    INSERT INTO cantidad_insumo_producto (
+        id_producto,
+        id_insumo,
+        cantidad_uso
+    ) VALUES (
+        p_id_producto,
+        p_id_insumo,
+        p_cantidad_uso
+    );
+
+    UPDATE productos
+    SET usa_insumos = 1
+    WHERE id_producto = p_id_producto
+      AND usa_insumos = 0;
+
+    COMMIT;
+
+    SELECT 
+        i.id_insumo,
+        i.nombre_insumo,
+        cip.cantidad_uso
+    FROM cantidad_insumo_producto cip
+    INNER JOIN insumos i 
+        ON i.id_insumo = cip.id_insumo
+    WHERE cip.id_producto = p_id_producto
+      AND cip.id_insumo = p_id_insumo;
+
+END //
+
+CREATE PROCEDURE sp_actualizar_cantidad_insumo_producto (
+    IN p_id_producto INT,
+    IN p_id_insumo INT,
+    IN p_cantidad_uso DECIMAL(5,2)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE cantidad_insumo_producto
+    SET cantidad_uso = p_cantidad_uso
+    WHERE id_producto = p_id_producto
+      AND id_insumo = p_id_insumo;
+
+    COMMIT;
+
+    SELECT 
+        i.id_insumo,
+        i.nombre_insumo,
+        cip.cantidad_uso
+    FROM cantidad_insumo_producto cip
+    INNER JOIN insumos i 
+        ON i.id_insumo = cip.id_insumo
+    WHERE cip.id_producto = p_id_producto
+    AND cip.id_insumo = p_id_insumo;
+
+END //
+
+CREATE PROCEDURE sp_eliminar_cantidad_insumo_producto (
+    IN p_id_producto INT,
+    IN p_id_insumo INT
+)
+BEGIN
+    DECLARE v_total_insumos INT DEFAULT 0;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    DELETE FROM cantidad_insumo_producto
+    WHERE id_producto = p_id_producto
+      AND id_insumo = p_id_insumo;
+
+    SELECT COUNT(*)
+    INTO v_total_insumos
+    FROM cantidad_insumo_producto
+    WHERE id_producto = p_id_producto;
+
+    IF v_total_insumos = 0 THEN
+        UPDATE productos
+        SET usa_insumos = 0
+        WHERE id_producto = p_id_producto;
+    END IF;
+
+    COMMIT;
+
+    SELECT 'Insumo quitado correctamente' AS mensaje;
+    
+ END //
 
 DELIMITER ;

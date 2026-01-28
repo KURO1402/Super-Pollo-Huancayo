@@ -1,6 +1,9 @@
 const {
     agregarProductoService,
-    actualizarDatosProductoService
+    actualizarDatosProductoService,
+    agregarCantidadInsumoProductoService,
+    actualizarCantidadInsumoProductoService,
+    eliminarCantidadInsumoProductoService
 } = require('./producto_service');
 
 const agregarProductoController = async (req, res) => {
@@ -18,7 +21,7 @@ const agregarProductoController = async (req, res) => {
         const file = req.file;
 
         const resultado = await agregarProductoService(datos, file);
-        
+
         return res.status(200).json(resultado);
     } catch (err) {
         const statusCode = err.status || 500;
@@ -32,7 +35,7 @@ const agregarProductoController = async (req, res) => {
 
 const actualizarDatosProductoController = async (req, res) => {
     try {
-        const {idProducto} = req.params;
+        const { idProducto } = req.params;
 
         const resultado = await actualizarDatosProductoService(req.body, idProducto);
 
@@ -48,7 +51,64 @@ const actualizarDatosProductoController = async (req, res) => {
     }
 };
 
+const agregarCantidadInsumoProductoController = async (req, res) => {
+    try {
+        const { idProducto } = req.params;
+
+        const resultado = await agregarCantidadInsumoProductoService(idProducto, req.body);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const actualizarCantidadInsumoProductoController = async (req, res) => {
+    try {
+        const { idProducto } = req.params;
+
+        const resultado = await actualizarCantidadInsumoProductoService(idProducto, req.body);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const eliminarCantidadInsumoProductoController = async (req, res) => {
+    try {
+        const { idProducto } = req.params;
+
+        const resultado = await eliminarCantidadInsumoProductoService(idProducto, req.body.idInsumo);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
 module.exports = {
     agregarProductoController,
-    actualizarDatosProductoController
+    actualizarDatosProductoController,
+    agregarCantidadInsumoProductoController,
+    actualizarCantidadInsumoProductoController, 
+    eliminarCantidadInsumoProductoController
 }

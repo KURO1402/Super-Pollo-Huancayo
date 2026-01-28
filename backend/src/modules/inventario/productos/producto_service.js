@@ -7,10 +7,16 @@ const {
     contarProductosNombreActInaModel,
     contarCategoriasPorIdModel,
     contarProductosPorIdModel,
-    contarProductosNombreV2Model, 
+    contarProductosNombreV2Model,
+    contarInsumoProductoModel, 
     registraProductoModel,
-    actualizarDatosProductoModel
+    actualizarDatosProductoModel,
+    agregarCantidadInsumoProductoModel,
+    actualizarCantidadInsumoProductoModel,
+    eliminarCantidadInsumoProductoModel
 } = require('./producto_model');
+
+const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
 
 const crearError = require('../../../utilidades/crear_error');
 
@@ -91,7 +97,115 @@ const actualizarDatosProductoService = async (datos, idProducto) => {
 
 };
 
+const agregarCantidadInsumoProductoService = async (idProducto, datos) => {
+    if (idProducto.trim() === "" || isNaN(Number(idProducto))) {
+        throw crearError('Producto no valido', 400);
+    }
+    const productoID = Number(idProducto);
+    if(!datos || typeof datos !== 'object') {
+        throw crearError('Se necesita el insumo y cantidad de uso', 400);
+    }
+    const {idInsumo, cantidadUso} = datos;
+    if(!idInsumo || typeof idInsumo !== 'number') {
+        throw crearError('Especifique el insumo', 400);
+    }
+
+    if(!cantidadUso || typeof cantidadUso !== 'number' || cantidadUso <= 0) {
+        throw crearError('Especifique cantidad de uso', 400);
+    }
+
+    const productoExistente = await contarProductosPorIdModel(productoID);
+    if(!productoExistente || productoExistente === 0){
+        throw crearError('Producto especificado no existente', 404);
+    }
+
+    const insumoExistente = await contarInsumosPorIdModel(idInsumo);
+    if(!insumoExistente || insumoExistente === 0){
+        throw crearError('Insumo especificado no existente', 404);
+    }
+
+    const insumoProductoExistente = await contarInsumoProductoModel(productoID, idInsumo);
+    if(insumoProductoExistente > 0){
+        throw crearError('Insumo ya relacionado a este producto', 409);
+    }
+
+    const productoInsumos = await agregarCantidadInsumoProductoModel(productoID, idInsumo, cantidadUso);
+
+    return {
+        ok: true,
+        mensaje: 'Cantidad de uso de insumo agregado correctamente',
+        resultado: productoInsumos
+    }
+};
+
+const actualizarCantidadInsumoProductoService = async (idProducto, datos) => {
+    if (idProducto.trim() === "" || isNaN(Number(idProducto))) {
+        throw crearError('Producto no valido', 400);
+    }
+    const productoID = Number(idProducto);
+    if(!datos || typeof datos !== 'object') {
+        throw crearError('Se necesita el insumo y cantidad de uso', 400);
+    }
+    const {idInsumo, cantidadUso} = datos;
+    if(!idInsumo || typeof idInsumo !== 'number') {
+        throw crearError('Especifique el insumo', 400);
+    }
+
+    if(!cantidadUso || typeof cantidadUso !== 'number' || cantidadUso <= 0) {
+        throw crearError('Especifique cantidad de uso', 400);
+    }
+
+    const productoExistente = await contarProductosPorIdModel(productoID);
+    if(!productoExistente || productoExistente === 0){
+        throw crearError('Producto especificado no existente', 404);
+    }
+
+    const insumoExistente = await contarInsumosPorIdModel(idInsumo);
+    if(!insumoExistente || insumoExistente === 0){
+        throw crearError('Insumo especificado no existente', 404);
+    }
+
+    const insumoProductoExistente = await contarInsumoProductoModel(productoID, idInsumo);
+    if(insumoProductoExistente === 0){
+        throw crearError('Insumo no relacionado a este producto', 422);
+    }
+
+    const productoInsumos = await actualizarCantidadInsumoProductoModel(productoID, idInsumo, cantidadUso);
+
+    return {
+        ok: true,
+        mensaje: 'Cantidad de uso de insumo actualizado correctamente',
+        resultado: productoInsumos
+    }
+};
+
+const eliminarCantidadInsumoProductoService = async (idProducto, idInsumo) => {
+    if (idProducto.trim() === "" || isNaN(Number(idProducto))) {
+        throw crearError('Producto no valido', 400);
+    }
+    const productoID = Number(idProducto);
+
+    if(!idInsumo || typeof idInsumo !== 'number') {
+        throw crearError('Especifique el insumo', 400);
+    }
+
+    const insumoProductoExistente = await contarInsumoProductoModel(productoID, idInsumo);
+    if(insumoProductoExistente === 0){
+        throw crearError('Insumo no relacionado a este producto', 404);
+    }
+
+    const resultado = await eliminarCantidadInsumoProductoModel(productoID, idInsumo);
+
+    return {
+        ok: true,
+        mensaje: resultado
+    }
+};
+
 module.exports = {
     agregarProductoService,
-    actualizarDatosProductoService
+    actualizarDatosProductoService,
+    agregarCantidadInsumoProductoService,
+    actualizarCantidadInsumoProductoService,
+    eliminarCantidadInsumoProductoService
 }

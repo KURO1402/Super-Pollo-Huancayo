@@ -57,6 +57,20 @@ const contarProductosNombreV2Model = async (nombreProducto, idProducto) =>{
     }
 }
 
+const contarInsumoProductoModel = async (idProducto, idInsumo) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_contar_insumo_producto(?, ?)', [idProducto, idInsumo]);
+
+        return result[0][0]?.total;
+    } catch (err) {
+        throw new Error('Error al contar cantidad de uso de insumo de un producto de la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    }
+}
+
 //Modelo para productos
 const registraProductoModel = async ( nombre, descripcion, precio, usaInsumo, insumos, categoria, urlImagen, publicId ) => {
     let conexion;
@@ -99,18 +113,64 @@ const actualizarDatosProductoModel = async (idProducto, nombre, descripcion, pre
 
         return result[0][0];
     } catch (err) {
-        throw new Error('Error al aactualizar producto en la base de datos');
+        throw new Error('Error al actualizar producto en la base de datos');
     } finally {
         if(conexion) conexion.release();
     }
 };
 
+const agregarCantidadInsumoProductoModel = async (idProducto, idInsumo, cantidadUso) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_agregar_cantidad_insumo_producto(?, ?, ?)', [idProducto, idInsumo, cantidadUso]);
+
+        return result[0][0];
+    } catch (err) {
+        console.log(err.message)
+        throw new Error('Error al relacionar insumo con el producto en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    }
+};
+
+const actualizarCantidadInsumoProductoModel = async (idProducto, idInsumo, cantidadUso) => {
+let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_actualizar_cantidad_insumo_producto(?, ?, ?)', [idProducto, idInsumo, cantidadUso]);
+
+        return result[0][0];
+    } catch (err) {
+        throw new Error('Error al actualizar el insumo relacionado con el producto en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    } 
+};
+
+const eliminarCantidadInsumoProductoModel = async (idProducto, idInsumo) => {
+let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_eliminar_cantidad_insumo_producto(?, ?)', [idProducto, idInsumo]);
+
+        return result[0][0]?.mensaje;
+    } catch (err) {
+        throw new Error('Error al quitar insumo asociado al producto en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    } 
+};
 
 module.exports = {
     contarProductosNombreActInaModel,
     contarCategoriasPorIdModel,
     contarProductosPorIdModel,
     contarProductosNombreV2Model,
+    contarInsumoProductoModel,
     registraProductoModel,
-    actualizarDatosProductoModel
+    actualizarDatosProductoModel,
+    agregarCantidadInsumoProductoModel,
+    actualizarCantidadInsumoProductoModel,
+    eliminarCantidadInsumoProductoModel
 }
