@@ -3,6 +3,7 @@ USE super_pollo_hyo;
 DROP PROCEDURE IF EXISTS sp_contar_productos_nombre_act_ina;
 DROP PROCEDURE IF EXISTS sp_contar_categoria_por_id;
 DROP PROCEDURE IF EXISTS sp_contar_productos_por_id;
+DROP PROCEDURE IF EXISTS sp_contar_productos_deshabilitados_por_id;
 DROP PROCEDURE IF EXISTS sp_contar_nombre_producto_edit_v2;
 DROP PROCEDURE IF EXISTS sp_contar_insumo_producto;
 
@@ -12,6 +13,7 @@ DROP PROCEDURE IF EXISTS sp_actualizar_datos_producto;
 DROP PROCEDURE IF EXISTS sp_agregar_cantidad_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_actualizar_cantidad_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_eliminar_cantidad_insumo_producto;
+DROP PROCEDURE IF EXISTS sp_actualizar_estado_producto;
 
 
 DELIMITER //
@@ -46,6 +48,16 @@ BEGIN
     FROM productos
     WHERE id_producto = p_id_producto
         AND estado_producto = 1;
+END //
+
+CREATE PROCEDURE sp_contar_productos_deshabilitados_por_id(
+    IN p_id_producto INT
+)
+BEGIN
+    SELECT COUNT(*) AS total_registros
+    FROM productos
+    WHERE id_producto = p_id_producto
+        AND estado_producto = 0;
 END //
 
 CREATE PROCEDURE sp_contar_nombre_producto_edit_v2(
@@ -283,7 +295,38 @@ BEGIN
     COMMIT;
 
     SELECT 'Insumo quitado correctamente' AS mensaje;
-    
+
  END //
+
+CREATE PROCEDURE sp_actualizar_estado_producto (
+    IN p_id_producto INT,
+    IN p_estado_producto TINYINT(1)
+)
+BEGIN
+    DECLARE v_mensaje VARCHAR(100);
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE productos
+    SET estado_producto = p_estado_producto
+    WHERE id_producto = p_id_producto;
+
+    COMMIT;
+
+    IF p_estado_producto = 1 THEN
+        SET v_mensaje = 'Producto habilitado correctamente';
+    ELSE
+        SET v_mensaje = 'Producto deshabilitado correctamente';
+    END IF;
+
+    SELECT v_mensaje AS mensaje;
+
+END //
 
 DELIMITER ;

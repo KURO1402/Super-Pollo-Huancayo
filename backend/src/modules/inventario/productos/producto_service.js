@@ -7,13 +7,15 @@ const {
     contarProductosNombreActInaModel,
     contarCategoriasPorIdModel,
     contarProductosPorIdModel,
+    contarProductosDeshabilitadosPorIdModel,
     contarProductosNombreV2Model,
     contarInsumoProductoModel, 
     registraProductoModel,
     actualizarDatosProductoModel,
     agregarCantidadInsumoProductoModel,
     actualizarCantidadInsumoProductoModel,
-    eliminarCantidadInsumoProductoModel
+    eliminarCantidadInsumoProductoModel,
+    actualizarEstadoProductoModel
 } = require('./producto_model');
 
 const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
@@ -202,10 +204,52 @@ const eliminarCantidadInsumoProductoService = async (idProducto, idInsumo) => {
     }
 };
 
+const deshabilitarProductoService = async (idProducto) => {
+    if (!idProducto || idProducto.trim() === '' || isNaN(Number(idProducto))) {
+        throw crearError('Producto no válido', 400);
+    }
+
+    const productoID = Number(idProducto);
+
+    const productoExistente = await contarProductosPorIdModel(productoID);
+    if (!productoExistente || productoExistente === 0) {
+        throw crearError('Producto especificado no existente', 404);
+    }
+
+    const resultado = await actualizarEstadoProductoModel(productoID, 0);
+
+    return {
+        ok: true,
+        mensaje: resultado
+    };
+};
+
+const habilitarProductoService = async (idProducto) => {
+    if (!idProducto || idProducto.trim() === '' || isNaN(Number(idProducto))) {
+        throw crearError('Producto no válido', 400);
+    }
+
+    const productoID = Number(idProducto);
+    
+    const productoExistente = await contarProductosDeshabilitadosPorIdModel(productoID);
+    if (!productoExistente || productoExistente === 0) {
+        throw crearError('Producto especificado no existente en productos deshabilitados', 404);
+    }
+
+    const resultado = await actualizarEstadoProductoModel(productoID, 1);
+
+    return {
+        ok: true,
+        mensaje: resultado
+    };
+};
+
 module.exports = {
     agregarProductoService,
     actualizarDatosProductoService,
     agregarCantidadInsumoProductoService,
     actualizarCantidadInsumoProductoService,
-    eliminarCantidadInsumoProductoService
+    eliminarCantidadInsumoProductoService,
+    deshabilitarProductoService,
+    habilitarProductoService
 }

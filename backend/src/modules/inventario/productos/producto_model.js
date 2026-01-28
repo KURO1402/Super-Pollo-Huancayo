@@ -43,6 +43,20 @@ const contarProductosPorIdModel = async (idProducto) => {
     }
 };
 
+const contarProductosDeshabilitadosPorIdModel = async (idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_contar_productos_deshabilitados_por_id(?)', [idProducto]);
+
+        return result[0][0]?.total_registros;
+    } catch (err) {
+        throw new Error('Error al contar productos en la base de datos');
+    } finally {
+        if(conexion) conexion.release();
+    }
+};
+
 const contarProductosNombreV2Model = async (nombreProducto, idProducto) =>{
     let conexion;
     try {
@@ -162,15 +176,34 @@ let conexion;
     } 
 };
 
+const actualizarEstadoProductoModel = async (idProducto, estadoProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_actualizar_estado_producto(?, ?)',[idProducto, estadoProducto]);
+
+        return result[0][0]?.mensaje;
+
+    } catch (err) {
+        throw new Error('Error al actualizar el estado del producto en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
 module.exports = {
     contarProductosNombreActInaModel,
     contarCategoriasPorIdModel,
     contarProductosPorIdModel,
+    contarProductosDeshabilitadosPorIdModel,
     contarProductosNombreV2Model,
     contarInsumoProductoModel,
     registraProductoModel,
     actualizarDatosProductoModel,
     agregarCantidadInsumoProductoModel,
     actualizarCantidadInsumoProductoModel,
-    eliminarCantidadInsumoProductoModel
+    eliminarCantidadInsumoProductoModel,
+    actualizarEstadoProductoModel
 }

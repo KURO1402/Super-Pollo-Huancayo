@@ -9,7 +9,9 @@ const {
     actualizarDatosProductoController,
     agregarCantidadInsumoProductoController,
     actualizarCantidadInsumoProductoController,
-    eliminarCantidadInsumoProductoController
+    eliminarCantidadInsumoProductoController,
+    deshabilitarProductoController,
+    habilitarProductoController
  } = require('./producto_controller');
 
 router.post('/agregar-producto', autenticacionToken, verificarRoles(2, 3), verificarImagen, agregarProductoController);
@@ -17,5 +19,7 @@ router.patch('/actualizar-producto/:idProducto', autenticacionToken, verificarRo
 router.post('/agregar-cantidad-insumo/:idProducto', autenticacionToken, verificarRoles(2, 3), agregarCantidadInsumoProductoController);
 router.patch('/actualizar-cantidad-insumo/:idProducto', autenticacionToken, verificarRoles(2, 3), actualizarCantidadInsumoProductoController);
 router.delete('/eliminar-cantidad-insumo/:idProducto', autenticacionToken, verificarRoles(2,3), eliminarCantidadInsumoProductoController);
+router.patch('/deshabilitar-producto/:idProducto', autenticacionToken, verificarRoles(2,3), deshabilitarProductoController);
+router.patch('/habilitar-producto/:idProducto',autenticacionToken, verificarRoles(2,3), habilitarProductoController);
 
 module.exports = router;

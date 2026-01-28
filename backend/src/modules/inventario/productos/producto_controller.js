@@ -3,7 +3,9 @@ const {
     actualizarDatosProductoService,
     agregarCantidadInsumoProductoService,
     actualizarCantidadInsumoProductoService,
-    eliminarCantidadInsumoProductoService
+    eliminarCantidadInsumoProductoService,
+    deshabilitarProductoService,
+    habilitarProductoService
 } = require('./producto_service');
 
 const agregarProductoController = async (req, res) => {
@@ -105,10 +107,48 @@ const eliminarCantidadInsumoProductoController = async (req, res) => {
     }
 };
 
+const deshabilitarProductoController = async (req, res) => {
+    try {
+        const { idProducto } = req.params;
+
+        const resultado = await deshabilitarProductoService(idProducto);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const habilitarProductoController = async (req, res) => {
+    try {
+        const { idProducto } = req.params;
+
+        const resultado = await habilitarProductoService(idProducto);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
 module.exports = {
     agregarProductoController,
     actualizarDatosProductoController,
     agregarCantidadInsumoProductoController,
     actualizarCantidadInsumoProductoController, 
-    eliminarCantidadInsumoProductoController
+    eliminarCantidadInsumoProductoController,
+    deshabilitarProductoController,
+    habilitarProductoController
 }
