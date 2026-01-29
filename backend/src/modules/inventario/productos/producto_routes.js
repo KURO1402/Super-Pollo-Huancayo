@@ -14,7 +14,8 @@ const {
     habilitarProductoController,
     insertarImagenProductoController,
     actualizarImagenProductoController,
-    eliminarImagenProductoController
+    eliminarImagenProductoController,
+    obtenerProductosCatalogoController
  } = require('./producto_controller');
 
 router.post('/agregar-producto', autenticacionToken, verificarRoles(2, 3), verificarImagen, agregarProductoController);
@@ -27,5 +28,8 @@ router.patch('/habilitar-producto/:idProducto',autenticacionToken, verificarRole
 router.post('/agregar-imagen/:idProducto', autenticacionToken, verificarRoles(2, 3), verificarImagen, insertarImagenProductoController);
 router.put('/actualizar-imagen/:idImagen', autenticacionToken, verificarRoles(2, 3), verificarImagen, actualizarImagenProductoController);
 router.delete('/eliminar-imagen/:idImagen', autenticacionToken, verificarRoles(2, 3), eliminarImagenProductoController);
+
+//Rutas get
+router.get('/catalogo/productos', obtenerProductosCatalogoController);
 
 module.exports = router;

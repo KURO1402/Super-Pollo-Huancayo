@@ -159,7 +159,6 @@ const registraProductoModel = async ( nombre, descripcion, precio, usaInsumo, in
         return producto;
 
     } catch (err) {
-        console.log(err.message);
         if (conexion) await conexion.rollback();
         throw new Error('Error al registrar el producto en la base de datos');
 
@@ -289,6 +288,7 @@ const eliminarImagenProductoModel = async (idImagenProducto) => {
     }
 };
 
+//Modelo para obtener datos
 const obtenerImagenProductoPorIdModel = async (idImagenProducto) => {
     let conexion;
     try {
@@ -305,6 +305,39 @@ const obtenerImagenProductoPorIdModel = async (idImagenProducto) => {
         if (conexion) conexion.release();
     }
 };
+
+const obtenerProductosCatalogoModel = async () => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_productos_catalogo()');
+
+        return result[0]; 
+
+    } catch (err) {
+        throw new Error('Error al obtener los productos de la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerImagenesPorProductoModel = async (idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_imagenes_por_producto(?)',[idProducto]);
+
+        return result[0];
+
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al obtener los datos de la imagen del producto');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 
 module.exports = {
     contarProductosNombreActInaModel,
@@ -325,5 +358,7 @@ module.exports = {
     insertarImagenProductoModel,
     actualizarImagenProductoModel,
     eliminarImagenProductoModel,
-    obtenerImagenProductoPorIdModel
+    obtenerImagenProductoPorIdModel,
+    obtenerProductosCatalogoModel,
+    obtenerImagenesPorProductoModel 
 }

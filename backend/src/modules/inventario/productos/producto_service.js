@@ -22,7 +22,9 @@ const {
     insertarImagenProductoModel,
     actualizarImagenProductoModel,
     eliminarImagenProductoModel,
-    obtenerImagenProductoPorIdModel
+    obtenerImagenProductoPorIdModel,
+    obtenerProductosCatalogoModel,
+    obtenerImagenesPorProductoModel 
 } = require('./producto_model');
 
 const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
@@ -352,7 +354,27 @@ const eliminarImagenProductoService = async (idImagen) => {
         ok: true,
         mensaje: resultado
     }
-}
+};
+
+const obtenerProductosCatalogoService = async () => {
+
+    const productos = await obtenerProductosCatalogoModel();
+
+    if(!productos || productos.length === 0) {
+        throw crearError('No se encontraron productos', 404);
+    }
+
+    for(const producto of productos) {
+        const imagenes = await obtenerImagenesPorProductoModel(producto.id_producto);
+        producto.imagenes = imagenes;
+    }
+
+    return {
+        ok: true,
+        productos
+    }
+
+};
 
 module.exports = {
     agregarProductoService,
@@ -364,5 +386,6 @@ module.exports = {
     habilitarProductoService,
     insertarImagenProductoService,
     actualizarImagenProductoService,
-    eliminarImagenProductoService
+    eliminarImagenProductoService,
+    obtenerProductosCatalogoService
 }

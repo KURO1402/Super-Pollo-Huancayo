@@ -22,6 +22,8 @@ DROP PROCEDURE IF EXISTS sp_actualizar_imagen_producto;
 DROP PROCEDURE IF EXISTS sp_eliminar_imagen_producto;
 
 DROP PROCEDURE IF EXISTS sp_obtener_imagen_producto_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_productos_catalogo;
+DROP PROCEDURE IF EXISTS sp_obtener_imagenes_por_producto;
 
 
 DELIMITER //
@@ -461,6 +463,32 @@ BEGIN
         id_producto
     FROM imagenes_producto
     WHERE id_imagen_producto = p_id_imagen_producto;
+END //
+
+CREATE PROCEDURE sp_obtener_productos_catalogo()
+BEGIN
+    SELECT
+        p.id_producto, 
+        p.nombre_producto,
+        p.descripcion_producto,
+        p.precio_producto
+    FROM
+        productos p
+    WHERE
+        p.estado_producto = 1;
+END //
+
+CREATE PROCEDURE sp_obtener_imagenes_por_producto(
+    IN p_id_producto INT
+)
+BEGIN
+    SELECT 
+        id_imagen_producto,
+        url_imagen
+    FROM 
+        imagenes_producto
+    WHERE 
+        id_producto = p_id_producto;
 END //
 
 DELIMITER ;
