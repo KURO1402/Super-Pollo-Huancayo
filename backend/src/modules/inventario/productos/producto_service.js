@@ -12,6 +12,7 @@ const {
     contarInsumoProductoModel,
     contarImagenProductoPorIdModel,
     obtenerPublicIdPorIdImagenModel,
+    contarImagenesPorProductoModel,
     registraProductoModel,
     actualizarDatosProductoModel,
     agregarCantidadInsumoProductoModel,
@@ -19,7 +20,9 @@ const {
     eliminarCantidadInsumoProductoModel,
     actualizarEstadoProductoModel,
     insertarImagenProductoModel,
-    actualizarImagenProductoModel
+    actualizarImagenProductoModel,
+    eliminarImagenProductoModel,
+    obtenerImagenProductoPorIdModel
 } = require('./producto_model');
 
 const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
@@ -32,25 +35,25 @@ const agregarProductoService = async (datos, file) => {
     const coincidenciasNombre = await contarProductosNombreActInaModel(nombreProducto);
 
     if (coincidenciasNombre.total_activos > 0) {
+        fs.unlinkSync(file.path); 
         throw crearError('El nombre de producto ya está en uso', 400);
     } else if (coincidenciasNombre.total_inactivos > 0) {
+        fs.unlinkSync(file.path); 
         throw crearError('El nombre de producto coincide con un producto inactivo. Por favor, reactívelo o use otro nombre.', 409);
     };
 
     const categoriasId = await contarCategoriasPorIdModel(idCategoria);
 
     if(!categoriasId || categoriasId === 0){
+        fs.unlinkSync(file.path); 
         throw crearError('La categoria especificada no existe', 400);
-    }
-
-    if(usaInsumos === 1){
-        insumos
     }
 
     let cloudinaryResult;
     try {
         cloudinaryResult = await cloudinary.uploader.upload(file.path, { folder: 'superpollo' });
     } catch (err) {
+        fs.unlinkSync(file.path); 
         throw crearError('No se pudo subir la imagen a Cloudinary', 500);
     }
 
@@ -250,12 +253,14 @@ const habilitarProductoService = async (idProducto) => {
 
 const insertarImagenProductoService = async (idProducto, file) => {
     if (!idProducto || idProducto.trim() === '' || isNaN(Number(idProducto))) {
+        fs.unlinkSync(file.path); 
         throw crearError('Producto no válido', 400);
     }
 
     const productoID = Number(idProducto);
     const productoExistente = await contarProductosPorIdModel(productoID);
     if(!productoExistente || productoExistente === 0){
+        fs.unlinkSync(file.path); 
         throw crearError('Producto especificado no existente', 400);
     }
 
@@ -263,6 +268,7 @@ const insertarImagenProductoService = async (idProducto, file) => {
     try {
         cloudinaryResult = await cloudinary.uploader.upload(file.path, { folder: 'superpollo' });
     } catch (err) {
+        fs.unlinkSync(file.path); 
         throw crearError('No se pudo subir la imagen a Cloudinary', 500);
     }
 
@@ -277,45 +283,75 @@ const insertarImagenProductoService = async (idProducto, file) => {
     };
 };
 
-const actualizarImagenProductoService = async (datos, idImagen, file) => {
-    if (!idImagen || idProducto.trim() === '' || isNaN(Number(idImagen))) {
+const actualizarImagenProductoService = async (idImagen, file) => {
+    if (!idImagen || idImagen.trim() === '' || isNaN(Number(idImagen))) {
+        fs.unlinkSync(file.path); 
         throw crearError('Producto no válido', 400);
     }
 
     const imagenID = Number(idImagen);
-    if(!datos || typeof datos !== 'object' || !datos.idProducto || typeof !datos.idProducto !== 'number'){
-        throw crearError('Se necesita especificar el producto', 400);
-    }
-
-    const productoExistente = await contarProductosPorIdModel(datos.idProducto);
-
-    if(!productoExistente || productoExistente === 0){
-        throw crearError('Producto especificado no existente', 400);
-    }
 
     const imagenExistente = await contarImagenProductoPorIdModel(imagenID);
 
     if(!imagenExistente || imagenExistente === 0){
+        fs.unlinkSync(file.path); 
         throw crearError('Imagen especificada no existente',400)
     }
     const publicID = await obtenerPublicIdPorIdImagenModel(imagenID);
 
-     let cloudinaryResult;
+    let cloudinaryResult;
     try {
         await cloudinary.uploader.destroy(publicID);
         cloudinaryResult = await cloudinary.uploader.upload(file.path, { folder: 'superpollo' });
     } catch (err) {
-        throw Object.assign(new Error('Error al actualizar imagen en Cloudinary'), { status: 500 });
+        fs.unlinkSync(file.path); 
+        throw crearError('Error al actualizar imagen en Cloudinary', 500);
     }
 
-    const imagen = await actualizarImagenProductoModel(imagenID, cloudinaryResult.secure_url, cloudinaryResult.public_id, idProducto);
-
+    const imagen = await actualizarImagenProductoModel(imagenID, cloudinaryResult.secure_url, cloudinaryResult.public_id);
+    fs.unlinkSync(file.path);
     return {
         ok: true,
         mensaje: 'Imagen actualizada correctamente',
         imagen
     }
 
+};
+
+const eliminarImagenProductoService = async (idImagen) => {
+     if (!idImagen || idImagen.trim() === '' || isNaN(Number(idImagen))) {
+        throw crearError('Producto no válido', 400);
+    }
+
+    const imagenID = Number(idImagen);
+
+    const imagenExistente = await obtenerImagenProductoPorIdModel(imagenID);
+
+    if(!imagenExistente || imagenExistente.length === 0){
+        throw crearError('Imagen especificada no existente',400)
+    }
+
+    const cantidadImagenesProducto = await contarImagenesPorProductoModel(imagenExistente.id_producto);
+
+    if(cantidadImagenesProducto === 1 || cantidadImagenesProducto === 0){
+        throw crearError('La imagen es unica del producto y no puede ser eliminada', 400);
+    }
+
+    try {
+        const resultado = await cloudinary.uploader.destroy(imagenExistente.public_id);
+        if (resultado.result !== 'ok') {
+            throw crearError('No se pudo eliminar la imagen en Cloudinary', 500);
+        }
+    } catch (err) {
+        throw crearError('Error al eliminar imagen en Cloudinary', 500);
+    }
+
+    const resultado = await eliminarImagenProductoModel(imagenID);
+
+    return {
+        ok: true,
+        mensaje: resultado
+    }
 }
 
 module.exports = {
@@ -327,5 +363,6 @@ module.exports = {
     deshabilitarProductoService,
     habilitarProductoService,
     insertarImagenProductoService,
-    actualizarImagenProductoService
+    actualizarImagenProductoService,
+    eliminarImagenProductoService
 }

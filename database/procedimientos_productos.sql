@@ -8,6 +8,7 @@ DROP PROCEDURE IF EXISTS sp_contar_nombre_producto_edit_v2;
 DROP PROCEDURE IF EXISTS sp_contar_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_contar_imagen_producto_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_public_id_por_id_imagen;
+DROP PROCEDURE IF EXISTS sp_contar_imagenes_por_producto;
 
 DROP PROCEDURE IF EXISTS sp_registrar_producto_con_imagen;
 DROP PROCEDURE IF EXISTS sp_registrar_cantidad_insumo_producto;
@@ -18,6 +19,9 @@ DROP PROCEDURE IF EXISTS sp_eliminar_cantidad_insumo_producto;
 DROP PROCEDURE IF EXISTS sp_actualizar_estado_producto;
 DROP PROCEDURE IF EXISTS sp_insertar_imagen_producto;
 DROP PROCEDURE IF EXISTS sp_actualizar_imagen_producto;
+DROP PROCEDURE IF EXISTS sp_eliminar_imagen_producto;
+
+DROP PROCEDURE IF EXISTS sp_obtener_imagen_producto_por_id;
 
 
 DELIMITER //
@@ -104,6 +108,16 @@ BEGIN
     SELECT public_id
     FROM imagenes_producto
     WHERE id_imagen_producto = p_id_imagen_producto;
+END //
+
+CREATE PROCEDURE sp_contar_imagenes_por_producto(
+    IN p_id_producto INT
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS total_imagenes
+    FROM imagenes_producto
+    WHERE id_producto = p_id_producto;
 END //
 
 
@@ -389,8 +403,7 @@ END //
 CREATE PROCEDURE sp_actualizar_imagen_producto (
     IN p_id_imagen_producto INT,
     IN p_url_imagen VARCHAR(300),
-    IN p_public_id VARCHAR(100),
-    IN p_id_producto INT
+    IN p_public_id VARCHAR(100)
 )
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -404,8 +417,7 @@ BEGIN
     UPDATE imagenes_producto
     SET
         url_imagen = p_url_imagen,
-        public_id  = p_public_id,
-        id_producto = p_id_producto
+        public_id  = p_public_id
     WHERE id_imagen_producto = p_id_imagen_producto;
 
     COMMIT;
@@ -413,6 +425,40 @@ BEGIN
     SELECT
         id_imagen_producto,
         url_imagen
+    FROM imagenes_producto
+    WHERE id_imagen_producto = p_id_imagen_producto;
+END //
+
+CREATE PROCEDURE sp_eliminar_imagen_producto (
+    IN p_id_imagen_producto INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    DELETE FROM imagenes_producto
+    WHERE id_imagen_producto = p_id_imagen_producto;
+
+    COMMIT;
+    SELECT 'Imagen eliminada correctamente' AS mensaje;
+END  //
+
+
+-- Procedimientos para obtener datos
+CREATE PROCEDURE sp_obtener_imagen_producto_por_id (
+    IN p_id_imagen_producto INT
+)
+BEGIN
+    SELECT 
+        id_imagen_producto,
+        url_imagen,
+        public_id,
+        id_producto
     FROM imagenes_producto
     WHERE id_imagen_producto = p_id_imagen_producto;
 END //

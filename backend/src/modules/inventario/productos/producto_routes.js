@@ -13,7 +13,8 @@ const {
     deshabilitarProductoController,
     habilitarProductoController,
     insertarImagenProductoController,
-    actualizarImagenProductoController
+    actualizarImagenProductoController,
+    eliminarImagenProductoController
  } = require('./producto_controller');
 
 router.post('/agregar-producto', autenticacionToken, verificarRoles(2, 3), verificarImagen, agregarProductoController);
@@ -24,5 +25,7 @@ router.delete('/eliminar-cantidad-insumo/:idProducto', autenticacionToken, verif
 router.patch('/deshabilitar-producto/:idProducto', autenticacionToken, verificarRoles(2,3), deshabilitarProductoController);
 router.patch('/habilitar-producto/:idProducto',autenticacionToken, verificarRoles(2,3), habilitarProductoController);
 router.post('/agregar-imagen/:idProducto', autenticacionToken, verificarRoles(2, 3), verificarImagen, insertarImagenProductoController);
+router.put('/actualizar-imagen/:idImagen', autenticacionToken, verificarRoles(2, 3), verificarImagen, actualizarImagenProductoController);
+router.delete('/eliminar-imagen/:idImagen', autenticacionToken, verificarRoles(2, 3), eliminarImagenProductoController);
 
 module.exports = router;

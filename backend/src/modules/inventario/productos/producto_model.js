@@ -117,6 +117,23 @@ const obtenerPublicIdPorIdImagenModel = async (idImagenProducto) => {
     }
 };
 
+const contarImagenesPorProductoModel = async (idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_contar_imagenes_por_producto(?)',[idProducto]);
+
+        return result[0][0]?.total_imagenes;
+
+    } catch (err) {
+        throw new Error('Error al contar las imágenes del producto');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
 //Modelo para productos
 const registraProductoModel = async ( nombre, descripcion, precio, usaInsumo, insumos, categoria, urlImagen, publicId ) => {
     let conexion;
@@ -240,12 +257,12 @@ const insertarImagenProductoModel = async (url, publicId, idProducto) => {
     }
 };
 
-const actualizarImagenProductoModel = async (idImagenProducto, url, publicId, idProducto) => {
+const actualizarImagenProductoModel = async (idImagenProducto, url, publicId) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
 
-        const [result] = await conexion.execute('CALL sp_actualizar_imagen_producto(?, ?, ?, ?)',[idImagenProducto, url, publicId, idProducto]);
+        const [result] = await conexion.execute('CALL sp_actualizar_imagen_producto(?, ?, ?)',[idImagenProducto, url, publicId]);
 
         return result[0][0];
 
@@ -256,6 +273,38 @@ const actualizarImagenProductoModel = async (idImagenProducto, url, publicId, id
     }
 };
 
+const eliminarImagenProductoModel = async (idImagenProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_eliminar_imagen_producto(?)',[idImagenProducto]);
+
+        return result[0][0]?.mensaje;
+
+    } catch (err) {
+        throw new Error('Error al eliminar imagen del producto en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerImagenProductoPorIdModel = async (idImagenProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_imagen_producto_por_id(?)',[idImagenProducto]);
+
+        return result[0][0];
+
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al obtener los datos de la imagen del producto');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
 
 module.exports = {
     contarProductosNombreActInaModel,
@@ -266,6 +315,7 @@ module.exports = {
     contarInsumoProductoModel,
     contarImagenProductoPorIdModel,
     obtenerPublicIdPorIdImagenModel,
+    contarImagenesPorProductoModel ,
     registraProductoModel,
     actualizarDatosProductoModel,
     agregarCantidadInsumoProductoModel,
@@ -273,5 +323,7 @@ module.exports = {
     eliminarCantidadInsumoProductoModel,
     actualizarEstadoProductoModel,
     insertarImagenProductoModel,
-    actualizarImagenProductoModel
+    actualizarImagenProductoModel,
+    eliminarImagenProductoModel,
+    obtenerImagenProductoPorIdModel
 }

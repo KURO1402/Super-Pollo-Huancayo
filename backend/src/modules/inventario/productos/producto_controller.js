@@ -7,7 +7,8 @@ const {
     deshabilitarProductoService,
     habilitarProductoService,
     insertarImagenProductoService,
-    actualizarImagenProductoService
+    actualizarImagenProductoService,
+    eliminarImagenProductoService
 } = require('./producto_service');
 
 const agregarProductoController = async (req, res) => {
@@ -167,19 +168,10 @@ const insertarImagenProductoController = async (req, res) => {
 const actualizarImagenProductoController = async (req, res) => {
     try {
         const {idImagen} = req.params;
-        if (!req.body.datos) {
-            throw Object.assign(new Error('Se necesitan los datos del producto.'), { status: 400 });
-        }
-        let datos;
-        try {
-            datos = JSON.parse(req.body.datos);
-        } catch (parseError) {
-            throw Object.assign(new Error("Formato incorrecto de los datos del producto."), { status: 400 });
-        }
 
         const file = req.file;
 
-        const resultado = await actualizarImagenProductoService(datos, idImagen, file);
+        const resultado = await actualizarImagenProductoService(idImagen, file);
 
         return res.status(200).json(resultado);
     } catch (err) {
@@ -192,6 +184,24 @@ const actualizarImagenProductoController = async (req, res) => {
     }
 };
 
+const eliminarImagenProductoController = async (req, res) => {
+    try {
+        const {idImagen} = req.params;
+
+        const resultado = await eliminarImagenProductoService(idImagen);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+}
+
 module.exports = {
     agregarProductoController,
     actualizarDatosProductoController,
@@ -201,5 +211,6 @@ module.exports = {
     deshabilitarProductoController,
     habilitarProductoController,
     insertarImagenProductoController,
-    actualizarImagenProductoController
+    actualizarImagenProductoController,
+    eliminarImagenProductoController
 }
