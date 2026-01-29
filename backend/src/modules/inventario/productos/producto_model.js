@@ -83,7 +83,39 @@ const contarInsumoProductoModel = async (idProducto, idInsumo) => {
     } finally {
         if(conexion) conexion.release();
     }
-}
+};
+
+const contarImagenProductoPorIdModel = async (idImagenProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_contar_imagen_producto_por_id(?)',[idImagenProducto]);
+
+        return result[0][0]?.total;
+
+    } catch (err) {
+        throw new Error('Error al contar la imagen del producto en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerPublicIdPorIdImagenModel = async (idImagenProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_public_id_por_id_imagen(?)',[idImagenProducto]);
+
+        return result[0][0]?.public_id;
+
+    } catch (err) {
+        throw new Error('Error al obtener el public_id de la imagen en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
 
 //Modelo para productos
 const registraProductoModel = async ( nombre, descripcion, precio, usaInsumo, insumos, categoria, urlImagen, publicId ) => {
@@ -208,6 +240,22 @@ const insertarImagenProductoModel = async (url, publicId, idProducto) => {
     }
 };
 
+const actualizarImagenProductoModel = async (idImagenProducto, url, publicId, idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_actualizar_imagen_producto(?, ?, ?, ?)',[idImagenProducto, url, publicId, idProducto]);
+
+        return result[0][0];
+
+    } catch (err) {
+        throw new Error('Error al actualizar imagen del producto en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 
 module.exports = {
     contarProductosNombreActInaModel,
@@ -216,11 +264,14 @@ module.exports = {
     contarProductosDeshabilitadosPorIdModel,
     contarProductosNombreV2Model,
     contarInsumoProductoModel,
+    contarImagenProductoPorIdModel,
+    obtenerPublicIdPorIdImagenModel,
     registraProductoModel,
     actualizarDatosProductoModel,
     agregarCantidadInsumoProductoModel,
     actualizarCantidadInsumoProductoModel,
     eliminarCantidadInsumoProductoModel,
     actualizarEstadoProductoModel,
-    insertarImagenProductoModel
+    insertarImagenProductoModel,
+    actualizarImagenProductoModel
 }

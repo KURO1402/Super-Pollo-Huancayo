@@ -12,7 +12,8 @@ const {
     eliminarCantidadInsumoProductoController,
     deshabilitarProductoController,
     habilitarProductoController,
-    insertarImagenProductoController
+    insertarImagenProductoController,
+    actualizarImagenProductoController
  } = require('./producto_controller');
 
 router.post('/agregar-producto', autenticacionToken, verificarRoles(2, 3), verificarImagen, agregarProductoController);
