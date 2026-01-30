@@ -24,7 +24,9 @@ const {
     eliminarImagenProductoModel,
     obtenerImagenProductoPorIdModel,
     obtenerProductosCatalogoModel,
-    obtenerImagenesPorProductoModel 
+    obtenerImagenesPorProductoModel,
+    contarProductosGestionModel,
+    obtenerProductosGestionModel  
 } = require('./producto_model');
 
 const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
@@ -373,7 +375,72 @@ const obtenerProductosCatalogoService = async (idCategoria) => {
         ok: true,
         productos
     }
+};
 
+const obtenerProductosGestionService = async (querys) => {
+    const allowedQuerys = ['limit', 'offset', 'nombre', 'usaInsumos', 'idCategoria'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido',400);
+    }
+    const { limit, offset, nombre, usaInsumos, idCategoria } = querys;
+
+    const limite = parseInt(limit) || 10;
+    const desplazamiento = parseInt(offset) || 0;
+
+    let insumosUsa;
+    if (typeof usaInsumos === 'string') {
+        const valor = usaInsumos.toLowerCase();
+        if (valor === 'si') {
+            insumosUsa = 1;
+        } else if (valor === 'no') {
+            insumosUsa = 0;
+        } else {
+            throw crearError(`Para el filtro solo pon "si" si usa insumos y "no" si no lo usa"`, 400)
+        }
+    }
+
+    const cacheKey = `productos_gestion:count:${nombre || 'null'}:${insumosUsa ?? 'null'}:${idCategoria || 'null'}`;
+
+    const cachedTotal = cache.get(cacheKey);
+
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit');
+
+        const productos = await obtenerProductosGestionModel(nombre, insumosUsa, idCategoria, limite, desplazamiento);
+
+        if (!productos || productos.length === 0) {
+            throw crearError('No se encontraron productos', 404);
+        }
+
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            productos
+        };
+    }
+
+    console.log('Cache miss');
+
+    const totalRegistros = await contarProductosGestionModel(nombre, insumosUsa, idCategoria);
+
+    cache.set(cacheKey, totalRegistros);
+
+    const productos = await obtenerProductosGestionModel(nombre, insumosUsa, idCategoria, limite, desplazamiento);
+
+    if (!productos || productos.length === 0) {
+        throw crearError('No se encontraron productos', 404);
+    }
+
+    return {
+        ok: true,
+        cantidad_filas: totalRegistros,
+        productos
+    };
 };
 
 module.exports = {
@@ -387,5 +454,6 @@ module.exports = {
     insertarImagenProductoService,
     actualizarImagenProductoService,
     eliminarImagenProductoService,
-    obtenerProductosCatalogoService
+    obtenerProductosCatalogoService,
+    obtenerProductosGestionService
 }

@@ -215,6 +215,15 @@ const registrarSalidaStockService = async (datos, idUsuario) => {
 };
 
 const obtenerMovimientosStockService = async (querys) => {
+    const allowedQuerys = ['limit', 'offset', 'fechaInicio', 'fechaFin', 'tipoMovimiento', 'insumo'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido',400);
+    }
     let { limit, offset, fechaInicio, fechaFin, tipoMovimiento, insumo } = querys;
 
     const limite = parseInt(limit) || 10;

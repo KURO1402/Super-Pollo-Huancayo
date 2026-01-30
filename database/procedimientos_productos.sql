@@ -24,6 +24,8 @@ DROP PROCEDURE IF EXISTS sp_eliminar_imagen_producto;
 DROP PROCEDURE IF EXISTS sp_obtener_imagen_producto_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_productos_catalogo;
 DROP PROCEDURE IF EXISTS sp_obtener_imagenes_por_producto;
+DROP PROCEDURE IF EXISTS sp_contar_productos_gestion;
+DROP PROCEDURE IF EXISTS sp_obtener_productos_gestion;
 
 
 DELIMITER //
@@ -495,6 +497,62 @@ BEGIN
         imagenes_producto
     WHERE 
         id_producto = p_id_producto;
+END //
+
+CREATE PROCEDURE sp_contar_productos_gestion(
+    IN p_nombre_producto VARCHAR(100),
+    IN p_usa_insumos TINYINT,
+    IN p_id_categoria INT
+)
+BEGIN
+    SELECT
+        COUNT(*) AS total
+    FROM
+        productos p
+    INNER JOIN
+        categorias_producto c ON p.id_categoria = c.id_categoria
+    WHERE
+        (p_nombre_producto IS NULL 
+            OR p.nombre_producto LIKE CONCAT('%', p_nombre_producto, '%'))
+        AND (p_usa_insumos IS NULL 
+            OR p.usa_insumos = p_usa_insumos)
+        AND (p_id_categoria IS NULL 
+            OR p.id_categoria = p_id_categoria);
+END //
+
+CREATE PROCEDURE sp_obtener_productos_gestion(
+    IN p_nombre_producto VARCHAR(100),
+    IN p_usa_insumos TINYINT,
+    IN p_id_categoria INT,
+    IN p_limit INT,
+    IN p_offset INT
+)
+BEGIN
+    SELECT
+        p.id_producto,
+        p.nombre_producto,
+        p.descripcion_producto,
+        p.precio_producto,
+        CASE 
+            WHEN p.usa_insumos = 1 THEN 'Sí'
+            ELSE 'No'
+        END AS usa_insumos,
+        p.id_categoria,
+        c.nombre_categoria
+    FROM
+        productos p
+    INNER JOIN
+        categorias_producto c ON p.id_categoria = c.id_categoria
+    WHERE
+        (p_nombre_producto IS NULL 
+            OR p.nombre_producto LIKE CONCAT('%', p_nombre_producto, '%'))
+        AND (p_usa_insumos IS NULL 
+            OR p.usa_insumos = p_usa_insumos)
+        AND (p_id_categoria IS NULL 
+            OR p.id_categoria = p_id_categoria)
+    ORDER BY
+        p.id_producto DESC
+    LIMIT p_limit OFFSET p_offset;
 END //
 
 DELIMITER ;

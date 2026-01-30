@@ -34,13 +34,24 @@ const obtenerRolesService = async () => {
     };
 };
 
-const obtenerUsuariosService = async (limit, offset, idUsuario, idRol, valor) => {
+const obtenerUsuariosService = async (idUsuario, querys) => {
+    const allowedQuerys = ['limit', 'offset', 'rol', 'valorBusqueda'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido',400);
+    }
+
+    const { limit, offset, rol, valorBusqueda} = querys;
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
 
-    const valorBusqueda = valor?.trim() || null;
+    const valorFiltro = valorBusqueda?.trim() || null;
 
-    const cacheKey = `usuarios:count:${idUsuario}:${idRol || null}:${valorBusqueda || null}`;
+    const cacheKey = `usuarios:count:${idUsuario}:${rol || null}:${valorFiltro || null}`;
 
 
     const cachedTotal = cache.get(cacheKey);
@@ -48,7 +59,7 @@ const obtenerUsuariosService = async (limit, offset, idUsuario, idRol, valor) =>
     if (cachedTotal !== undefined) {
         console.log('Cache hit usuarios');
 
-        const usuarios = await obtenerUsuariosModel(limite,desplazamiento,idUsuario,idRol, valorBusqueda);
+        const usuarios = await obtenerUsuariosModel(limite, desplazamiento, idUsuario, rol, valorFiltro);
 
         if (!usuarios || usuarios.length === 0) {
             throw crearError('No se encontraron usuarios', 404);
@@ -63,14 +74,14 @@ const obtenerUsuariosService = async (limit, offset, idUsuario, idRol, valor) =>
 
     console.log('Cache miss usuarios');
 
-    const totalUsuarios = await contarUsuariosModel(idUsuario, idRol, valorBusqueda);
+    const totalUsuarios = await contarUsuariosModel(idUsuario, rol, valorFiltro);
 
     if (totalUsuarios === 0) {
         throw crearError('No se encontraron usuarios', 404);
     }
     cache.set(cacheKey, totalUsuarios);
 
-    const usuarios = await obtenerUsuariosModel(limite, desplazamiento, idUsuario, idRol, valorBusqueda);
+    const usuarios = await obtenerUsuariosModel(limite, desplazamiento, idUsuario, rol, valorFiltro);
 
     if (!usuarios || usuarios.length === 0) {
         throw crearError('No se encontraron usuarios', 404);

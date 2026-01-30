@@ -86,9 +86,8 @@ const cerrarCajaController = async (req, res) => {
 
 const obtenerCajasController = async (req, res) => {
   try {
-    const { limit, offset, fechaInicio, fechaFin } = req.query;
 
-    const resultado = await obtenerCajasService(limit, offset, fechaInicio, fechaFin);
+    const resultado = await obtenerCajasService(req.query);
 
     return res.status(200).json(resultado);
 
@@ -104,9 +103,9 @@ const obtenerCajasController = async (req, res) => {
 
 const obtenerMovimientosPorCajaController = async (req, res) => {
   const { idCaja } = req.params;
-  const { tipoMovimiento, limit , offset } = req.query;
+  
   try {
-    const resultado = await obtenerMovimientosPorCajaService(idCaja, tipoMovimiento, limit , offset );
+    const resultado = await obtenerMovimientosPorCajaService(idCaja, querys);
     res.status(200).json(resultado);
   } catch (err) {
     const statusCode = err.status || 500;

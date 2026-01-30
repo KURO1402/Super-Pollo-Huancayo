@@ -154,7 +154,19 @@ const cerrarCajaService = async (idUsuario) => {
     };
 };
 
-const obtenerCajasService = async (limit, offset, fechaInicio, fechaFin) => {
+const obtenerCajasService = async (querys) => {
+    const allowedQuerys = ['limit', 'offset', 'fechaInicio', 'fechaFin'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido',400);
+    }
+
+    const { limit, offset, fechaInicio, fechaFin } = querys;
+
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
 
@@ -199,12 +211,22 @@ const obtenerCajasService = async (limit, offset, fechaInicio, fechaFin) => {
     };
 };
 
-const obtenerMovimientosPorCajaService = async (cajaId, tipoMovimiento, limit, offset) => {
+const obtenerMovimientosPorCajaService = async (cajaId, querys) => {
+    const allowedQuerys = ['limit', 'offset', 'tipoMovimiento'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido',400);
+    }
+
+    const { tipoMovimiento, limit , offset } = querys;
 
     if (tipoMovimiento !== undefined && (tipoMovimiento !== 'ingreso' && tipoMovimiento !== 'egreso')) {
         throw crearError(`El tipo de movimiento solo puede ser 'ingreso' o 'egreso'`, 400);
     }
-
 
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;

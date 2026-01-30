@@ -9,7 +9,8 @@ const {
     insertarImagenProductoService,
     actualizarImagenProductoService,
     eliminarImagenProductoService,
-    obtenerProductosCatalogoService
+    obtenerProductosCatalogoService,
+    obtenerProductosGestionService
 } = require('./producto_service');
 
 const agregarProductoController = async (req, res) => {
@@ -221,6 +222,23 @@ const obtenerProductosCatalogoController = async (req, res) => {
     }
 };
 
+const obtenerProductosGestionController = async (req, res) => {
+    try {
+
+        const resultado = await obtenerProductosGestionService(req.query);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
 module.exports = {
     agregarProductoController,
     actualizarDatosProductoController,
@@ -232,5 +250,6 @@ module.exports = {
     insertarImagenProductoController,
     actualizarImagenProductoController,
     eliminarImagenProductoController,
-    obtenerProductosCatalogoController
+    obtenerProductosCatalogoController,
+    obtenerProductosGestionController
 }

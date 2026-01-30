@@ -15,7 +15,8 @@ const {
     insertarImagenProductoController,
     actualizarImagenProductoController,
     eliminarImagenProductoController,
-    obtenerProductosCatalogoController
+    obtenerProductosCatalogoController,
+    obtenerProductosGestionController
  } = require('./producto_controller');
 
 router.post('/agregar-producto', autenticacionToken, verificarRoles(2, 3), verificarImagen, agregarProductoController);
@@ -30,6 +31,7 @@ router.put('/actualizar-imagen/:idImagen', autenticacionToken, verificarRoles(2,
 router.delete('/eliminar-imagen/:idImagen', autenticacionToken, verificarRoles(2, 3), eliminarImagenProductoController);
 
 //Rutas get
-router.get('/catalogo/productos', obtenerProductosCatalogoController);
+router.get('/catalogo', obtenerProductosCatalogoController);
+router.get('/', autenticacionToken, verificarRoles(2, 3), obtenerProductosGestionController);
 
 module.exports = router;

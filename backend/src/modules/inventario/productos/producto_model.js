@@ -338,6 +338,41 @@ const obtenerImagenesPorProductoModel = async (idProducto) => {
     }
 };
 
+const contarProductosGestionModel = async (nombreProducto = null, usaInsumos = null, idCategoria = null) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_contar_productos_gestion(?, ?, ?)',[nombreProducto, usaInsumos, idCategoria]);
+
+        return result[0][0]?.total;
+
+    } catch (err) {
+        console.error(err.message);
+        throw new Error('Error al contar productos en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
+const obtenerProductosGestionModel = async (nombreProducto = null, usaInsumos = null, idCategoria = null, limit, offset) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_productos_gestion(?, ?, ?, ?, ?)',[nombreProducto, usaInsumos, idCategoria, limit, offset]);
+
+        return result[0];
+
+    } catch (err) {
+        throw new Error('Error al obtener los productos de la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
 
 module.exports = {
     contarProductosNombreActInaModel,
@@ -360,5 +395,7 @@ module.exports = {
     eliminarImagenProductoModel,
     obtenerImagenProductoPorIdModel,
     obtenerProductosCatalogoModel,
-    obtenerImagenesPorProductoModel 
+    obtenerImagenesPorProductoModel,
+    contarProductosGestionModel,
+    obtenerProductosGestionModel 
 }

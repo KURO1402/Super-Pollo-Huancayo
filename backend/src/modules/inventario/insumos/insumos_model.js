@@ -178,20 +178,12 @@ const registrarMovimientoStockModel = async (idInsumo , cantidad, tipoMovimiento
     }
 };
 
-const contarMovimientosStockFiltrosModel = async (
-    fechaInicio = null,
-    fechaFin = null,
-    tipoMovimiento = null,
-    idInsumo = null
-) => {
+const contarMovimientosStockFiltrosModel = async (fechaInicio = null, fechaFin = null, tipoMovimiento = null, idInsumo = null) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
 
-        const [result] = await conexion.execute(
-            'CALL sp_contar_movimientos_stock_filtros(?, ?, ?, ?)',
-            [fechaInicio, fechaFin, tipoMovimiento, idInsumo]
-        );
+        const [result] = await conexion.execute('CALL sp_contar_movimientos_stock_filtros(?, ?, ?, ?)',[fechaInicio, fechaFin, tipoMovimiento, idInsumo]);
 
         return result[0][0]?.total_registros;
 
@@ -204,21 +196,12 @@ const contarMovimientosStockFiltrosModel = async (
 };
 
 
-const obtenerMovimientosStockFiltrosModel = async (fechaInicio = null,
-    fechaFin = null,
-    tipoMovimiento = null,
-    idInsumo = null,
-    limit,
-    offset
-) => {
+const obtenerMovimientosStockFiltrosModel = async (fechaInicio = null, fechaFin = null, tipoMovimiento = null, idInsumo = null, limit, offset) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
 
-        const [rows] = await conexion.execute(
-            'CALL sp_obtener_movimientos_stock_filtros(?, ?, ?, ?, ?, ?)',
-            [fechaInicio, fechaFin, tipoMovimiento, idInsumo, limit, offset]
-        );
+        const [rows] = await conexion.execute('CALL sp_obtener_movimientos_stock_filtros(?, ?, ?, ?, ?, ?)',[fechaInicio, fechaFin, tipoMovimiento, idInsumo, limit, offset]);
 
         return rows[0];
 
