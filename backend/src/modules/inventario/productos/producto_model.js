@@ -306,11 +306,11 @@ const obtenerImagenProductoPorIdModel = async (idImagenProducto) => {
     }
 };
 
-const obtenerProductosCatalogoModel = async () => {
+const obtenerProductosCatalogoModel = async (idCategoria = null) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_obtener_productos_catalogo()');
+        const [result] = await conexion.execute('CALL sp_obtener_productos_catalogo(?)', [idCategoria]);
 
         return result[0]; 
 

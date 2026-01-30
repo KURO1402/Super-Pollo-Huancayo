@@ -465,7 +465,9 @@ BEGIN
     WHERE id_imagen_producto = p_id_imagen_producto;
 END //
 
-CREATE PROCEDURE sp_obtener_productos_catalogo()
+CREATE PROCEDURE sp_obtener_productos_catalogo(
+    IN p_id_categoria INT
+)
 BEGIN
     SELECT
         p.id_producto, 
@@ -475,7 +477,11 @@ BEGIN
     FROM
         productos p
     WHERE
-        p.estado_producto = 1;
+        p.estado_producto = 1
+        AND (p_id_categoria IS NULL OR p.id_categoria = p_id_categoria)
+    ORDER BY
+        p.id_categoria ASC,
+        p.id_producto;
 END //
 
 CREATE PROCEDURE sp_obtener_imagenes_por_producto(

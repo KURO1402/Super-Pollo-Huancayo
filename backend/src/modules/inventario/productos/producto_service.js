@@ -356,9 +356,9 @@ const eliminarImagenProductoService = async (idImagen) => {
     }
 };
 
-const obtenerProductosCatalogoService = async () => {
+const obtenerProductosCatalogoService = async (idCategoria) => {
 
-    const productos = await obtenerProductosCatalogoModel();
+    const productos = await obtenerProductosCatalogoModel(idCategoria);
 
     if(!productos || productos.length === 0) {
         throw crearError('No se encontraron productos', 404);

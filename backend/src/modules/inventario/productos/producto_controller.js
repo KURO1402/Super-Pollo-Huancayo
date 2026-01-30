@@ -205,8 +205,9 @@ const eliminarImagenProductoController = async (req, res) => {
 
 const obtenerProductosCatalogoController = async (req, res) => {
     try {
+        const {categoria} = req.query;
 
-        const resultado = await obtenerProductosCatalogoService();
+        const resultado = await obtenerProductosCatalogoService(categoria);
 
         return res.status(200).json(resultado);
 
