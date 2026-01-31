@@ -86,9 +86,8 @@ const cerrarCajaController = async (req, res) => {
 
 const obtenerCajasController = async (req, res) => {
   try {
-    const { limit, offset } = req.query;
 
-    const resultado = await obtenerCajasService(limit, offset);
+    const resultado = await obtenerCajasService(req.query);
 
     return res.status(200).json(resultado);
 
@@ -104,9 +103,9 @@ const obtenerCajasController = async (req, res) => {
 
 const obtenerMovimientosPorCajaController = async (req, res) => {
   const { idCaja } = req.params;
-
+  
   try {
-    const resultado = await obtenerMovimientosPorCajaService(idCaja);
+    const resultado = await obtenerMovimientosPorCajaService(idCaja, querys);
     res.status(200).json(resultado);
   } catch (err) {
     const statusCode = err.status || 500;
@@ -122,7 +121,7 @@ const obtenerArqueosPorCajaController = async (req, res) => {
   const { idCaja } = req.params;
 
   try {
-    const arqueos = await obtenerArqueosPorCajaService(idCaja);
+    const arqueos = await obtenerArqueosPorCajaService(idCaja, req.query);
     res.status(200).json(arqueos);
   } catch (err) {
     const statusCode = err.status || 500;

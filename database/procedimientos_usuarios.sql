@@ -8,9 +8,11 @@ DROP PROCEDURE IF EXISTS sp_obtener_verificacion_correo;
 DROP PROCEDURE IF EXISTS sp_verificar_codigo_correo;
 DROP PROCEDURE IF EXISTS sp_verificar_validacion_correo;
 DROP PROCEDURE IF EXISTS sp_seleccionar_usuario_correo;
+DROP PROCEDURE IF EXISTS sp_contar_usuarios;
 DROP PROCEDURE IF EXISTS sp_listar_usuarios;
 DROP PROCEDURE IF EXISTS sp_contar_usuario_id;
 DROP PROCEDURE IF EXISTS sp_obtener_usuario_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_historial_roles_usuario;
 DROP PROCEDURE IF EXISTS sp_obtener_clave_usuario_por_id;
 DROP PROCEDURE IF EXISTS sp_actualizar_datos_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_correo_usuario;
@@ -18,7 +20,6 @@ DROP PROCEDURE IF EXISTS sp_actualizar_clave_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_estado_usuario;
 DROP PROCEDURE IF EXISTS sp_actualizar_rol_usuario;
 DROP PROCEDURE IF EXISTS sp_obtener_rol_por_id_rol;
-DROP PROCEDURE IF EXISTS sp_buscar_usuarios_por_valor;
 
 DELIMITER //
 
@@ -236,10 +237,38 @@ BEGIN
       AND ur.rol_activo = 1;
 END //
 
+CREATE PROCEDURE sp_contar_usuarios(
+    IN p_id_usuario INT,
+    IN p_id_rol INT,
+    IN p_valor VARCHAR(100)
+)
+BEGIN
+    SELECT 
+        COUNT(DISTINCT u.id_usuario) AS total_usuarios
+    FROM usuarios u
+    LEFT JOIN usuario_rol ur
+        ON u.id_usuario = ur.id_usuario
+        AND ur.rol_activo = 1
+    LEFT JOIN rol_usuario ru
+        ON ur.id_rol = ru.id_rol
+    WHERE u.estado_usuario = 1
+      AND u.id_usuario <> p_id_usuario
+      AND (p_id_rol IS NULL OR ru.id_rol = p_id_rol)
+      AND (
+            p_valor IS NULL OR
+            u.nombre_usuario   LIKE CONCAT('%', p_valor, '%') OR
+            u.apellido_usuario LIKE CONCAT('%', p_valor, '%') OR
+            u.correo_usuario   LIKE CONCAT('%', p_valor, '%') OR
+            u.telefono_usuario LIKE CONCAT('%', p_valor, '%')
+          );
+END // 
+
 CREATE PROCEDURE sp_listar_usuarios(
     IN p_limite INT,
     IN p_desplazamiento INT,
-    IN p_id_usuario INT
+    IN p_id_usuario INT,
+    IN p_id_rol INT,
+    IN p_valor VARCHAR(100)
 )
 BEGIN
     SELECT 
@@ -258,6 +287,14 @@ BEGIN
         ON ur.id_rol = ru.id_rol
     WHERE u.estado_usuario = 1
       AND u.id_usuario <> p_id_usuario
+      AND (p_id_rol IS NULL OR ru.id_rol = p_id_rol)
+      AND (
+            p_valor IS NULL OR
+            u.nombre_usuario   LIKE CONCAT('%', p_valor, '%') OR
+            u.apellido_usuario LIKE CONCAT('%', p_valor, '%') OR
+            u.correo_usuario   LIKE CONCAT('%', p_valor, '%') OR
+            u.telefono_usuario LIKE CONCAT('%', p_valor, '%')
+          )
     ORDER BY u.id_usuario DESC
     LIMIT p_limite OFFSET p_desplazamiento;
 END //
@@ -282,13 +319,31 @@ BEGIN
         ru.id_rol,
         ru.nombre_rol
     FROM usuarios u
-    LEFT JOIN usuario_rol ur
+    INNER JOIN usuario_rol ur
         ON u.id_usuario = ur.id_usuario
         AND ur.rol_activo = 1
-    LEFT JOIN rol_usuario ru
+    INNER JOIN rol_usuario ru
         ON ur.id_rol = ru.id_rol
     WHERE u.estado_usuario = 1
       AND u.id_usuario = p_id_usuario;
+END //
+
+CREATE PROCEDURE sp_obtener_historial_roles_usuario(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT 
+        ru.nombre_rol,
+        DATE_FORMAT(ur.fecha_inicio, '%d-%m-%Y') AS fecha_inicio,
+        IFNULL(
+            DATE_FORMAT(ur.fecha_fin, '%d-%m-%Y'),
+            '--'
+        ) AS fecha_fin
+    FROM usuario_rol ur
+    INNER JOIN rol_usuario ru
+        ON ur.id_rol = ru.id_rol
+    WHERE ur.id_usuario = p_id_usuario
+    ORDER BY ur.fecha_inicio DESC;
 END //
 
 CREATE PROCEDURE sp_obtener_clave_usuario_por_id(
@@ -451,14 +506,6 @@ BEGIN
 
     COMMIT;
 
-    SELECT 'Rol del usuario actualizado correctamente' AS mensaje;
-END //
-
-CREATE PROCEDURE sp_buscar_usuarios_por_valor(
-    IN p_valor VARCHAR(100),
-    IN p_id_usuario INT
-)
-BEGIN
     SELECT 
         u.id_usuario,
         u.nombre_usuario,
@@ -468,20 +515,12 @@ BEGIN
         ru.id_rol,
         ru.nombre_rol
     FROM usuarios u
-    LEFT JOIN usuario_rol ur
+    INNER JOIN usuario_rol ur
         ON u.id_usuario = ur.id_usuario
         AND ur.rol_activo = 1
-    LEFT JOIN rol_usuario ru
+    INNER JOIN rol_usuario ru
         ON ur.id_rol = ru.id_rol
-    WHERE u.estado_usuario = 1
-      AND u.id_usuario <> p_id_usuario
-      AND (
-            u.nombre_usuario   LIKE CONCAT('%', p_valor, '%') OR
-            u.apellido_usuario LIKE CONCAT('%', p_valor, '%') OR
-            u.correo_usuario   LIKE CONCAT('%', p_valor, '%') OR
-            u.telefono_usuario LIKE CONCAT('%', p_valor, '%')
-          )
-    ORDER BY u.id_usuario DESC;
+    WHERE u.id_usuario = p_id_usuario;
 END //
 
 DELIMITER ;

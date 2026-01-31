@@ -75,3 +75,44 @@ VALUES
 ('2025-12-10 20:45:00', 900.00, 500.00, 100.00, 0.00, 0.00, 'cuadra', 2, 1),
 ('2025-12-20 21:50:00', 1200.00, 500.00, 100.00, 0.00, 0.00, 'cuadra', 3, 1);
 
+INSERT INTO categorias_producto (nombre_categoria) 
+VALUES ('Pollos'), ('Bebidas'), ('Extras');
+
+INSERT INTO insumos (nombre_insumo, stock_insumo, unidad_medida, estado_insumo) 
+VALUES 
+('Pollo entero marinado', 50.00, 'unidades', 1),
+('Papa cortada amarilla', 120.00, 'kg', 1),
+('Aceite vegetal', 40.00, 'litros', 1),
+('Carbón vegetal', 100.00, 'kg', 1),
+('Gaseosa 1.5L', 15.00, 'unidad', 1);
+
+INSERT INTO productos (nombre_producto, descripcion_producto, precio_producto, usa_insumos, estado_producto, id_categoria) 
+VALUES 
+('1/4 de Pollo a la Brasa', 'Pollo jugoso y dorado, con papas y ensalada.', 14.00, 1, 1, 1),
+('1 Pollo Entero', 'Pollo completo, ideal para disfrutar en familia.', 56.00, 1, 1, 1),
+('Gaseosa 1.5L', 'Perfecta para grupos o familias.', 12.00, 0, 1, 2),
+('Porción de Papa', 'Papas doradas y crocantes recién salidas de la cocina.', 7.00, 1, 1, 3),
+('1/8 de Pollo a la Brasa', 'Porción pequeña con todo el sabor de la brasa.', 8.50, 0, 1);
+
+INSERT INTO cantidad_insumo_producto (id_producto, id_insumo, cantidad_uso) 
+VALUES 
+(1, 1, 0.25), -- 1/4 de pollo usa 0.25 unidades de un pollo entero
+(1, 2, 0.40), -- 1/4 de pollo usa 400 gramos de papa (0.40 kg)
+(2, 1, 1.00), -- 1 Pollo entero usa 1.00 unidad de insumo pollo
+(3, 4, 1.00); -- Una gaseosa usa la misma gaseosa de insumos
+
+-- Asumiendo id_usuario = 1 (el administrador o almacenero)
+INSERT INTO movimientos_stock (cantidad_movimiento, tipo_movimiento, detalle_movimiento, id_insumo, id_usuario) 
+VALUES 
+(100.00, 'entrada', 'Compra semanal de pollo fresco', 1, 1),
+(50.00, 'entrada', 'Ingreso de sacos de papa', 2, 1),
+(2.50, 'salida', 'Papas en mal estado (merma)', 2, 1);
+
+INSERT INTO imagenes_producto ( url_imagen, public_id, id_producto)
+VALUES
+('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769788681/superpollo/sfccqvcr75y8kkvphqfv.png', 'superpollo/sfccqvcr75y8kkvphqfv', 1),
+('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769788697/superpollo/wue0rskkua5ufb1fzhdq.png', 'superpollo/wue0rskkua5ufb1fzhdq', 1),
+('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769788747/superpollo/nujo9qddgasqifkyrlun.png', 'superpollo/nujo9qddgasqifkyrlun', 2),
+('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769788819/superpollo/ow16qvlls6gvp0r3pgyy.png', 'superpollo/ow16qvlls6gvp0r3pgyy', 3),
+('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769788840/superpollo/mkxmajkqydglbbeqs9gu.png', 'superpollo/mkxmajkqydglbbeqs9gu', 4),
+('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769790283/superpollo/cjwczqui2lzwjpbbgexk.png', 'superpollo/cjwczqui2lzwjpbbgexk', 5);

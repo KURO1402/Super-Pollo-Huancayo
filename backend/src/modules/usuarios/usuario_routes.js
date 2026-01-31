@@ -7,7 +7,6 @@ const {
     obtenerRolesController,
     obtenerUsuariosController,
     obtenerUsuarioPorIdController,
-    buscarUsuariosPorValorController,
     actualizarDatosUsuarioController,
     actualizarCorreoUsuarioController,
     actualizarClaveUsuarioController,
@@ -17,7 +16,6 @@ const {
 
 router.get('/', autenticacionToken, verificarRoles(3), obtenerUsuariosController);
 router.get('/usuario', autenticacionToken, obtenerUsuarioPorIdController);
-router.get('/buscar-usuario', autenticacionToken, verificarRoles(3), buscarUsuariosPorValorController);
 router.patch('/actualizar-usuario', autenticacionToken, actualizarDatosUsuarioController);  
 router.patch('/actualizar-correo', autenticacionToken, actualizarCorreoUsuarioController);
 router.patch('/actualizar-clave', autenticacionToken, actualizarClaveUsuarioController);

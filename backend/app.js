@@ -1,4 +1,4 @@
-require('dotenv').config(); // 1. Variables de entorno primero
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
@@ -16,6 +16,8 @@ app.use(express.json());
 const autenticacionRoutes = require('./src/modules/autenticacion/autenticacion_routes');
 const usuarioRoutes = require('./src/modules/usuarios/usuario_routes');
 const cajaRoutes = require('./src/modules/caja/caja_routes');
+const insumosRoutes = require('./src/modules/inventario/insumos/insumo_routes');
+const productosRoutes = require('./src/modules/inventario/productos/producto_routes');
 
 app.get('/', (req, res) => {
   res.send("Super-pollo");
@@ -24,6 +26,8 @@ app.get('/', (req, res) => {
 app.use('/api/auth', autenticacionRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/caja', cajaRoutes);
+app.use('/api/insumos', insumosRoutes);
+app.use('/api/productos', productosRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
