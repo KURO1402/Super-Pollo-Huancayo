@@ -16,7 +16,12 @@ const {
     actualizarImagenProductoController,
     eliminarImagenProductoController,
     obtenerProductosCatalogoController,
-    obtenerProductosGestionController
+    obtenerProductosGestionController,
+    obtenerProductosDeshabilitadosController,
+    obtenerProductoIdController,
+    obtenerImagenesPorProductoController,
+    obtenerImagenesProductosController,
+    obtenerInsumosPorProductoController
  } = require('./producto_controller');
 
 router.post('/agregar-producto', autenticacionToken, verificarRoles(2, 3), verificarImagen, agregarProductoController);
@@ -33,5 +38,11 @@ router.delete('/eliminar-imagen/:idImagen', autenticacionToken, verificarRoles(2
 //Rutas get
 router.get('/catalogo', obtenerProductosCatalogoController);
 router.get('/', autenticacionToken, verificarRoles(2, 3), obtenerProductosGestionController);
+router.get('/producto/:idProducto', autenticacionToken, verificarRoles(2, 3), obtenerProductoIdController);
+router.get('/deshabilitados', autenticacionToken, verificarRoles(2, 3), obtenerProductosDeshabilitadosController);
+router.get('/imagenes', autenticacionToken, verificarRoles(2, 3), obtenerImagenesProductosController);
+router.get('/imagenes/:idProducto', autenticacionToken, verificarRoles(2, 3), obtenerImagenesPorProductoController);
+router.get('/insumos/:idProducto', autenticacionToken, verificarRoles(2, 3), obtenerInsumosPorProductoController);
+
 
 module.exports = router;

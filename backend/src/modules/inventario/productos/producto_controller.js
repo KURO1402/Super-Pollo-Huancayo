@@ -10,7 +10,12 @@ const {
     actualizarImagenProductoService,
     eliminarImagenProductoService,
     obtenerProductosCatalogoService,
-    obtenerProductosGestionService
+    obtenerProductosGestionService,
+    obtenerProductosDeshabilitadosService,
+    obtenerProductoIdService,
+    obtenerImagenesPorProductoService,
+    obtenerImagenesProductosService,
+    obtenerInsumosPorProductoService
 } = require('./producto_service');
 
 const agregarProductoController = async (req, res) => {
@@ -239,6 +244,90 @@ const obtenerProductosGestionController = async (req, res) => {
     }
 };
 
+const obtenerProductosDeshabilitadosController = async (req, res) => {
+    try {
+        const resultado = await obtenerProductosDeshabilitadosService(req.query);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const obtenerProductoIdController = async (req, res) => {
+    try {
+        const {idProducto} = req.params;
+        const resultado = await obtenerProductoIdService(idProducto);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const obtenerImagenesPorProductoController = async (req, res) => {
+    try {
+        const {idProducto} = req.params;
+        const resultado = await obtenerImagenesPorProductoService(idProducto);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const obtenerImagenesProductosController = async (req, res) => {
+    try {
+        const resultado = await obtenerImagenesProductosService(req.query);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const obtenerInsumosPorProductoController = async (req, res) => {
+    try {
+        const { idProducto } = req.params;
+
+        const resultado = await obtenerInsumosPorProductoService(idProducto);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
 module.exports = {
     agregarProductoController,
     actualizarDatosProductoController,
@@ -251,5 +340,10 @@ module.exports = {
     actualizarImagenProductoController,
     eliminarImagenProductoController,
     obtenerProductosCatalogoController,
-    obtenerProductosGestionController
+    obtenerProductosGestionController,
+    obtenerProductosDeshabilitadosController,
+    obtenerProductoIdController,
+    obtenerImagenesPorProductoController,
+    obtenerImagenesProductosController,
+    obtenerInsumosPorProductoController
 }

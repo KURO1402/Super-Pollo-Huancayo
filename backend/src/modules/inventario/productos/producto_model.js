@@ -372,6 +372,104 @@ const obtenerProductosGestionModel = async (nombreProducto = null, usaInsumos = 
     }
 };
 
+const contarProductosDeshabilitadosModel = async (nombreProducto = null, idCategoria = null) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_contar_productos_gestion_deshabilitados(?, ?)',[nombreProducto, idCategoria]);
+
+        return result[0][0]?.total;
+
+    } catch (err) {
+        console.error(err.message);
+        throw new Error('Error al contar productos deshabilitados en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerProductosDeshabilitadosModel = async (nombreProducto = null, idCategoria = null, limit, offset) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_productos_gestion_deshabilitados(?, ?, ?, ?)',[nombreProducto, idCategoria, limit, offset]);
+
+        return result[0];
+
+    } catch (err) {
+        throw new Error('Error al obtener los productos deshabilitados de la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
+const obtenerProductoIdModel = async (idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_producto_por_id(?)', [idProducto]);
+
+        return result[0][0];
+
+    } catch (err) {
+        throw new Error('Error al obtener el producto de la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const contarImagenesProductosModel = async (nombreProducto = null) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_contar_imagenes_productos(?)',[nombreProducto]);
+
+        return result[0][0]?.total;
+
+    } catch (err) {
+        console.error(err.message);
+        throw new Error('Error al contar imágenes de productos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerImagenesProductosModel = async (nombreProducto = null, limit, offset) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_imagenes_productos(?, ?, ?)',[nombreProducto, limit, offset]);
+
+        return result[0];
+
+    } catch (err) {
+        throw new Error('Error al obtener imágenes de productos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerInsumosPorProductoModel = async (idProducto) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [rows] = await conexion.execute('CALL sp_obtener_insumos_por_producto(?)',[idProducto]);
+
+        return rows[0];
+
+    } catch (err) {
+        throw new Error('Error al obtener los insumos del producto');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
 
 
 module.exports = {
@@ -397,5 +495,11 @@ module.exports = {
     obtenerProductosCatalogoModel,
     obtenerImagenesPorProductoModel,
     contarProductosGestionModel,
-    obtenerProductosGestionModel 
+    obtenerProductosGestionModel,
+    contarProductosDeshabilitadosModel,
+    obtenerProductosDeshabilitadosModel,
+    obtenerProductoIdModel,
+    contarImagenesProductosModel,
+    obtenerImagenesProductosModel,
+    obtenerInsumosPorProductoModel 
 }

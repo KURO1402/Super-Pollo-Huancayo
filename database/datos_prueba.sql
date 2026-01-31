@@ -91,7 +91,8 @@ VALUES
 ('1/4 de Pollo a la Brasa', 'Pollo jugoso y dorado, con papas y ensalada.', 14.00, 1, 1, 1),
 ('1 Pollo Entero', 'Pollo completo, ideal para disfrutar en familia.', 56.00, 1, 1, 1),
 ('Gaseosa 1.5L', 'Perfecta para grupos o familias.', 12.00, 0, 1, 2),
-('Porción de Papa', 'Papas doradas y crocantes recién salidas de la cocina.', 7.00, 1, 1, 3);
+('Porción de Papa', 'Papas doradas y crocantes recién salidas de la cocina.', 7.00, 1, 1, 3),
+('1/8 de Pollo a la Brasa', 'Porción pequeña con todo el sabor de la brasa.', 8.50, 0, 1);
 
 INSERT INTO cantidad_insumo_producto (id_producto, id_insumo, cantidad_uso) 
 VALUES 

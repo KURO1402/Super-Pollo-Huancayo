@@ -26,7 +26,13 @@ const {
     obtenerProductosCatalogoModel,
     obtenerImagenesPorProductoModel,
     contarProductosGestionModel,
-    obtenerProductosGestionModel  
+    obtenerProductosGestionModel,
+    contarProductosDeshabilitadosModel,
+    obtenerProductosDeshabilitadosModel,
+    obtenerProductoIdModel,
+    contarImagenesProductosModel,
+    obtenerImagenesProductosModel,
+    obtenerInsumosPorProductoModel   
 } = require('./producto_model');
 
 const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
@@ -323,7 +329,7 @@ const actualizarImagenProductoService = async (idImagen, file) => {
 };
 
 const eliminarImagenProductoService = async (idImagen) => {
-     if (!idImagen || idImagen.trim() === '' || isNaN(Number(idImagen))) {
+    if (!idImagen || idImagen.trim() === '' || isNaN(Number(idImagen))) {
         throw crearError('Producto no válido', 400);
     }
 
@@ -378,7 +384,7 @@ const obtenerProductosCatalogoService = async (idCategoria) => {
 };
 
 const obtenerProductosGestionService = async (querys) => {
-    const allowedQuerys = ['limit', 'offset', 'nombre', 'usaInsumos', 'idCategoria'];
+    const allowedQuerys = ['limit', 'offset', 'nombre', 'usaInsumos', 'contarCategoriasPorIdModel'];
 
     const keysInvalidas = Object.keys(querys).filter(
         key => !allowedQuerys.includes(key)
@@ -387,7 +393,7 @@ const obtenerProductosGestionService = async (querys) => {
     if (keysInvalidas.length > 0) {
         throw crearError('Filtro no valido',400);
     }
-    const { limit, offset, nombre, usaInsumos, idCategoria } = querys;
+    const { limit, offset, nombre, usaInsumos, contarCategoriasPorIdModel } = querys;
 
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
@@ -404,14 +410,14 @@ const obtenerProductosGestionService = async (querys) => {
         }
     }
 
-    const cacheKey = `productos_gestion:count:${nombre || 'null'}:${insumosUsa ?? 'null'}:${idCategoria || 'null'}`;
+    const cacheKey = `productos_gestion:count:${nombre || 'null'}:${insumosUsa ?? 'null'}:${categoria || 'null'}`;
 
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
         console.log('Cache hit');
 
-        const productos = await obtenerProductosGestionModel(nombre, insumosUsa, idCategoria, limite, desplazamiento);
+        const productos = await obtenerProductosGestionModel(nombre, insumosUsa, categoria, limite, desplazamiento);
 
         if (!productos || productos.length === 0) {
             throw crearError('No se encontraron productos', 404);
@@ -426,11 +432,11 @@ const obtenerProductosGestionService = async (querys) => {
 
     console.log('Cache miss');
 
-    const totalRegistros = await contarProductosGestionModel(nombre, insumosUsa, idCategoria);
+    const totalRegistros = await contarProductosGestionModel(nombre, insumosUsa, categoria);
 
     cache.set(cacheKey, totalRegistros);
 
-    const productos = await obtenerProductosGestionModel(nombre, insumosUsa, idCategoria, limite, desplazamiento);
+    const productos = await obtenerProductosGestionModel(nombre, insumosUsa, categoria, limite, desplazamiento);
 
     if (!productos || productos.length === 0) {
         throw crearError('No se encontraron productos', 404);
@@ -440,6 +446,183 @@ const obtenerProductosGestionService = async (querys) => {
         ok: true,
         cantidad_filas: totalRegistros,
         productos
+    };
+};
+
+const obtenerProductosDeshabilitadosService = async (querys) => {
+    const allowedQuerys = ['limit', 'offset', 'nombre', 'categoria'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido', 400);
+    }
+
+    const { limit, offset, nombre, categoria } = querys;
+
+    const limite = parseInt(limit) || 10;
+    const desplazamiento = parseInt(offset) || 0;
+
+    const cacheKey = `productos_deshabilitados:count:${nombre || 'null'}:${categoria || 'null'}`;
+
+    const cachedTotal = cache.get(cacheKey);
+
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit');
+
+        const productos = await obtenerProductosDeshabilitadosModel(nombre, categoria, limite, desplazamiento);
+
+        if (!productos || productos.length === 0) {
+            throw crearError('No se encontraron productos', 404);
+        }
+
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            productos
+        };
+    }
+
+    console.log('Cache miss');
+
+    const totalRegistros = await contarProductosDeshabilitadosModel(nombre, categoria);
+
+    cache.set(cacheKey, totalRegistros);
+
+    const productos = await obtenerProductosDeshabilitadosModel(nombre, categoria, limite, desplazamiento);
+
+    if (!productos || productos.length === 0) {
+        throw crearError('No se encontraron productos deshabilitados', 404);
+    }
+
+    return {
+        ok: true,
+        cantidad_filas: totalRegistros,
+        productos
+    };
+};
+
+const obtenerProductoIdService = async (idProducto) => {
+    if (!idProducto || idProducto.trim() === '' || isNaN(Number(idProducto))) {
+        throw crearError('Producto no válido', 400);
+    }
+
+    const productoID = Number(idProducto);
+    const producto = await obtenerProductoIdModel(productoID);
+    if(!producto) {
+        throw crearError('No existe el producto especificado');
+    }
+
+    return {
+        ok: true,
+        producto
+    }
+};
+
+const obtenerImagenesPorProductoService =  async (idProducto) => {
+    if (!idProducto || idProducto.trim() === '' || isNaN(Number(idProducto))) {
+        throw crearError('Producto no válido', 400);
+    }
+
+    const productoID = Number(idProducto);
+    const productoExistente = await contarProductosPorIdModel(productoID);
+    if(!productoExistente || productoExistente === 0){
+        throw crearError('Producto especificado no existente', 404);
+    }
+    const imagenes = await obtenerImagenesPorProductoModel(productoID);
+    
+    if(!imagenes || imagenes.length === 0) {
+        throw  crearError('No se encontraron imagenes para el producto especificado', 404)
+    }
+
+    return {
+        ok: true,
+        imagenes
+    }
+};
+
+const obtenerImagenesProductosService = async (querys) => {
+    const allowedQuerys = ['limit', 'offset', 'nombre'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido', 400);
+    }
+
+    const { limit, offset, nombre } = querys;
+
+    const limite = parseInt(limit) || 10;
+    const desplazamiento = parseInt(offset) || 0;
+
+    const cacheKey = `imagenes_productos:count:${nombre || 'null'}`;
+
+    const cachedTotal = cache.get(cacheKey);
+
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit');
+
+        const imagenes = await obtenerImagenesProductosModel(nombre, limite, desplazamiento);
+
+        if (!imagenes || imagenes.length === 0) {
+            throw crearError('No se encontraron imágenes', 404);
+        }
+
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            imagenes
+        };
+    }
+
+    console.log('Cache miss');
+
+    const totalRegistros = await contarImagenesProductosModel(nombre);
+
+    cache.set(cacheKey, totalRegistros);
+
+    const imagenes = await obtenerImagenesProductosModel(nombre, limite, desplazamiento);
+
+    if (!imagenes || imagenes.length === 0) {
+        throw crearError('No se encontraron imágenes', 404);
+    }
+
+    return {
+        ok: true,
+        cantidad_filas: totalRegistros,
+        imagenes
+    };
+};
+
+const obtenerInsumosPorProductoService = async (idProducto) => {
+    if (!idProducto || isNaN(idProducto)) {
+        throw crearError('El id del producto es inválido', 400);
+    }
+    const productoID = Number(idProducto);
+
+    const producto = await obtenerProductoIdModel(productoID);
+
+    if(!producto) {
+        throw crearError('Producto especificado no existente', 404);
+    }
+    
+    if(producto.usa_insumos === 'No') {
+        throw crearError('El producto no tiene activado el inventario');
+    }
+
+    const insumos = await obtenerInsumosPorProductoModel(productoID);
+
+    if (!insumos || insumos.length === 0) {
+        throw crearError('El producto no tiene insumos registrados', 404);
+    }
+
+    return {
+        ok: true,
+        insumos
     };
 };
 
@@ -455,5 +638,10 @@ module.exports = {
     actualizarImagenProductoService,
     eliminarImagenProductoService,
     obtenerProductosCatalogoService,
-    obtenerProductosGestionService
+    obtenerProductosGestionService,
+    obtenerProductosDeshabilitadosService,
+    obtenerProductoIdService,
+    obtenerImagenesPorProductoService,
+    obtenerImagenesProductosService,
+    obtenerInsumosPorProductoService
 }

@@ -26,6 +26,12 @@ DROP PROCEDURE IF EXISTS sp_obtener_productos_catalogo;
 DROP PROCEDURE IF EXISTS sp_obtener_imagenes_por_producto;
 DROP PROCEDURE IF EXISTS sp_contar_productos_gestion;
 DROP PROCEDURE IF EXISTS sp_obtener_productos_gestion;
+DROP PROCEDURE IF EXISTS sp_contar_productos_gestion_deshabilitados;
+DROP PROCEDURE IF EXISTS sp_obtener_productos_gestion_deshabilitados;
+DROP PROCEDURE IF EXISTS sp_obtener_producto_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_imagenes_productos;
+DROP PROCEDURE IF EXISTS sp_contar_imagenes_productos;
+DROP PROCEDURE IF EXISTS sp_obtener_insumos_por_producto;
 
 
 DELIMITER //
@@ -165,12 +171,21 @@ BEGIN
         v_id_producto
     );
 
-    SELECT 
+    SELECT
         p.id_producto,
         p.nombre_producto,
         p.descripcion_producto,
-        p.precio_producto
-    FROM productos p
+        p.precio_producto,
+        CASE 
+            WHEN p.usa_insumos = 1 THEN 'Sí'
+            ELSE 'No'
+        END AS usa_insumos,
+        p.id_categoria,
+        c.nombre_categoria
+    FROM
+        productos p
+    INNER JOIN
+        categorias_producto c ON p.id_categoria = c.id_categoria
     WHERE p.id_producto = v_id_producto;
 END //
 
@@ -218,12 +233,21 @@ BEGIN
 
     COMMIT;
 
-     SELECT 
+     SELECT
         p.id_producto,
         p.nombre_producto,
         p.descripcion_producto,
-        p.precio_producto
-    FROM productos p
+        p.precio_producto,
+        CASE 
+            WHEN p.usa_insumos = 1 THEN 'Sí'
+            ELSE 'No'
+        END AS usa_insumos,
+        p.id_categoria,
+        c.nombre_categoria
+    FROM
+        productos p
+    INNER JOIN
+        categorias_producto c ON p.id_categoria = c.id_categoria
     WHERE p.id_producto = p_id_producto;
 END //
 
@@ -258,13 +282,15 @@ BEGIN
 
     COMMIT;
 
-    SELECT 
+    SELECT
         i.id_insumo,
         i.nombre_insumo,
         cip.cantidad_uso
-    FROM cantidad_insumo_producto cip
-    INNER JOIN insumos i 
-        ON i.id_insumo = cip.id_insumo
+    FROM
+        cantidad_insumo_producto cip
+    INNER JOIN
+        insumos i 
+            ON cip.id_insumo = i.id_insumo
     WHERE cip.id_producto = p_id_producto
       AND cip.id_insumo = p_id_insumo;
 
@@ -291,13 +317,15 @@ BEGIN
 
     COMMIT;
 
-    SELECT 
+    SELECT
         i.id_insumo,
         i.nombre_insumo,
         cip.cantidad_uso
-    FROM cantidad_insumo_producto cip
-    INNER JOIN insumos i 
-        ON i.id_insumo = cip.id_insumo
+    FROM
+        cantidad_insumo_producto cip
+    INNER JOIN
+        insumos i 
+            ON cip.id_insumo = i.id_insumo
     WHERE cip.id_producto = p_id_producto
     AND cip.id_insumo = p_id_insumo;
 
@@ -376,6 +404,8 @@ CREATE PROCEDURE sp_insertar_imagen_producto (
     IN p_id_producto INT
 )
 BEGIN
+    DECLARE v_id_imagen INT;
+
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
@@ -395,13 +425,21 @@ BEGIN
         p_id_producto
     );
 
+    SET v_id_imagen = LAST_INSERT_ID();
+
     COMMIT;
 
     SELECT
-        id_imagen_producto,
-        url_imagen
-    FROM imagenes_producto
-    WHERE id_producto = p_id_producto;
+        ip.id_imagen_producto,
+        ip.url_imagen,
+        p.id_producto,
+        p.nombre_producto
+    FROM
+        imagenes_producto ip
+    INNER JOIN productos p 
+    ON ip.id_producto = p.id_producto
+    WHERE 
+        ip.id_imagen_producto = v_id_imagen;
 END //
 
 CREATE PROCEDURE sp_actualizar_imagen_producto (
@@ -426,10 +464,15 @@ BEGIN
 
     COMMIT;
 
-    SELECT
-        id_imagen_producto,
-        url_imagen
-    FROM imagenes_producto
+    SELECT 
+        ip.id_imagen_producto,
+        ip.url_imagen,
+        p.id_producto,
+        p.nombre_producto
+    FROM 
+        imagenes_producto ip
+    INNER JOIN productos p 
+    ON ip.id_producto = p.id_producto
     WHERE id_imagen_producto = p_id_imagen_producto;
 END //
 
@@ -491,12 +534,18 @@ CREATE PROCEDURE sp_obtener_imagenes_por_producto(
 )
 BEGIN
     SELECT 
-        id_imagen_producto,
-        url_imagen
+        ip.id_imagen_producto,
+        ip.url_imagen,
+        p.id_producto,
+        p.nombre_producto
     FROM 
-        imagenes_producto
+        imagenes_producto ip
+    INNER JOIN 
+        productos p 
+            ON ip.id_producto = p.id_producto
     WHERE 
-        id_producto = p_id_producto;
+        ip.id_producto = p_id_producto
+        AND p.estado_producto = 1;
 END //
 
 CREATE PROCEDURE sp_contar_productos_gestion(
@@ -544,6 +593,8 @@ BEGIN
     INNER JOIN
         categorias_producto c ON p.id_categoria = c.id_categoria
     WHERE
+        p.estado_producto = 1 
+        AND
         (p_nombre_producto IS NULL 
             OR p.nombre_producto LIKE CONCAT('%', p_nombre_producto, '%'))
         AND (p_usa_insumos IS NULL 
@@ -553,6 +604,143 @@ BEGIN
     ORDER BY
         p.id_producto DESC
     LIMIT p_limit OFFSET p_offset;
+END //
+
+CREATE PROCEDURE sp_contar_productos_gestion_deshabilitados(
+    IN p_nombre_producto VARCHAR(100),
+    IN p_id_categoria INT
+)
+BEGIN
+    SELECT
+        COUNT(*) AS total
+    FROM
+        productos p
+    INNER JOIN
+        categorias_producto c 
+            ON p.id_categoria = c.id_categoria
+    WHERE
+        p.estado_producto = 0
+        AND (p_nombre_producto IS NULL 
+            OR p.nombre_producto LIKE CONCAT('%', p_nombre_producto, '%'))
+        AND (p_id_categoria IS NULL 
+            OR p.id_categoria = p_id_categoria);
+END //
+
+CREATE PROCEDURE sp_obtener_productos_gestion_deshabilitados(
+    IN p_nombre_producto VARCHAR(100),
+    IN p_id_categoria INT,
+    IN p_limit INT,
+    IN p_offset INT
+)
+BEGIN
+    SELECT
+        p.id_producto,
+        p.nombre_producto,
+        p.descripcion_producto,
+        p.precio_producto,
+        CASE 
+            WHEN p.usa_insumos = 1 THEN 'Sí'
+            ELSE 'No'
+        END AS usa_insumos,
+        p.id_categoria,
+        c.nombre_categoria
+    FROM
+        productos p
+    INNER JOIN
+        categorias_producto c 
+            ON p.id_categoria = c.id_categoria
+    WHERE
+        p.estado_producto = 0
+        AND (p_nombre_producto IS NULL 
+            OR p.nombre_producto LIKE CONCAT('%', p_nombre_producto, '%'))
+        AND (p_id_categoria IS NULL 
+            OR p.id_categoria = p_id_categoria)
+    ORDER BY
+        p.id_producto DESC
+    LIMIT p_limit OFFSET p_offset;
+END //
+
+CREATE PROCEDURE sp_obtener_producto_por_id(
+    IN p_id_producto INT
+)
+BEGIN
+    SELECT
+        p.id_producto,
+        p.nombre_producto,
+        p.descripcion_producto,
+        p.precio_producto,
+        CASE 
+            WHEN p.usa_insumos = 1 THEN 'Sí'
+            ELSE 'No'
+        END AS usa_insumos,
+        p.id_categoria,
+        c.nombre_categoria
+    FROM
+        productos p
+    INNER JOIN
+        categorias_producto c 
+            ON p.id_categoria = c.id_categoria
+    WHERE
+        p.id_producto = p_id_producto AND p.estado_producto = 1;
+END //
+
+CREATE PROCEDURE sp_contar_imagenes_productos(
+    IN p_nombre_producto VARCHAR(100)
+)
+BEGIN
+    SELECT
+        COUNT(*) AS total
+    FROM
+        imagenes_producto ip
+    INNER JOIN
+        productos p 
+            ON ip.id_producto = p.id_producto
+    WHERE
+        p.estado_producto = 1
+        AND (p_nombre_producto IS NULL 
+            OR p.nombre_producto LIKE CONCAT('%', p_nombre_producto, '%'));
+END //
+
+CREATE PROCEDURE sp_obtener_imagenes_productos(
+    IN p_nombre_producto VARCHAR(100),
+    IN p_limit INT,
+    IN p_offset INT
+)
+BEGIN
+    SELECT
+        ip.id_imagen_producto,
+        ip.url_imagen,
+        p.id_producto,
+        p.nombre_producto
+    FROM
+        imagenes_producto ip
+    INNER JOIN
+        productos p 
+            ON ip.id_producto = p.id_producto
+    WHERE
+        p.estado_producto = 1
+        AND (p_nombre_producto IS NULL 
+            OR p.nombre_producto LIKE CONCAT('%', p_nombre_producto, '%'))
+    ORDER BY
+        ip.id_imagen_producto DESC
+    LIMIT p_limit OFFSET p_offset;
+END //
+
+CREATE PROCEDURE sp_obtener_insumos_por_producto(
+    IN p_id_producto INT
+)
+BEGIN
+    SELECT
+        i.id_insumo,
+        i.nombre_insumo,
+        cip.cantidad_uso
+    FROM
+        cantidad_insumo_producto cip
+    INNER JOIN
+        insumos i 
+            ON cip.id_insumo = i.id_insumo
+    WHERE
+        cip.id_producto = p_id_producto;
 END //
 
 DELIMITER ;
