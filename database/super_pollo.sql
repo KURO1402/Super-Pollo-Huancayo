@@ -20,6 +20,9 @@ DROP TABLE IF EXISTS categorias_producto;
 DROP TABLE IF EXISTS usuarios;
 DROP TABLE IF EXISTS rol_usuario;
 DROP TABLE IF EXISTS verificacion_correos;
+DROP TABLE IF EXISTS tipo_documento;
+DROP TABLE IF EXISTS medio_pago;
+DROP TABLE IF EXISTS tipo_comprobante;
 
 -- Tabla para verificar correos
 CREATE TABLE verificacion_correos(
@@ -169,4 +172,27 @@ CREATE TABLE cantidad_insumo_producto (
     PRIMARY KEY (id_producto, id_insumo),
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
     FOREIGN KEY (id_insumo) REFERENCES insumos(id_insumo)
+);
+
+-- Tabla de tipos de documento
+CREATE TABLE tipo_documento (
+  id_tipo_documento INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_tipo_documento VARCHAR(50) NOT NULL ,
+  estado_documento TINYINT(1) NOT NULL DEFAULT 1
+);
+
+-- Tabla de medios de pago
+CREATE TABLE medio_pago (
+  id_medio_pago INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_medio_pago VARCHAR(50) NOT NULL,
+  estado_medio_pago TINYINT(1) NOT NULL DEFAULT 1
+);
+
+-- Tabla de tipos de comprobantes
+CREATE TABLE tipo_comprobante (
+  id_tipo_comprobante INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_tipo_comprobante VARCHAR(50) NOT NULL,
+  serie VARCHAR(5) NOT NULL,
+  correlativo INT NOT NULL DEFAULT 0,
+  estado_comprobante TINYINT(1) NOT NULL DEFAULT 1
 );

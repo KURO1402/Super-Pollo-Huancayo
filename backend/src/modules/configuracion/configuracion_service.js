@@ -8,7 +8,9 @@ const {
     eliminarCategoriaProductoModel,
     contarProductosPorCategoriaModel,
     listarCategoriasProductoModel,
-    obtenerCategoriaProductoPorIdModel
+    obtenerCategoriaProductoPorIdModel,
+    insertarTipoDocumentoModel,
+    contarTipoDocumentoPorNombreModel
 } = require('./configuracion_model');
 
 const insertarCategoriaProductoService = async (datos) => {
@@ -132,12 +134,37 @@ const obtenerCategoriaProductoPorIdService = async (idCategoria) => {
     };
 };
 
+//Servicios para tipo d documento
+const insertarTipoDocumentoService = async (datos) => {
+    if(!datos || typeof datos !== 'object'){
+        throw crearError('Se necesitan datos para crear un nuevo tipo de documento', 400); 
+    }
 
+    const { nombreDocumento } = datos;
+
+    if(!nombreDocumento || typeof nombreDocumento !== 'string' || !nombreDocumento.trim()) {
+        throw crearError('Se necesita el nombre de el nuevo tipo de documento', 400);
+    }
+
+    const nombreCoincidente = await contarTipoDocumentoPorNombreModel(nombreDocumento);
+    if(nombreCoincidente > 0) {
+        throw crearError('Ya existe un tipo de documento con ese nombre', 409);
+    }
+
+    const tipo_documento = await insertarTipoDocumentoModel(nombreDocumento);
+
+    return {
+        ok: true,
+        mensaje: 'Tipo de documento insertado correctamente',
+        tipo_documento
+    }
+}
 
 module.exports = {
     insertarCategoriaProductoService,
     actualizarCategoriaProductoService,
     eliminarCategoriaProductoService,
     listarCategoriasProductoService,
-    obtenerCategoriaProductoPorIdService 
+    obtenerCategoriaProductoPorIdService,
+    insertarTipoDocumentoService 
 }

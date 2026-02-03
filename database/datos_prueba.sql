@@ -92,7 +92,7 @@ VALUES
 ('1 Pollo Entero', 'Pollo completo, ideal para disfrutar en familia.', 56.00, 1, 1, 1),
 ('Gaseosa 1.5L', 'Perfecta para grupos o familias.', 12.00, 0, 1, 2),
 ('Porción de Papa', 'Papas doradas y crocantes recién salidas de la cocina.', 7.00, 1, 1, 3),
-('1/8 de Pollo a la Brasa', 'Porción pequeña con todo el sabor de la brasa.', 8.50, 0, 1);
+('1/8 de Pollo a la Brasa', 'Porción pequeña con todo el sabor de la brasa.', 8.50, 0, 1, 1);
 
 INSERT INTO cantidad_insumo_producto (id_producto, id_insumo, cantidad_uso) 
 VALUES 
@@ -116,3 +116,18 @@ VALUES
 ('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769788819/superpollo/ow16qvlls6gvp0r3pgyy.png', 'superpollo/ow16qvlls6gvp0r3pgyy', 3),
 ('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769788840/superpollo/mkxmajkqydglbbeqs9gu.png', 'superpollo/mkxmajkqydglbbeqs9gu', 4),
 ('https://res.cloudinary.com/dwj05ueoe/image/upload/v1769790283/superpollo/cjwczqui2lzwjpbbgexk.png', 'superpollo/cjwczqui2lzwjpbbgexk', 5);
+
+-- Inserts para la tabla tipo_documento
+INSERT INTO tipo_documento (nombre_tipo_documento, estado_documento) VALUES
+('DNI', 1),
+('RUC', 1);
+
+-- Inserts para la tabla medio_pago
+INSERT INTO medio_pago (nombre_medio_pago, estado_medio_pago) VALUES
+('efectivo', 1),
+('tarjeta', 1);
+
+-- Inserts para la tabla tipo_comprobante
+INSERT INTO tipo_comprobante (nombre_tipo_comprobante, serie, correlativo, estado_comprobante) VALUES
+('boleta', 'B001', 0, 1),
+('factura', 'F001', 0, 1);

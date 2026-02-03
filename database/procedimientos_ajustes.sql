@@ -11,6 +11,10 @@ DROP PROCEDURE IF EXISTS sp_contar_productos_por_categoria;
 DROP PROCEDURE IF EXISTS sp_listar_categorias_producto;
 DROP PROCEDURE IF EXISTS sp_obtener_categoria_producto_por_id;
 
+-- Procedimientos para tipo de documento
+DROP PROCEDURE IF EXISTS sp_insertar_tipo_documento;
+DROP PROCEDURE IF EXISTS sp_contar_tipo_documento_por_nombre;
+
 -- Procedimientos de categorias de productos
 DELIMITER //
 
@@ -152,5 +156,61 @@ BEGIN
     WHERE id_categoria = p_id_categoria;
 END //
 
+-- Procedimientos para tipo de documento
+
+CREATE PROCEDURE sp_insertar_tipo_documento (
+    IN p_nombre_tipo_documento VARCHAR(50)
+)
+BEGIN
+    DECLARE v_id INT;
+    DECLARE v_estado TINYINT(1);
+
+    -- Manejo de errores
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+        SELECT id_tipo_documento, estado_documento
+        INTO v_id, v_estado
+        FROM tipo_documento
+        WHERE nombre_tipo_documento = p_nombre_tipo_documento
+        LIMIT 1;
+
+        IF v_id IS NULL THEN
+            INSERT INTO tipo_documento (nombre_tipo_documento, estado_documento)
+            VALUES (p_nombre_tipo_documento, 1);
+
+            SET v_id = LAST_INSERT_ID();
+
+        ELSEIF v_estado = 0 THEN
+            UPDATE tipo_documento
+            SET estado_documento = 1
+            WHERE id_tipo_documento = v_id;
+        END IF;
+
+    COMMIT;
+
+    SELECT 
+        id_tipo_documento,
+        nombre_tipo_documento
+    FROM tipo_documento
+    WHERE id_tipo_documento = v_id;
+
+END //
+
+CREATE PROCEDURE sp_contar_tipo_documento_por_nombre (
+    IN p_nombre VARCHAR(50)
+)
+BEGIN
+    SELECT
+        COUNT(*) as total
+    FROM tipo_documento
+    WHERE nombre_tipo_documento = p_nombre
+    AND estado_documento = 1;
+END //
 
 DELIMITER ;

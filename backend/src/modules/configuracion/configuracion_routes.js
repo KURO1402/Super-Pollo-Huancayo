@@ -7,7 +7,8 @@ const {
     actualizarCategoriaProductoController,
     eliminarCategoriaProductoController,
     listarCategoriasProductoController,
-    obtenerCategoriaProductoPorIdController
+    obtenerCategoriaProductoPorIdController,
+    insertarTipoDocumentoController
 } = require('./configuracion_controller');
 
 router.post('/categorias/agregar', autenticacionToken, verificarRoles(2, 3), insertarCategoriaProductoController);
@@ -15,5 +16,6 @@ router.put('/categorias/actualizar/:idCategoria', autenticacionToken, verificarR
 router.delete('/categorias/eliminar/:idCategoria', autenticacionToken, verificarRoles(2, 3), eliminarCategoriaProductoController);
 router.get('/categorias', listarCategoriasProductoController);
 router.get('/categorias/:idCategoria', autenticacionToken, verificarRoles(2, 3), obtenerCategoriaProductoPorIdController);
+router.post('/tipos-documentos/agregar', autenticacionToken, verificarRoles(2, 3), insertarTipoDocumentoController);
 
 module.exports = router;
