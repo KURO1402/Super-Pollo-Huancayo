@@ -4,7 +4,8 @@ const {
     eliminarCategoriaProductoService,
     listarCategoriasProductoService,
     obtenerCategoriaProductoPorIdService,
-    insertarTipoDocumentoService  
+    insertarTipoDocumentoService,
+    actualizarTipoDocumentoService  
 } = require('./configuracion_service');
 
 const insertarCategoriaProductoController = async (req, res) => {
@@ -95,11 +96,28 @@ const insertarTipoDocumentoController = async (req, res) => {
     }
 };
 
+const actualizarTipoDocumentoController = async (req, res) => {
+    try {
+        const { idTipoDocumento } = req.params;
+        const resultado = await actualizarTipoDocumentoService(req.body, idTipoDocumento);
+
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
 module.exports = {
     insertarCategoriaProductoController,
     actualizarCategoriaProductoController,
     eliminarCategoriaProductoController,
     listarCategoriasProductoController,
     obtenerCategoriaProductoPorIdController,
-    insertarTipoDocumentoController
+    insertarTipoDocumentoController,
+    actualizarTipoDocumentoController
 }

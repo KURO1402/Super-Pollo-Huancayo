@@ -14,6 +14,9 @@ DROP PROCEDURE IF EXISTS sp_obtener_categoria_producto_por_id;
 -- Procedimientos para tipo de documento
 DROP PROCEDURE IF EXISTS sp_insertar_tipo_documento;
 DROP PROCEDURE IF EXISTS sp_contar_tipo_documento_por_nombre;
+DROP PROCEDURE IF EXISTS sp_contar_tipo_documento_por_id;
+DROP PROCEDURE IF EXISTS sp_contar_tipo_documento_nombre_excluyendo_id;
+DROP PROCEDURE IF EXISTS sp_actualizar_tipo_documento;
 
 -- Procedimientos de categorias de productos
 DELIMITER //
@@ -211,6 +214,56 @@ BEGIN
     FROM tipo_documento
     WHERE nombre_tipo_documento = p_nombre
     AND estado_documento = 1;
+END //
+
+CREATE PROCEDURE sp_actualizar_tipo_documento (
+    IN p_id_tipo_documento INT,
+    IN p_nombre_tipo_documento VARCHAR(50)
+)
+BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+        UPDATE tipo_documento
+        SET
+            nombre_tipo_documento = p_nombre_tipo_documento
+        WHERE id_tipo_documento = p_id_tipo_documento;
+
+    COMMIT;
+
+
+    SELECT 
+    id_tipo_documento,
+    nombre_tipo_documento
+    FROM tipo_documento
+    WHERE id_tipo_documento = p_id_tipo_documento;
+
+END //
+
+CREATE PROCEDURE sp_contar_tipo_documento_por_id (
+    IN p_id_tipo_documento INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM tipo_documento
+    WHERE id_tipo_documento = p_id_tipo_documento;
+END //
+
+CREATE PROCEDURE sp_contar_tipo_documento_nombre_excluyendo_id (
+    IN p_nombre_tipo_documento VARCHAR(50),
+    IN p_id_tipo_documento INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM tipo_documento
+    WHERE nombre_tipo_documento = p_nombre_tipo_documento
+      AND id_tipo_documento <> p_id_tipo_documento;
 END //
 
 DELIMITER ;
