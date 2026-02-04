@@ -7,6 +7,7 @@ import { useAutenticacionStore } from "../../store/useAutenticacionStore";
 export default function DesplegableUsuario() {
   const [estaAbierto, setEstaAbierto] = useState(false);
   const { usuario, logout } = useAutenticacionStore();
+  console.log(usuario);
 
   function alternarDesplegable() {
     setEstaAbierto(!estaAbierto);
@@ -56,7 +57,7 @@ export default function DesplegableUsuario() {
             {usuario.nombre_usuario} {" "} {usuario.apellido_usuario}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            Rol: { usuario.idRol === 1 ? "Superadministrador": "Administrador"}
+            Rol: { usuario.id_rol === 2 ? "Colaborador": "Administrador"}
           </span>
         </div>
 

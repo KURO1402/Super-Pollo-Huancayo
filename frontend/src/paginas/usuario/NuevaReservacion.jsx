@@ -65,7 +65,7 @@ const NuevaReservacion = () => {
   const capacidadActual = datos.mesas?.reduce((total, mesa) => total + mesa.capacidad, 0) || 0;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-8 md:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}
@@ -195,10 +195,9 @@ const NuevaReservacion = () => {
           </div>
         )}
 
-        {/* Información de ayuda */}
         <div className="mt-6 p-4 bg-gray-800/50 border border-gray-700 rounded-xl">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center shrink-0">
               <span className="text-blue-400 font-bold">i</span>
             </div>
             <div>

@@ -15,12 +15,12 @@ const navItems = [
     icon: <FiGrid size={20} />,
     name: "Dashboard",
     path: "/admin",
-    rolesPermitidos: [ROLES.SUPERADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR],
   },
   {
     icon: <FiShoppingCart size={20} />,
     name: "Ventas",
-    rolesPermitidos: [ROLES.SUPERADMIN, ROLES.ADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
     subItems: [
       { name: "Generar Venta", path: "/admin/generar-venta" },
       { name: "Historial de Comprobantes", path: "/admin/registro-ventas" },
@@ -29,7 +29,7 @@ const navItems = [
   {
     icon: <IoFastFoodOutline size={22} />,
     name: "Productos",
-    rolesPermitidos: [ROLES.SUPERADMIN, ROLES.ADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
     subItems: [
       { name: "Gestión Productos", path: "/admin/gestion-productos" },
       { name: "Gestión Imagenes", path: "/admin/gestion-imagenes" },
@@ -38,7 +38,7 @@ const navItems = [
   {
     icon: <FiArchive size={20} />,
     name: "Stock",
-    rolesPermitidos: [ROLES.SUPERADMIN, ROLES.ADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
     subItems: [
       { name: "Stock Insumos", path: "/admin/stock-insumos" },
       { name: "Historial Entradas", path: "/admin/historial-entradas" },
@@ -48,7 +48,7 @@ const navItems = [
   {
     icon: <FaCashRegister size={20} />,
     name: "Caja",
-    rolesPermitidos: [ROLES.SUPERADMIN, ROLES.ADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
     subItems: [
       { name: "Caja Actual", path: "/admin/caja-actual" },
       { name: "Historial", path: "/admin/historial-cajas" }
@@ -57,7 +57,7 @@ const navItems = [
   {
     icon: <FiCalendar size={20} />,
     name: "Reservas",
-    rolesPermitidos: [ROLES.SUPERADMIN, ROLES.ADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
     subItems: [
       { name: "Calendario", path: "/admin/calendario-reservas" },
       { name: "Historial de Reservaciones", path: "/admin/historial-reservas" },
@@ -67,13 +67,13 @@ const navItems = [
     icon: <FiUsers size={20} />,
     name: "Usuarios",
     path: "/admin/usuarios",
-    rolesPermitidos: [ROLES.SUPERADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR],
   },
   {
     icon: <FiUser size={20} />,
     name: "Perfil",
     path: "/admin/perfil",
-    rolesPermitidos: [ROLES.SUPERADMIN, ROLES.ADMIN],
+    rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
   },
 ];
 
@@ -88,7 +88,7 @@ const MenuLateral = () => {
 
   const menuItemsFiltrados = navItems.filter((item) => {
     if (!item.rolesPermitidos) return true;
-    return item.rolesPermitidos.includes(usuario?.idRol);
+    return item.rolesPermitidos.includes(usuario?.id_rol);
   });
 
   const isActive = useCallback(
