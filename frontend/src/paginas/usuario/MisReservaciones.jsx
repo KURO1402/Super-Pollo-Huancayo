@@ -13,9 +13,49 @@ import { obtenerReservacionesPorUsuario } from "../../servicios/reservacionesSer
 
 const MisReservaciones = () => {
   const [filtro, setFiltro] = useState("todas");
-  const [reservaciones, setReservaciones] = useState([]);
+  // const [reservaciones, setReservaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+
+  const reservaciones = [
+  {
+    idReservacion: 1,
+    estado: 'confirmada',
+    fecha_registro: '2023-01-15',
+    fecha: '2023-01-20',
+    hora: '18:00',
+    numero_personas: 4,
+    mesa: 12,
+  },
+  {
+    idReservacion: 2,
+    estado: 'pendiente',
+    fecha_registro: '2023-01-16',
+    fecha: '2023-01-21',
+    hora: '20:00',
+    numero_personas: 2,
+    mesa: 5,
+  },
+  {
+    idReservacion: 3,
+    estado: 'cancelada',
+    fecha_registro: '2023-01-17',
+    fecha: '2023-01-22',
+    hora: '19:30',
+    numero_personas: 3,
+    mesa: 9,
+  },
+  {
+    idReservacion: 4,
+    estado: 'pagado',
+    fecha_registro: '2023-01-18',
+    fecha: '2023-01-23',
+    hora: '17:00',
+    numero_personas: 6,
+    mesa: 1,
+  }
+];
+
 
   
   useEffect(() => {

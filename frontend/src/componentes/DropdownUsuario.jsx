@@ -1,14 +1,9 @@
+import { FaUser, FaCalendarPlus, FaCalendarCheck, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  FaUser, 
-  FaCalendarPlus, 
-  FaCalendarCheck, 
-  FaSignOutAlt,
-  FaChevronDown
-} from 'react-icons/fa';
 import { useAutenticacionStore } from '../store/useAutenticacionStore';
 import { mostrarAlerta } from '../utilidades/toastUtilidades';
+
 const DropdownUsuario = ({ usuario, mobile = false }) => {
   const [dropdownAbierto, setDropdownAbierto] = useState(false);
   const dropdownRef = useRef(null);
@@ -48,7 +43,7 @@ const DropdownUsuario = ({ usuario, mobile = false }) => {
     },
     {
       icono: <FaCalendarCheck className="w-4 h-4" />,
-      texto: 'Mis Reservacines',
+      texto: 'Mis Reservaciones',
       ruta: '/usuario/mis-reservaciones',
       onClick: () => setDropdownAbierto(false)
     },
