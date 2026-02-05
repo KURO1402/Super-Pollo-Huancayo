@@ -1,6 +1,5 @@
-const pool = require('../../config/conexion_DB');
+const pool = require('../../../config/conexion_DB');
 
-//Modelos para categorias de productos
 const insertarCategoriaProductoModel = async (nombreCategoria) => {
     let conexion;
     try {
@@ -146,85 +145,6 @@ const obtenerCategoriaProductoPorIdModel = async (idCategoria) => {
     }
 };
 
-//Modelos para tipos de documento
-const insertarTipoDocumentoModel = async (nombreTipoDocumento) => {
-
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_insertar_tipo_documento(?)',[nombreTipoDocumento]);
-
-        return result[0][0];
-    } catch (err) {
-        console.log(err.message);
-        throw new Error('Error al insertar tipo de documento en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-const contarTipoDocumentoPorNombreModel = async (nombre) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_contar_tipo_documento_por_nombre(?)',[nombre]);
-
-        return result[0][0]?.total;
-    } catch (err) {
-        console.log(err.message);
-        throw new Error('Error al contar tipos de documento en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-const actualizarTipoDocumentoModel = async (idTipoDocumento, nombreTipoDocumento) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_actualizar_tipo_documento(?, ?)',[idTipoDocumento, nombreTipoDocumento]);
-
-        return result[0][0];
-    } catch (err) {
-        console.log(err.message);
-        throw new Error('Error al actualizar tipo de documento en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-const contarTipoDocumentoPorIdModel = async (idTipoDocumento) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_contar_tipo_documento_por_id(?)',[idTipoDocumento]);
-
-        return result[0][0]?.total;
-    } catch (err) {
-        console.log(err.message);
-        throw new Error('Error al contar tipo de documento por ID en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-const contarTipoDocumentoNombreExcluyendoIdModel = async (nombreTipoDocumento, idTipoDocumento) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_contar_tipo_documento_nombre_excluyendo_id(?, ?)',[nombreTipoDocumento, idTipoDocumento]
-        );
-
-        return result[0][0]?.total;
-    } catch (err) {
-        console.log(err.message);
-        throw new Error('Error al contar tipo de documento por nombre excluyendo ID en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-
 module.exports = {
     insertarCategoriaProductoModel,
     contarCategoriaPorNombreModel,
@@ -234,10 +154,5 @@ module.exports = {
     eliminarCategoriaProductoModel,
     contarProductosPorCategoriaModel,
     listarCategoriasProductoModel,
-    obtenerCategoriaProductoPorIdModel,
-    insertarTipoDocumentoModel,
-    contarTipoDocumentoPorNombreModel,
-    actualizarTipoDocumentoModel,
-    contarTipoDocumentoPorIdModel,
-    contarTipoDocumentoNombreExcluyendoIdModel
+    obtenerCategoriaProductoPorIdModel
 }
