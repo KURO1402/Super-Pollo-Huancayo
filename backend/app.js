@@ -5,11 +5,11 @@ const cors = require('cors');
 
 const app = express();
 
-/*const corsOptions = {
+const corsOptions = {
   origin: 'http://localhost:5173',
   credentials: true,
-};*/
-app.use(cors());
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 
