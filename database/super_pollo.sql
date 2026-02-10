@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS imagenes_producto;
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS insumos;
 DROP TABLE IF EXISTS caja;
+DROP TABLE IF EXISTS pago_reservacion ;
 
 -- Tablas base
 DROP TABLE IF EXISTS categorias_producto;
@@ -23,6 +24,8 @@ DROP TABLE IF EXISTS verificacion_correos;
 DROP TABLE IF EXISTS tipo_documento;
 DROP TABLE IF EXISTS medio_pago;
 DROP TABLE IF EXISTS tipo_comprobante;
+DROP TABLE IF EXISTS mesas;
+DROP TABLE IF EXISTS reservaciones;
 
 -- Tabla para verificar correos
 CREATE TABLE verificacion_correos(
@@ -195,4 +198,41 @@ CREATE TABLE tipo_comprobante (
   serie VARCHAR(5) NOT NULL,
   correlativo INT NOT NULL DEFAULT 0,
   estado_comprobante TINYINT(1) NOT NULL DEFAULT 1
+);
+
+-- Tabla para mesas
+CREATE TABLE mesas (
+    id_mesa INT AUTO_INCREMENT PRIMARY KEY,
+    numero_mesa INT NOT NULL,
+    capacidad INT NOT NULL,
+    estado_mesa ENUM('disponible','reservada','ocupada') NOT NULL DEFAULT 'disponible',
+    ocupado_desde DATETIME DEFAULT NULL,
+    ocupado_hasta DATETIME DEFAULT NULL
+);
+
+-- Tabla para reservaciones
+CREATE TABLE reservaciones (
+    id_reservacion INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_reservacion DATE NOT NULL,
+    hora_reservacion TIME NOT NULL,
+    cantidad_personas INT NOT NULL,
+    estado_reservacion ENUM('pendiente','pagado','cancelado') NOT NULL DEFAULT 'pendiente',
+    fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_usuario INT NOT NULL,
+    id_mesa INT NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa)
+);
+
+-- Tabla para pagos de las reservaciones
+CREATE TABLE pago_reservacion (
+    id_pago INT AUTO_INCREMENT PRIMARY KEY,
+    monto_total DECIMAL(5,2) NOT NULL,
+    monto_pagado DECIMAL(5,2) NOT NULL,
+    porcentaje_pago INT NOT NULL,
+    id_transaccion VARCHAR(100) NOT NULL,
+    fecha_pago DATETIME NOT NULL,
+    estado_pago ENUM('pendiente','confirmado','fallido') NOT NULL,
+    id_reservacion INT NOT NULL,
+    FOREIGN KEY (id_reservacion) REFERENCES reservaciones(id_reservacion)
 );
