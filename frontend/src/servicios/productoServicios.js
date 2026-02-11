@@ -28,6 +28,22 @@ export const obtenerProductosServicio = async () => {
   }
 };
 
+export const obtenerProductoCatalogoServicio = async ( categoriaId = null) => {
+  try {
+    const url = categoriaId ? `/productos/catalogo?categoria=${categoriaId}` : `/productos/catalogo`;
+
+    const respuesta = await API.get(url);
+
+    if(respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || 'Error al obtener los productos del catalogo' )
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const actualizarProductoServicio = async (idProducto, datosActualizados) => {
   try {
     

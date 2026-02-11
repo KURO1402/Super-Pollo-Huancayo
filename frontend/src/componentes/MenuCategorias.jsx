@@ -5,23 +5,22 @@ import { LuSalad } from "react-icons/lu";
 import { LuDessert } from "react-icons/lu";
 
 const categorias = [
-  { nombre: "Todos", icono: <FaBorderAll /> },
-  { nombre: "Pollos", icono: <GiChickenOven /> },
-  { nombre: "Bebidas", icono: <RiDrinks2Fill /> },
-  { nombre: "Extras", icono: <LuSalad /> },
-  { nombre: "Postres", icono: <LuDessert /> },
+  { id: null, nombre: "Todos", icono: <FaBorderAll /> },
+  { id: 1, nombre: "Pollos", icono: <GiChickenOven /> },
+  { id: 2, nombre: "Bebidas", icono: <RiDrinks2Fill /> },
+  { id: 3, nombre: "Extras", icono: <LuSalad /> },
+  { id: 4, nombre: "Postres", icono: <LuDessert /> },
 ];
 
 const MenuCategorias = ({ categoriaSeleccionada, onCategoriaChange }) => {
   return (
     <div className="flex justify-center gap-4 md:gap-6 mb-10 flex-wrap px-4">
       {categorias.map((cat) => {
-        const estaSeleccionada = categoriaSeleccionada === cat.nombre;
-        
+        const estaSeleccionada = categoriaSeleccionada?.id === cat.id;
         return (
           <button
             key={cat.nombre}
-            onClick={() => onCategoriaChange(cat.nombre)}
+            onClick={() => onCategoriaChange(cat)}
             className={`flex flex-col items-center gap-2 px-4 py-3 md:px-5 md:py-4 rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group relative overflow-hidden ${
               estaSeleccionada 
                 ? 'bg-rojo text-white shadow-lg scale-105' 

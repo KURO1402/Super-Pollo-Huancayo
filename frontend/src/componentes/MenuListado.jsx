@@ -49,7 +49,7 @@ const MenuListado = ({ productos, cargando, error, categoriaSeleccionada }) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
       {productos.map((producto) => (
         <TarjetaProducto 
-          key={producto.idProducto || producto.id} 
+          key={producto.id_producto || producto.id} 
           producto={producto} 
         />
       ))}
