@@ -1,5 +1,37 @@
 const pool = require('../../config/conexion_DB');
 
+const obtenerEstadoMesaModel = async (numeroMesa) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_estado_mesa(?)',[numeroMesa]);
+
+        return result[0][0]?.estado_mesa;
+
+
+    } catch (error) {
+        throw new Error('Error al obtener el estado de la mesa');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const contarMesasPorNumeroModel = async (numeroMesa) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_contar_mesas_por_numero(?)',[numeroMesa]);
+
+        return result[0][0]?.total_mesas;
+    } catch (err) {
+        throw new Error('Error al contar tipos de documento en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 const ocuparMesasModel = async (mesas, minutosOcupada, fechaActual) => {
     let conexion;
     try {
@@ -27,25 +59,10 @@ const ocuparMesasModel = async (mesas, minutosOcupada, fechaActual) => {
     }
 };
 
-const obtenerEstadoMesaModel = async (numeroMesa) => {
-    let conexion;
 
-    try {
-        conexion = await pool.getConnection();
-
-        const [result] = await conexion.execute('CALL sp_obtener_estado_mesa(?)',[numeroMesa]);
-
-        return result[0][0]?.estado_mesa;
-
-
-    } catch (error) {
-        throw new Error('Error al obtener el estado de la mesa');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
 
 module.exports = {
-    ocuparMesasModel,
-    obtenerEstadoMesaModel
+    obtenerEstadoMesaModel,
+    contarMesasPorNumeroModel,
+    ocuparMesasModel
 }

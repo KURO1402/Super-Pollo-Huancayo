@@ -1,8 +1,9 @@
 const crearError = require('../../utilidades/crear_error');
 
 const {
+    obtenerEstadoMesaModel,
+    contarMesasPorNumeroModel,
     ocuparMesasModel,
-    obtenerEstadoMesaModel
 } = require('./reservacion_model');
 
 const ocuparMesasService = async (datos) => {
@@ -21,6 +22,10 @@ const ocuparMesasService = async (datos) => {
     for (const mesa of mesas) {
         if (!mesa || typeof mesa !== 'object' || typeof mesa.numeroMesa !== 'number' || mesa.numeroMesa <= 0) {
             throw crearError('Se necesita que cada mesa tenga su numero de mesa', 400);
+        }
+        const mesaExistente = await contarMesasPorNumeroModel(mesa.numeroMesa);
+        if(!mesaExistente | mesaExistente === 0) {
+            throw crearError(`Mesa ${mesa.numeroMesa} no existente.`, 404)
         }
 
         const estadoMesa = await obtenerEstadoMesaModel(mesa.numeroMesa);

@@ -10,7 +10,7 @@ DO
 BEGIN
     UPDATE mesas 
     SET estado_mesa = 'disponible',
-        ocupada_desde = NULL,
+        ocupado_desde = NULL,
         ocupado_hasta = NULL
     WHERE estado_mesa = 'ocupada' 
       AND ocupado_hasta <= NOW();
