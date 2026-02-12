@@ -38,7 +38,7 @@ const BarraNavegacion = () => {
                 className="relative cursor-pointer text-gray-100 text-sm font-medium
                   transition-colors duration-200 hover:text-rojo
                   after:content-[''] after:absolute after:bottom-0 after:left-0
-                  after:h-[2px] after:w-0 hover:after:w-full
+                  after:h-0.5 after:w-0 hover:after:w-full
                   after:bg-rojo after:transition-all after:duration-300
                   py-2 px-1
                 "
@@ -54,7 +54,7 @@ const BarraNavegacion = () => {
                 className="relative cursor-pointer text-gray-100 text-sm font-medium
                   transition-colors duration-200 hover:text-rojo
                   after:content-[''] after:absolute after:bottom-0 after:left-0
-                  after:h-[2px] after:w-0 hover:after:w-full
+                  after:h-0.5 after:w-0 hover:after:w-full
                   after:bg-rojo after:transition-all after:duration-300
                   py-2 px-1
                 "

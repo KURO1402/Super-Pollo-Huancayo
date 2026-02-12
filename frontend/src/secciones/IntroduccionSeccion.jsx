@@ -1,12 +1,14 @@
 import { useRef } from "react";
 import { Link as ScrollLink } from "react-scroll";
+import BotonFlotanteWhataspp from '../componentes/ui/botones/BotonFlotanteWhataspp';
 import useAnimacionesIntro from "../hooks/useAnimacionesIntro";
 import CirculoRojo from "../assets/decorativos/Mitad_circulo_rojo.png";
-import Lechuga from "../assets/decorativos/Lechuga.png";
+import Gaseosa from "../assets/imagenes/gaseosa-removebg-preview.png"
 import Pollos from "../assets/imagenes/PolloPortada.png";
 import Papas from "../assets/imagenes/Chicha.png";
 import Ensalada from "../assets/imagenes/Ensalada2.png";
 import '../estilos/animaciones.css'
+import BotonFlotante from "../componentes/ui/botones/BotonFlotante";
 
 const IntroduccionSeccion = () => {
   const textoReferencia = useRef(null);
@@ -25,7 +27,7 @@ const IntroduccionSeccion = () => {
       <img src={CirculoRojo} alt="" aria-hidden="true"
         className="absolute right-0 w-auto h-auto z-10 hidden lg:block transform"
       />
-      <img ref={lechugaReferencia} src={Lechuga} alt="Decoración de lechuga"
+      <img ref={lechugaReferencia} src={Gaseosa} alt="Decoración de Gaseosa"
         className="absolute top-10 left-0 w-40 h-auto z-20 md:block hidden transform -rotate-12"
       />
 
@@ -41,18 +43,15 @@ const IntroduccionSeccion = () => {
             Disfruta del auténtico sabor de la cocina peruana con nuestro pollo a la brasa, preparado con las mejores especias y técnicas tradicionales.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <div className="inline-block">
-              <ScrollLink 
-                to="menu"
-                smooth={true}
-                duration={500}
-                offset={-70}
-                className="px-8 py-4 bg-rojo hover:bg-rojo text-white font-bold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/30 block w-fit cursor-pointer"
-              >
-                VER MENU
-              </ScrollLink>
-              
-            </div>
+            <ScrollLink 
+              to="menu"
+              smooth={true}
+              duration={500}
+              offset={-70}
+              className="px-8 py-4 bg-rojo hover:bg-rojo text-white font-bold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/30 block cursor-pointer"
+            >
+              VER MENU
+            </ScrollLink>
             <ScrollLink 
                 to="reservaciones"
                 smooth={true}
@@ -61,7 +60,7 @@ const IntroduccionSeccion = () => {
                 className="px-8 py-4 border-2 cursor-pointer border-amarillo text-amarillo hover:bg-amarillo hover:text-gray-900 font-bold rounded-full transition-all duration-300"
               >
                 RESERVAR
-              </ScrollLink>
+            </ScrollLink>
           </div>
         </div> 
         <div className="hidden lg:relative lg:flex lg:justify-center lg:items-center h-96 lg:h-auto mt-8 lg:mt-0">
@@ -69,6 +68,10 @@ const IntroduccionSeccion = () => {
           <img ref={papasReferencia} src={Papas} alt="Papas fritas" className="absolute bottom-0 left-0 lg:left-10 w-80 h-auto z-40 opacity-0 transition-opacity duration-1000"/>
           <img ref={ensaladaReferencia} src={Ensalada} alt="Ensalada fresca" className="absolute top-96 lg:top-60 right-0 lg:right-5 translate-y-4 lg:translate-y-10 w-80 h-auto z-40 opacity-0 transition-opacity duration-1000"/>
         </div>
+      </div>
+      <div className="fixed bottom-6 right-6 z-50 flex flex-row items-end gap-3">
+        <BotonFlotanteWhataspp />
+        <BotonFlotante/>
       </div>
     </section>
   );
