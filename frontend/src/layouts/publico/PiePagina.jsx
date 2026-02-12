@@ -5,7 +5,7 @@ import { MdKeyboardDoubleArrowRight } from "react-icons/md";
 import BotonSecundario from "../../componentes/ui/botones/BotonSecundario";
 import NombreEmpresa from "../../assets/imagenes/Nombre_Empresa.png";
 import Logo from "../../assets/imagenes/Logo.svg";
-import UbicacionMapa from "../../assets/imagenes/UbicacionMapa.png";
+import MapaSuperPollo from "../../componentes/MapaSuperPollo";
 
 const socialIconos = [
   { icon: <FaFacebook size={16} />, href: "#" },
@@ -71,7 +71,10 @@ const PiePagina = () => {
             <h3 className="text-gray-100 text-xl font-semibold mb-4 pb-2 border-b-2 border-yellow-400 inline-block">
               UBICACIÓN
             </h3>
-            <img src={UbicacionMapa} alt="" />
+            <MapaSuperPollo
+              direccion = "Jr. Ica 324, Huancayo"
+              height="180px"
+            />
           </div>
 
           <div className="flex flex-col">
