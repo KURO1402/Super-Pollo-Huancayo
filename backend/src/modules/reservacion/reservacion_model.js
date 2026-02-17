@@ -1,38 +1,6 @@
 const pool = require('../../config/conexion_DB');
 
-const obtenerEstadoMesaModel = async (numeroMesa) => {
-    let conexion;
-
-    try {
-        conexion = await pool.getConnection();
-
-        const [result] = await conexion.execute('CALL sp_obtener_estado_mesa(?)',[numeroMesa]);
-
-        return result[0][0]?.estado_mesa;
-
-
-    } catch (error) {
-        throw new Error('Error al obtener el estado de la mesa');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-const contarMesasPorNumeroModel = async (numeroMesa) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_contar_mesas_por_numero(?)',[numeroMesa]);
-
-        return result[0][0]?.total_mesas;
-    } catch (err) {
-        throw new Error('Error al contar tipos de documento en la base de datos');
-    } finally {
-        if (conexion) conexion.release();
-    }
-};
-
-const ocuparMesasModel = async (mesas, minutosOcupada, fechaActual) => {
+const ocuparMesasModel = async (mesas, idUsuario, fechaActual) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
@@ -41,7 +9,7 @@ const ocuparMesasModel = async (mesas, minutosOcupada, fechaActual) => {
 
         if (Array.isArray(mesas)) {
             for (const mesa of mesas) {
-                await conexion.execute('CALL sp_ocupar_mesa(?, ?, ?)', [mesa.numeroMesa, minutosOcupada, fechaActual]
+                await conexion.execute('CALL sp_bloquear_mesa(?, ?, ?)', [mesa.idMesa, idUsuario, fechaActual]
                 );
             }
         }
@@ -59,10 +27,73 @@ const ocuparMesasModel = async (mesas, minutosOcupada, fechaActual) => {
     }
 };
 
+const verificarMesaDisponibleModel = async (idMesa, fechaHora, idUsuario) => {
+    let conexion;
 
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_verificar_mesa_disponible(?, ?, ?)',[idMesa, fechaHora, idUsuario]);
+        return result[0][0]?.conflictos;
+
+    } catch (err) {
+        console.log(err.message)
+        throw new Error('Error al verificar disponibilidad de la mesa');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerMesaPorIdModel = async (idMesa) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_mesa_por_id(?)', [idMesa]);
+
+        return result[0][0];
+
+    } catch (err) {
+        console.error('Error en obtenerMesaPorIdModel:', err.message);
+        
+        throw new Error('Error al consultar los datos de la mesa en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuario, mesas, fechaHoraReserva) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+        await conexion.beginTransaction();
+
+        const [result] = await conexion.execute('CALL sp_insertar_reservacion(?, ?, ?, ?)',[fecha, hora, cantidadPersonas, idUsuario]);
+
+        const reservacion = result[0][0];
+
+        for (const mesa of mesas) {
+            await conexion.execute('CALL sp_insertar_mesas_reservacion(?, ?, ?)',[reservacion.id_reservacion,mesa.idMesa,fechaHoraReserva]);
+        }
+
+        await conexion.commit();
+
+        return 'Reservacion registrada exitosamente';
+
+    } catch (error) {
+        if (conexion) await conexion.rollback();
+        throw new Error('Error al registrar la reservación');
+
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
 
 module.exports = {
-    obtenerEstadoMesaModel,
-    contarMesasPorNumeroModel,
-    ocuparMesasModel
+    ocuparMesasModel,
+    verificarMesaDisponibleModel,
+    obtenerMesaPorIdModel,
+    registrarReservacionModel
 }
