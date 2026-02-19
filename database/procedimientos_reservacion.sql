@@ -5,6 +5,8 @@ DROP PROCEDURE IF EXISTS sp_obtener_estado_mesa;
 DROP PROCEDURE IF EXISTS sp_obtener_mesa_por_id;
 DROP PROCEDURE IF EXISTS sp_insertar_reservacion;
 DROP PROCEDURE IF EXISTS sp_insertar_mesas_reservacion;
+DROP PROCEDURE IF EXISTS sp_insertar_pago_reservacion;
+DROP PROCEDURE IF EXISTS sp_obtener_reservacion_por_codigo;
 
 DELIMITER //
 
@@ -16,9 +18,11 @@ CREATE PROCEDURE sp_verificar_mesa_disponible(
 BEGIN
     DECLARE v_conflictos INT DEFAULT 0;
 
+    -- Limpiar bloqueos expirados
     DELETE FROM bloqueos_temporales_mesa
     WHERE expira_en < NOW();
 
+    -- Verificar conflictos en reservaciones confirmadas
     SELECT COUNT(*) INTO v_conflictos
     FROM mesas_reservacion mr
     JOIN reservaciones r 
@@ -27,13 +31,14 @@ BEGIN
       AND p_fecha_hora BETWEEN mr.reserva_desde AND mr.reserva_hasta
       AND r.estado_reservacion <> 'cancelado';
 
+    -- Verificar bloqueos temporales de CUALQUIER usuario incluido el mismo
     IF v_conflictos = 0 THEN
         SELECT COUNT(*) INTO v_conflictos
         FROM bloqueos_temporales_mesa
         WHERE id_mesa = p_id_mesa
           AND p_fecha_hora BETWEEN bloqueado_desde AND bloqueado_hasta
-          AND expira_en > NOW()
-          AND id_usuario <> p_id_usuario;
+          AND expira_en > NOW();
+          -- ← quitamos AND id_usuario <> p_id_usuario
     END IF;
 
     SELECT v_conflictos AS conflictos;
@@ -84,7 +89,8 @@ CREATE PROCEDURE sp_insertar_reservacion(
     IN p_fecha DATE,
     IN p_hora TIME,
     IN p_cantidad_personas INT,
-    IN p_id_usuario INT
+    IN p_id_usuario INT,
+    IN p_codigo_reservacion CHAR(6)  
 )
 BEGIN
     DELETE FROM bloqueos_temporales_mesa
@@ -94,13 +100,15 @@ BEGIN
         fecha_reservacion,
         hora_reservacion,
         cantidad_personas,
-        id_usuario
+        id_usuario,
+        codigo_reservacion 
     )
     VALUES (
         p_fecha,
         p_hora,
         p_cantidad_personas,
-        p_id_usuario
+        p_id_usuario,
+        p_codigo_reservacion
     );
 
     SELECT LAST_INSERT_ID() AS id_reservacion;
@@ -131,6 +139,43 @@ BEGIN
         v_hasta
     );
 
+END //
+
+CREATE PROCEDURE sp_insertar_pago_reservacion(
+    IN p_monto_total DECIMAL(5,2),
+    IN p_monto_pagado DECIMAL(5,2),
+    IN p_porcentaje_pago INT,
+    IN p_id_transaccion VARCHAR(100),
+    IN p_id_reservacion INT
+)
+BEGIN
+    INSERT INTO pago_reservacion(
+        monto_total,
+        monto_pagado,
+        porcentaje_pago,
+        id_transaccion,
+        fecha_pago,
+        estado_pago,
+        id_reservacion
+    )
+    VALUES (
+        p_monto_total,
+        p_monto_pagado,
+        p_porcentaje_pago,
+        p_id_transaccion,
+        NOW(),
+        'confirmado',
+        p_id_reservacion
+    );
+END //
+
+CREATE PROCEDURE sp_obtener_reservacion_por_codigo(
+    IN p_codigo CHAR(6)
+)
+BEGIN
+    SELECT id_reservacion, estado_reservacion
+    FROM reservaciones
+    WHERE codigo_reservacion = p_codigo;
 END //
 
 DELIMITER ;

@@ -63,29 +63,72 @@ const obtenerMesaPorIdModel = async (idMesa) => {
     }
 };
 
-const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuario, mesas, fechaHoraReserva) => {
+const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuario, mesas, fechaHoraReserva, codigoReservacion) =>{
     let conexion;
 
     try {
         conexion = await pool.getConnection();
         await conexion.beginTransaction();
 
-        const [result] = await conexion.execute('CALL sp_insertar_reservacion(?, ?, ?, ?)',[fecha, hora, cantidadPersonas, idUsuario]);
+        const [result] = await conexion.execute(
+            'CALL sp_insertar_reservacion(?, ?, ?, ?, ?)',
+            [fecha, hora, cantidadPersonas, idUsuario, codigoReservacion] // ← agregado
+        );
 
         const reservacion = result[0][0];
 
         for (const mesa of mesas) {
-            await conexion.execute('CALL sp_insertar_mesas_reservacion(?, ?, ?)',[reservacion.id_reservacion,mesa.idMesa,fechaHoraReserva]);
+            await conexion.execute(
+                'CALL sp_insertar_mesas_reservacion(?, ?, ?)',
+                [reservacion.id_reservacion, mesa.id_mesa, fechaHoraReserva]
+            );
         }
 
         await conexion.commit();
-
-        return 'Reservacion registrada exitosamente';
+        return reservacion.id_reservacion;
 
     } catch (error) {
+        console.log(error.message)
         if (conexion) await conexion.rollback();
         throw new Error('Error al registrar la reservación');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
 
+const registrarPagoReservacionModel = async (montoTotal, montoPagado, porcentajePago, idTransaccion, idReservacion) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        await conexion.execute(
+            'CALL sp_insertar_pago_reservacion(?, ?, ?, ?, ?)',
+            [montoTotal, montoPagado, porcentajePago, idTransaccion, idReservacion]
+        );
+
+    } catch (err) {
+        throw new Error('Error al registrar el pago de la reservación');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerReservacionPorCodigoModel = async (codigo) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute(
+            'CALL sp_obtener_reservacion_por_codigo(?)',
+            [codigo]
+        );
+
+        return result[0][0];
+
+    } catch (err) {
+        throw new Error('Error al buscar la reservación por código');
     } finally {
         if (conexion) conexion.release();
     }
@@ -95,5 +138,7 @@ module.exports = {
     ocuparMesasModel,
     verificarMesaDisponibleModel,
     obtenerMesaPorIdModel,
-    registrarReservacionModel
+    registrarReservacionModel,
+    registrarPagoReservacionModel,
+    obtenerReservacionPorCodigoModel
 }

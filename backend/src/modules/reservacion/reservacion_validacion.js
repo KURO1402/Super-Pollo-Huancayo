@@ -18,6 +18,14 @@ const validarDatosReservacion = (datos) => {
         throw crearError('La hora es obligatoria', 400);
     }
 
+    const fechaHoraReserva = new Date(`${fecha}T${hora}`);
+    const ahora = new Date();
+    const unaHoraEnMs = 60 * 60 * 1000;
+
+    if (fechaHoraReserva - ahora < unaHoraEnMs) {
+        throw crearError('La reservación debe realizarse con al menos 1 hora de anticipación', 400);
+    }
+
     if (!cantidadPersonas || typeof cantidadPersonas !== 'number' || cantidadPersonas <= 0) {
         throw crearError('La cantidad de personas es obligatoria', 400);
     }

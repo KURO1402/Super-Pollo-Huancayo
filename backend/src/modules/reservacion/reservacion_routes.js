@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { autenticacionToken } = require('../../middlewares/autenticacion_middleware');
 const {
-    ocuparMesasController,
-    realizarReservacionController
+    crearPreferenciaReservacionController,
+    webhookReservacionController
 } = require('./reservacion_controller');
 
-router.post('/ocupar-mesa', autenticacionToken, ocuparMesasController);
-router.post('/reservar-mesa', autenticacionToken, realizarReservacionController);
+router.post('/crear-preferencia', autenticacionToken, crearPreferenciaReservacionController);
+router.post('/webhook', webhookReservacionController);
 
 module.exports = router;

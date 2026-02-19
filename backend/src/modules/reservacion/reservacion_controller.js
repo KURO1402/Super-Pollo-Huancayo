@@ -1,43 +1,40 @@
 const {
-    ocuparMesasService,
-    realizarReservacionService
+    crearPreferenciaReservacionService,
+    confirmarPagoReservacionService
 } = require('./reservacion_service');
 
-const ocuparMesasController = async (req, res) => {
+const crearPreferenciaReservacionController = async (req, res) => {
     try {
-        const {id_usuario} = req.usuario;
-
-        const resultado = await ocuparMesasService(req.body, id_usuario);
-
+        const { id_usuario } = req.usuario;
+        const resultado = await crearPreferenciaReservacionService(req.body, id_usuario);
         return res.status(200).json(resultado);
 
     } catch (err) {
         const statusCode = err.status || 500;
-
         return res.status(statusCode).json({
             ok: false,
-            mensaje: err.message || 'Error interno del servidor',
+            mensaje: err.message || 'Error interno del servidor'
         });
     }
 };
 
-const realizarReservacionController = async (req, res) => {
+const webhookReservacionController = async (req, res) => {
     try {
-        const {id_usuario} = req.usuario;
-        const resultado = await realizarReservacionService(req.body, id_usuario);
-        return res.status(200).json(resultado);
+        const { type, data } = req.body;
+
+        if (type !== 'payment') return res.sendStatus(200);
+
+        await confirmarPagoReservacionService(data.id);
+
+        return res.sendStatus(200);
 
     } catch (err) {
-        const statusCode = err.status || 500;
-
-        return res.status(statusCode).json({
-            ok: false,
-            mensaje: err.message || 'Error interno del servidor',
-        });
+        console.error('Error en webhook:', err.message);
+        return res.sendStatus(200);
     }
-}
+};
 
 module.exports = {
-    ocuparMesasController,
-    realizarReservacionController
-}
+    crearPreferenciaReservacionController,
+    webhookReservacionController
+};
