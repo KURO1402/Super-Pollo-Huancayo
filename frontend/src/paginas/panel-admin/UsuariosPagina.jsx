@@ -6,17 +6,9 @@ import FiltrosUsuarios   from '../../componentes/panel-admin/usuario/FiltrosUsua
 import TablaUsuarios     from '../../componentes/panel-admin/usuario/TablaUsuarios';
 import { Paginacion } from '../../componentes/ui/tabla/Paginacion';
 /* import ModalEditarRol    from './ModalEditarRol';
-import Paginacion        from './Paginacion';
 import ModalConfirmacion from './ModalConfirmacion'; */
 
-// ─────────────────────────────────────────────────────────────
-// PÁGINA CONTENEDOR — GESTIÓN DE USUARIOS
-// Orquesta: store ← hooks ← componentes
-// No contiene lógica de presentación propia.
-// ─────────────────────────────────────────────────────────────
-
 const UsuariosPagina = () => {
-  // ── Store ─────────────────────────────────────────────────
   const {
     usuarios, total, cargando, error,
     paginaActual, limite, filtros,
@@ -25,7 +17,6 @@ const UsuariosPagina = () => {
     limpiarError,
   } = useUsuariosStore();
 
-  // ── Hook paginación (cálculos visuales) ───────────────────
   const paginacion = usePaginacion({
     paginaActual,
     limite,
@@ -34,24 +25,19 @@ const UsuariosPagina = () => {
     onLimite: setLimite,
   });
 
-  // ── Estado local de UI ────────────────────────────────────
   const [modalRol, setModalRol]     = useState({ visible: false, usuario: null });
   const [guardando, setGuardando]   = useState(false);
   const [toast, setToast]           = useState(null);  // { mensaje, tipo }
 
-  // ── Carga inicial ─────────────────────────────────────────
   useEffect(() => {
     cargarUsuarios();
   }, []);
 
-  // ── Errores del store → toast ─────────────────────────────
   useEffect(() => {
     if (error) {
       limpiarError();
     }
   }, [error]);
-
-  // ── Handlers ──────────────────────────────────────────────
 
 /*   const handleEditarRol = (usuario) =>
     setModalRol({ visible: true, usuario });
@@ -95,12 +81,9 @@ const UsuariosPagina = () => {
     });
   }; */
 
-  // ── Render ────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-6xl mx-auto px-4 py-8">
-
-        {/* Encabezado */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             Gestión de Usuarios
@@ -152,17 +135,6 @@ const UsuariosPagina = () => {
         onAceptar={aceptar}
         onCancelar={cancelar}
       /> */}
-
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-medium text-white transition-all animate-fade-in ${
-            toast.tipo === 'error' ? 'bg-red-600' : 'bg-emerald-600'
-          }`}
-        >
-          {toast.mensaje}
-        </div>
-      )}
     </div>
   );
 };

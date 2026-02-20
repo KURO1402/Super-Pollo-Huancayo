@@ -54,6 +54,6 @@ export const useUsuariosStore = create((set, get) => ({
         set({
         usuarios: [], total: 0, cargando: false, error: null,
         paginaActual: 1, limite: 10,
-        filtros: { busqueda: '', id_rol: '' },
+        filtros: { busqueda: '', rol: '' },
     }),
 }));

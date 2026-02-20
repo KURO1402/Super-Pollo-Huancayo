@@ -25,6 +25,19 @@ export const obtenerUsuariosServicio = async ({ limite = 10, offset = 0, filtros
   }
 };
 
+export const obtenerRolesUsuariosServicio = async () => {
+  try {
+    const respuesta = await API.get('/usuarios/roles');
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || 'Error al obtener roles de usuarios');
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const eliminarUsuarioServicio = async (idUsuario) => {
   try {
     const respuesta = await API.delete(`/usuarios/${idUsuario}`);

@@ -1,12 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useDebounce } from '../../../hooks/useDebounce';
-
-import { ROLES } from '../../../constantes/roles';
+import { obtenerRolesUsuariosServicio } from '../../../servicios/usuariosServicios';
 import { FiSearch } from 'react-icons/fi';
 
 const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
   const [busquedaLocal, setBusquedaLocal] = useState(filtros.busqueda ?? '');
   const busquedaDebounced = useDebounce(busquedaLocal, 500);
+  const [roles, setRoles] = useState({});
+
+  useEffect(() => {
+    const cargarRoles = async () => {
+      try {
+        const roles = await obtenerRolesUsuariosServicio();
+        setRoles(roles.roles ?? {});
+      } catch (error) {
+        console.error('Error al obtener roles:', error);
+      }
+    };
+    cargarRoles();
+  }, []);
 
   useEffect(() => {
     if (busquedaDebounced !== filtros.busqueda) {
@@ -18,7 +30,7 @@ const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
     setBusquedaLocal(filtros.busqueda ?? '');
   }, [filtros.busqueda]);
 
-  const hayFiltros = busquedaLocal !== '' || filtros.id_rol !== '';
+  const hayFiltros = busquedaLocal !== '' || filtros.rol !== '';
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 mb-4">
@@ -38,20 +50,20 @@ const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
         </div>
 
         <select
-          value={filtros.id_rol ?? ''}
-          onChange={(e) => onCambio({ id_rol: e.target.value })}
+          value={filtros.rol ?? ''}
+          onChange={(e) => onCambio({ rol: e.target.value })}
           className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 dark:text-white"
         >
           <option value="">Todos los roles</option>
-          {Object.entries(ROLES).map(([key, valor]) => (
-            <option key={valor} value={valor}>
-              {/* Capitalizar primera letra */}
-              {key.charAt(0).toUpperCase() + key.slice(1)}
-            </option>
-          ))}
+          {roles.length > 0 &&
+            roles.map((role) => (
+              <option key={role.id_rol} value={role.id_rol}>
+                {role.nombre_rol.charAt(0).toUpperCase() + role.nombre_rol.slice(1)}
+              </option>
+            ))
+          }
         </select>
 
-        {/* Limpiar */}
         {hayFiltros && (
           <button
             onClick={() => {
