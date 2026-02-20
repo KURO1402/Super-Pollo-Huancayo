@@ -1,27 +1,32 @@
-import { useState } from "react";
+import { useCallback } from "react";
 
-export const usePaginacion = (itemsPorPaginaInicial = 5) => {
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [itemsPorPagina, setItemsPorPagina] = useState(itemsPorPaginaInicial);
+export const usePaginacion = ({ paginaActual, limite, total, onPagina, onLimite }) => { 
 
-  const paginar = (items) => {
-    const totalPaginas = Math.ceil(items.length / itemsPorPagina);
-    const inicio = (paginaActual - 1) * itemsPorPagina;
-    const datosPaginados = items.slice(inicio, inicio + itemsPorPagina);
+  const offset = (paginaActual -1) * limite; 
+  const totalPaginas = Math.max(Math.ceil(total / limite), 1);
+  const hayAnterior    = paginaActual > 1;
+  const haySiguiente   = paginaActual < totalPaginas;
+  const irAPagina     = useCallback((n) => { if (n >= 1 && n <= totalPaginas) onPagina(n); }, [totalPaginas, onPagina]);
+  const siguiente     = useCallback(() => { if (haySiguiente) onPagina(paginaActual + 1); }, [haySiguiente, paginaActual, onPagina]);
+  const anterior      = useCallback(() => { if (hayAnterior)  onPagina(paginaActual - 1); }, [hayAnterior,  paginaActual, onPagina]);
+  const cambiarLimite = useCallback((n) => onLimite(n),           [onLimite]);
 
-    return { datosPaginados, totalPaginas };
-  };
-
-  const cambiarItemsPorPagina = (nuevoItemsPorPagina) => {
-    setItemsPorPagina(nuevoItemsPorPagina);
-    setPaginaActual(1);
-  };
+  const paginas = (() => {
+    if (totalPaginas <= 7) return Array.from({ length: totalPaginas }, (_, i) => i + 1);
+    const rango  = 2;
+    const inicio = Math.max(2, paginaActual - rango);
+    const fin    = Math.min(totalPaginas - 1, paginaActual + rango);
+    const arr    = [1];
+    if (inicio > 2) arr.push('...');
+    for (let i = inicio; i <= fin; i++) arr.push(i);
+    if (fin < totalPaginas - 1) arr.push('...');
+    arr.push(totalPaginas);
+    return arr;
+  })();
 
   return { 
-    paginaActual, 
-    setPaginaActual, 
-    itemsPorPagina,
-    setItemsPorPagina: cambiarItemsPorPagina,
-    paginar 
+    paginaActual, limite, total, totalPaginas,
+    offset, hayAnterior, haySiguiente, paginas,
+    irAPagina, siguiente, anterior, cambiarLimite,
   };
 };

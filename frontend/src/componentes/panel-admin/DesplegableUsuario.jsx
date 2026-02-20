@@ -7,7 +7,6 @@ import { useAutenticacionStore } from "../../store/useAutenticacionStore";
 export default function DesplegableUsuario() {
   const [estaAbierto, setEstaAbierto] = useState(false);
   const { usuario, logout } = useAutenticacionStore();
-  console.log(usuario);
 
   function alternarDesplegable() {
     setEstaAbierto(!estaAbierto);
