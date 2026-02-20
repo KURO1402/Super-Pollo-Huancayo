@@ -38,7 +38,7 @@ const validarDatosReservacion = (datos) => {
 
     mesas.forEach((mesa) => {
         if(!mesa || typeof mesa !== 'object') {
-            throw crearError('Seleccione mesas validad')
+            throw crearError('Seleccione mesas validas')
         }
         if (!mesa.idMesa || typeof mesa.idMesa !== 'number') {
             throw crearError('Seleccione mesas validas', 400);

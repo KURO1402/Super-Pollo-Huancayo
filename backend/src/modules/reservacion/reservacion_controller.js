@@ -1,6 +1,7 @@
 const {
     crearPreferenciaReservacionService,
-    confirmarPagoReservacionService
+    confirmarPagoReservacionService,
+    registrarReservacionManualService
 } = require('./reservacion_service');
 
 const crearPreferenciaReservacionController = async (req, res) => {
@@ -34,7 +35,22 @@ const webhookReservacionController = async (req, res) => {
     }
 };
 
+const registrarReservacionManualController = async (req, res) => {
+    try {
+        const resultado = await registrarReservacionManualService(req.body);
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
 module.exports = {
     crearPreferenciaReservacionController,
-    webhookReservacionController
+    webhookReservacionController,
+    registrarReservacionManualController
 };

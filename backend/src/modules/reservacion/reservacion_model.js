@@ -63,7 +63,7 @@ const obtenerMesaPorIdModel = async (idMesa) => {
     }
 };
 
-const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuario, mesas, fechaHoraReserva, codigoReservacion) =>{
+const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuario = null, mesas, fechaHoraReserva, codigoReservacion) =>{
     let conexion;
 
     try {
@@ -72,7 +72,7 @@ const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuari
 
         const [result] = await conexion.execute(
             'CALL sp_insertar_reservacion(?, ?, ?, ?, ?)',
-            [fecha, hora, cantidadPersonas, idUsuario, codigoReservacion] // ← agregado
+            [fecha, hora, cantidadPersonas, idUsuario, codigoReservacion] 
         );
 
         const reservacion = result[0][0];
@@ -80,7 +80,7 @@ const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuari
         for (const mesa of mesas) {
             await conexion.execute(
                 'CALL sp_insertar_mesas_reservacion(?, ?, ?)',
-                [reservacion.id_reservacion, mesa.id_mesa, fechaHoraReserva]
+                [reservacion.id_reservacion, mesa.idMesa, fechaHoraReserva]
             );
         }
 
@@ -88,7 +88,7 @@ const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuari
         return reservacion.id_reservacion;
 
     } catch (error) {
-        console.log(error.message)
+        console.log("ERROR AL RESERVAR: ", error.message)
         if (conexion) await conexion.rollback();
         throw new Error('Error al registrar la reservación');
     } finally {
