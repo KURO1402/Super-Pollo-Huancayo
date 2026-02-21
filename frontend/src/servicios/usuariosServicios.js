@@ -38,13 +38,28 @@ export const obtenerRolesUsuariosServicio = async () => {
   }
 }
 
-export const eliminarUsuarioServicio = async (idUsuario) => {
+export const actualizarRolUsuarioServicio = async (id_usuario, id_rol) => {
   try {
-    const respuesta = await API.delete(`/usuarios/${idUsuario}`);
+    const respuesta = await API.patch(`/usuarios/actualizar-rol/${id_usuario}`, {
+      nuevoRol: id_rol
+    });
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {
-      throw new Error(respuesta.data?.mensaje || "Error al crear usuario");
+      throw new Error(respuesta.data?.mensaje || "Error al actualizar rol del usuario");
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const eliminarUsuarioServicio = async (idUsuario) => {
+  try {
+    const respuesta = await API.delete(`/usuarios/eliminar-usuario/${idUsuario}`);
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al eliminar usuario");
     }
   } catch (error) {
     throw error;
@@ -101,36 +116,6 @@ export const actualizarClaveUsuarioServicio = async (idUsuario, datos) => {
       return respuesta.data;
     } else {
       throw new Error(respuesta.data?.mensaje || "Error al actualizar contraseña");
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const listarRolesServicio = async () => {
-  try {
-    const respuesta = await API.get('/usuarios/roles');
-    
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data;
-    } else {
-      throw new Error(respuesta.data?.mensaje || 'Error al listar los roles');
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const actualizarRolUsuarioServicio  = async (idUsuario, idRolNuevo) => {
-  try {
-    const respuesta = await API.patch(`/usuarios/cambiar-rol/${idUsuario}`, {
-      nuevoRol: idRolNuevo
-    });
-    
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data;
-    } else {
-      throw new Error(respuesta.data?.mensaje || 'Error al listar los roles');
     }
   } catch (error) {
     throw error;

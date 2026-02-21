@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { obtenerUsuariosServicio } from '../servicios/usuariosServicios';
+import { actualizarRolUsuarioServicio, obtenerUsuariosServicio } from '../servicios/usuariosServicios';
 
 export const useUsuariosStore = create((set, get) => ({
     usuarios: [],
@@ -23,6 +23,28 @@ export const useUsuariosStore = create((set, get) => ({
             set({ usuarios: data.usuarios, total: data.total, cargando: false, error: null });
         } catch (error) {
             set({ error: error.message, cargando: false });
+        }
+    },
+
+    actualizarRol: async (id_usuario, id_rol) => {
+        try {
+            await actualizarRolUsuarioServicio(id_usuario, id_rol);
+            await get().cargarUsuarios();
+        } catch (err) {
+            set({ error: err.message });
+            throw err;
+        }
+    },
+
+    eliminarUsuario: async (id_usuario) => {
+        try {
+            await eliminarUsuarioServicio(id_usuario);
+            set((state) => ({
+                usuarios: state.usuarios.filter((u) => u.id_usuario !== id_usuario),
+            }));
+        } catch (err) {
+            set({ error: err.message });
+            throw err;
         }
     },
 

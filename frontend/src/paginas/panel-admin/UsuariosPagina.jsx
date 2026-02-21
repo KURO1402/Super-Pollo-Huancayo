@@ -1,21 +1,21 @@
-import { useState, useEffect }    from 'react';
-import { useUsuariosStore }        from '../../store/useUsuarioStore';
-import { usePaginacion }           from '../../hooks/usePaginacion';
-    
-import FiltrosUsuarios   from '../../componentes/panel-admin/usuario/FiltrosUsuarios';
-import TablaUsuarios     from '../../componentes/panel-admin/usuario/TablaUsuarios';
+import { useEffect, useState } from 'react';
+import { useUsuariosStore } from '../../store/useUsuarioStore';
+import { usePaginacion } from '../../hooks/usePaginacion';
+import { useModal } from '../../hooks/useModal';
+
+import FiltrosUsuarios from '../../componentes/panel-admin/usuario/FiltrosUsuarios';
+import TablaUsuarios from '../../componentes/panel-admin/usuario/TablaUsuarios';
 import { Paginacion } from '../../componentes/ui/tabla/Paginacion';
-/* import ModalEditarRol    from './ModalEditarRol';
-import ModalConfirmacion from './ModalConfirmacion'; */
+import Modal from '../../componentes/ui/modal/Modal';
+import ModalEditarUsuario from '../../componentes/panel-admin/usuario/ModalEditarUsuario';
 
 const UsuariosPagina = () => {
   const {
-    usuarios, total, cargando, error,
-    paginaActual, limite, filtros,
-    cargarUsuarios,
-    setPagina, setLimite, setFiltros, limpiarFiltros,
-    limpiarError,
+    usuarios, total, cargando, error, paginaActual, limite, filtros, cargarUsuarios, setPagina, setLimite, setFiltros, limpiarFiltros, limpiarError,
   } = useUsuariosStore();
+
+  const { estaAbierto, abrir, cerrar } = useModal();
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
   const paginacion = usePaginacion({
     paginaActual,
@@ -25,61 +25,23 @@ const UsuariosPagina = () => {
     onLimite: setLimite,
   });
 
-  const [modalRol, setModalRol]     = useState({ visible: false, usuario: null });
-  const [guardando, setGuardando]   = useState(false);
-  const [toast, setToast]           = useState(null);  // { mensaje, tipo }
-
   useEffect(() => {
     cargarUsuarios();
   }, []);
 
   useEffect(() => {
-    if (error) {
-      limpiarError();
-    }
+    if (error) limpiarError();
   }, [error]);
 
-/*   const handleEditarRol = (usuario) =>
-    setModalRol({ visible: true, usuario });
+  const handleEditarRol = (usuario) => {
+    setUsuarioSeleccionado(usuario);
+    abrir();
+  };
 
   const handleCerrarModal = () => {
-    if (guardando) return;
-    setModalRol({ visible: false, usuario: null });
+    setUsuarioSeleccionado(null);
+    cerrar();
   };
-
-  const handleGuardarRol = async (id_usuario, id_rol) => {
-    setGuardando(true);
-    try {
-      await actualizarRol(id_usuario, id_rol);
-      mostrarToast('Rol actualizado ✓');
-      setModalRol({ visible: false, usuario: null });
-    } catch {
-      mostrarToast('No se pudo actualizar el rol', 'error');
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  const handleToggleEstado = async (id_usuario, activo) => {
-    try {
-      await toggleEstado(id_usuario, activo);
-      mostrarToast(activo ? 'Usuario activado ✓' : 'Usuario desactivado ✓');
-    } catch {
-      mostrarToast('No se pudo cambiar el estado', 'error');
-    }
-  };
-
-  const handleEliminar = (usuario) => {
-    confirmar({
-      titulo:   'Eliminar usuario',
-      mensaje:  `¿Eliminar a ${usuario.nombre_usuario} ${usuario.apellido_usuario}? Esta acción no se puede deshacer.`,
-      tipo:     'danger',
-      onAceptar: async () => {
-        await eliminarUsuario(usuario.id_usuario);
-        mostrarToast('Usuario eliminado ✓');
-      },
-    });
-  }; */
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -95,23 +57,18 @@ const UsuariosPagina = () => {
           </p>
         </div>
 
-        {/* Filtros */}
         <FiltrosUsuarios
           filtros={filtros}
           onCambio={setFiltros}
           onLimpiar={limpiarFiltros}
         />
 
-        {/* Tabla */}
         <TablaUsuarios
           usuarios={usuarios}
           cargando={cargando}
-          /* onEditarRol={handleEditarRol}
-          onEliminar={handleEliminar}
-          onToggleEstado={handleToggleEstado} */
+          onEditarRol={handleEditarRol}
         />
 
-        {/* Paginación */}
         {total > 0 && (
           <div className="mt-4">
             <Paginacion {...paginacion} />
@@ -119,22 +76,21 @@ const UsuariosPagina = () => {
         )}
       </div>
 
-      {/* Modal editar rol */}
-      {/* {modalRol.visible && (
-        <ModalEditarRol
-          usuario={modalRol.usuario}
-          onGuardar={handleGuardarRol}
-          onCerrar={handleCerrarModal}
-          cargando={guardando}
-        />
-      )} */}
-
-      {/* Modal confirmación */}
-      {/* <ModalConfirmacion
-        estado={modalConfirm}
-        onAceptar={aceptar}
-        onCancelar={cancelar}
-      /> */}
+      <Modal
+        estaAbierto={estaAbierto}
+        onCerrar={handleCerrarModal}
+        titulo="Editar rol del usuario"
+        tamaño="md"
+        mostrarHeader
+        mostrarFooter={false}
+      >
+        {usuarioSeleccionado && (
+          <ModalEditarUsuario
+            usuario={usuarioSeleccionado}
+            onClose={handleCerrarModal}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

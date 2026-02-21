@@ -33,7 +33,7 @@ const Modal = ({
   if (!estaAbierto) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onCerrar} />
       <div
         className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${tamaños[tamaño]} max-h-[90vh] flex flex-col z-10`}
