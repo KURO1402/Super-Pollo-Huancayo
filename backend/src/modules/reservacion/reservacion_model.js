@@ -114,21 +114,79 @@ const registrarPagoReservacionModel = async (montoTotal, montoPagado, porcentaje
     }
 };
 
-const obtenerReservacionPorCodigoModel = async (codigo) => {
+const confirmarReservacionModel = async (idReservacion) => {
     let conexion;
-
     try {
         conexion = await pool.getConnection();
-
-        const [result] = await conexion.execute(
-            'CALL sp_obtener_reservacion_por_codigo(?)',
-            [codigo]
-        );
-
-        return result[0][0];
-
+        const [result] = await conexion.execute('CALL sp_confirmar_reservacion(?)', [idReservacion]);
+        return result[0][0]?.mensaje;
     } catch (err) {
-        throw new Error('Error al buscar la reservación por código');
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const cancelarReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_cancelar_reservacion(?)', [idReservacion]);
+        return result[0][0]?.mensaje;
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerEstadoReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_estado_reservacion(?)', [idReservacion]);
+        return result[0][0]?.estado_reservacion;
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerReservacionPorCodigoModel = async (codigo) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_reservacion_por_codigo(?)', [codigo]);
+        return result[0][0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const contarReservacionPorIdModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_contar_reservacion_por_id(?)', [idReservacion]);
+        return result[0][0]?.total;
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerMesasPorIdReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_mesas_por_id_reservacion(?)', [idReservacion]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
     } finally {
         if (conexion) conexion.release();
     }
@@ -140,5 +198,10 @@ module.exports = {
     obtenerMesaPorIdModel,
     registrarReservacionModel,
     registrarPagoReservacionModel,
-    obtenerReservacionPorCodigoModel
+    confirmarReservacionModel,
+    cancelarReservacionModel,
+    obtenerEstadoReservacionModel,
+    obtenerReservacionPorCodigoModel,
+    contarReservacionPorIdModel,
+    obtenerMesasPorIdReservacionModel
 }

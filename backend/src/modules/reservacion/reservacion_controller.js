@@ -1,7 +1,10 @@
 const {
     crearPreferenciaReservacionService,
     confirmarPagoReservacionService,
-    registrarReservacionManualService
+    registrarReservacionManualService,
+    obtenerReservacionPorCodigoService,
+    confirmarReservacionService,
+    cancelarReservacionService
 } = require('./reservacion_service');
 
 const crearPreferenciaReservacionController = async (req, res) => {
@@ -49,8 +52,53 @@ const registrarReservacionManualController = async (req, res) => {
     }
 };
 
+const obtenerReservacionPorCodigoController = async (req, res) => {
+    try {
+        const { codigo } = req.params;
+        const resultado = await obtenerReservacionPorCodigoService(codigo);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
+const confirmarReservacionController = async (req, res) => {
+    try {
+        const { idReservacion } = req.params;
+        const resultado = await confirmarReservacionService(Number(idReservacion));
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
+const cancelarReservacionController = async (req, res) => {
+    try {
+        const { idReservacion } = req.params;
+        const resultado = await cancelarReservacionService(Number(idReservacion));
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+}
+
 module.exports = {
     crearPreferenciaReservacionController,
     webhookReservacionController,
-    registrarReservacionManualController
+    registrarReservacionManualController,
+    obtenerReservacionPorCodigoController,
+    confirmarReservacionController,
+    cancelarReservacionController
 };

@@ -11,7 +11,12 @@ const {
     obtenerMesaPorIdModel,
     registrarReservacionModel,
     registrarPagoReservacionModel,
-    obtenerReservacionPorCodigoModel
+    confirmarReservacionModel,
+    cancelarReservacionModel,
+    obtenerEstadoReservacionModel,
+    obtenerReservacionPorCodigoModel,
+    contarReservacionPorIdModel,
+    obtenerMesasPorIdReservacionModel
 } = require('./reservacion_model');
 
 const { validarDatosReservacion } = require('./reservacion_validacion');
@@ -191,8 +196,80 @@ const registrarReservacionManualService = async (datos) => {
     };
 };
 
+const obtenerReservacionPorCodigoService = async (codigo) => {
+    if (!codigo || typeof codigo !== "string" || codigo.length > 6) {
+        throw crearError('Se necesita el codigo de reserva', 400);
+    }
+
+    const reservacion = await obtenerReservacionPorCodigoModel(codigo);
+    if (!reservacion) throw crearError('Reservación no encontrada', 404);
+
+    const mesas = await obtenerMesasPorIdReservacionModel(reservacion.id_reservacion);
+
+    return { 
+        ok: true,
+        reservacion: {
+            ...reservacion,
+            mesas
+        }
+    };
+};
+
+const confirmarReservacionService = async (idReservacion) => {
+    if(!idReservacion || typeof idReservacion !== 'number' || isNaN(Number(idReservacion))) {
+        throw crearError('Se necesita especificar la reserva', 400);
+    };
+
+    const reservacionID = Number(idReservacion);
+
+    // Verificar que existe
+    const existe = await contarReservacionPorIdModel(reservacionID);
+    if (!existe) throw crearError('Reservación no encontrada', 404);
+
+    // Verificar estado
+    const estado = await obtenerEstadoReservacionModel(reservacionID);
+
+    if (estado === 'completado') throw crearError('La reservación ya está confirmada', 400);
+
+    if (estado === 'cancelado') throw crearError('No se puede confirmar una reservación cancelada', 400);
+
+    const mensaje = await confirmarReservacionModel(reservacionID);
+
+    return { 
+        ok: true, 
+        mensaje 
+    };
+};
+
+const cancelarReservacionService = async (idReservacion) => {
+    if(!idReservacion || typeof idReservacion !== 'number' || isNaN(Number(idReservacion))) {
+        throw crearError('Se necesita especificar la reserva', 400);
+    }
+
+    const reservacionID = Number(idReservacion);
+
+    // Verificar que existe
+    const existe = await contarReservacionPorIdModel(reservacionID);
+    if (!existe) throw crearError('Reservación no encontrada', 404);
+
+    // Verificar estado
+    const estado = await obtenerEstadoReservacionModel(reservacionID);
+    if (estado === 'cancelado') throw crearError('La reservación ya está cancelada', 400);
+    if (estado === 'completado') throw crearError('No se puede cancelar una reservación ya completada', 400);
+
+    const mensaje = await cancelarReservacionModel(reservacionID);
+
+    return { 
+        ok: true, 
+        mensaje 
+    };
+};
+
 module.exports = {
     crearPreferenciaReservacionService,
     confirmarPagoReservacionService,
-    registrarReservacionManualService
+    registrarReservacionManualService,
+    obtenerReservacionPorCodigoService,
+    confirmarReservacionService,
+    cancelarReservacionService
 };

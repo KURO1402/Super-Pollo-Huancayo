@@ -7,6 +7,11 @@ DROP PROCEDURE IF EXISTS sp_insertar_reservacion;
 DROP PROCEDURE IF EXISTS sp_insertar_mesas_reservacion;
 DROP PROCEDURE IF EXISTS sp_insertar_pago_reservacion;
 DROP PROCEDURE IF EXISTS sp_obtener_reservacion_por_codigo;
+DROP PROCEDURE IF EXISTS sp_confirmar_reservacion;
+DROP PROCEDURE IF EXISTS sp_cancelar_reservacion;
+DROP PROCEDURE IF EXISTS sp_obtener_estado_reservacion;
+DROP PROCEDURE IF EXISTS sp_contar_reservacion_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_mesas_por_id_reservacion;
 
 DELIMITER //
 
@@ -173,9 +178,86 @@ CREATE PROCEDURE sp_obtener_reservacion_por_codigo(
     IN p_codigo CHAR(6)
 )
 BEGIN
-    SELECT id_reservacion, estado_reservacion
+    SELECT 
+        r.id_reservacion,
+        DATE_FORMAT(r.fecha_reservacion, '%d-%m-%Y') AS fecha_reservacion,
+        DATE_FORMAT(r.hora_reservacion, '%H:%i') AS hora_reservacion,
+        r.cantidad_personas,
+        r.estado_reservacion,
+        COALESCE(CONCAT(u.nombre_usuario, ' ', u.apellido_usuario), '----') AS usuario
+    FROM reservaciones r
+    LEFT JOIN usuarios u ON r.id_usuario = u.id_usuario
+    WHERE r.codigo_reservacion = p_codigo;
+END //
+
+CREATE PROCEDURE sp_confirmar_reservacion(
+    IN p_id_reservacion INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE reservaciones
+    SET estado_reservacion = 'completado'
+    WHERE id_reservacion = p_id_reservacion;
+
+    COMMIT;
+
+    SELECT 'Reservación confirmada exitosamente' AS mensaje;
+END //
+
+CREATE PROCEDURE sp_cancelar_reservacion(
+    IN p_id_reservacion INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE reservaciones
+    SET estado_reservacion = 'cancelado'
+    WHERE id_reservacion = p_id_reservacion;
+
+    COMMIT;
+
+    SELECT 'Reservación cancelada exitosamente' AS mensaje;
+END //
+
+CREATE PROCEDURE sp_obtener_estado_reservacion(
+    IN p_id_reservacion INT
+)
+BEGIN
+    SELECT estado_reservacion
     FROM reservaciones
-    WHERE codigo_reservacion = p_codigo;
+    WHERE id_reservacion = p_id_reservacion;
+END //
+
+CREATE PROCEDURE sp_contar_reservacion_por_id(
+    IN p_id_reservacion INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM reservaciones
+    WHERE id_reservacion = p_id_reservacion;
+END //
+
+CREATE PROCEDURE sp_obtener_mesas_por_id_reservacion(
+    IN p_id_reservacion INT
+)
+BEGIN
+    SELECT m.numero_mesa
+    FROM mesas_reservacion mr
+    INNER JOIN mesas m ON mr.id_mesa = m.id_mesa
+    WHERE mr.id_reservacion = p_id_reservacion;
 END //
 
 DELIMITER ;
