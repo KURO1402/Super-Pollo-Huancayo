@@ -4,7 +4,8 @@ const {
     registrarReservacionManualService,
     obtenerReservacionPorCodigoService,
     confirmarReservacionService,
-    cancelarReservacionService
+    cancelarReservacionService,
+    listarMesasDisponibilidadService
 } = require('./reservacion_service');
 
 const crearPreferenciaReservacionController = async (req, res) => {
@@ -92,7 +93,21 @@ const cancelarReservacionController = async (req, res) => {
             mensaje: err.message || 'Error interno del servidor'
         });
     }
-}
+};
+
+const listarMesasDisponibilidadController = async (req, res) => {
+    try {
+        const { fecha, hora } = req.query;
+        const resultado = await listarMesasDisponibilidadService(fecha, hora);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
 
 module.exports = {
     crearPreferenciaReservacionController,
@@ -100,5 +115,6 @@ module.exports = {
     registrarReservacionManualController,
     obtenerReservacionPorCodigoController,
     confirmarReservacionController,
-    cancelarReservacionController
+    cancelarReservacionController,
+    listarMesasDisponibilidadController
 };

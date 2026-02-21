@@ -16,7 +16,8 @@ const {
     obtenerEstadoReservacionModel,
     obtenerReservacionPorCodigoModel,
     contarReservacionPorIdModel,
-    obtenerMesasPorIdReservacionModel
+    obtenerMesasPorIdReservacionModel,
+    listarMesasDisponibilidadModel
 } = require('./reservacion_model');
 
 const { validarDatosReservacion } = require('./reservacion_validacion');
@@ -265,11 +266,37 @@ const cancelarReservacionService = async (idReservacion) => {
     };
 };
 
+const listarMesasDisponibilidadService = async (fecha, hora) => {
+
+    if (!fecha || isNaN(Date.parse(fecha))) {
+        throw crearError('La fecha es obligatoria y debe tener formato válido (YYYY-MM-DD)', 400);
+    }
+
+    const formatoHora = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!hora || !formatoHora.test(hora)) {
+        throw crearError('La hora es obligatoria y debe tener formato válido (HH:MM)', 400);
+    }
+
+    const fechaHora = `${fecha} ${hora}`;
+
+    const mesas = await listarMesasDisponibilidadModel(fechaHora);
+
+    if (!mesas || mesas.length === 0) {
+        throw crearError('No hay mesas registradas', 404);
+    }
+
+    return {
+        ok: true,
+        mesas
+    };
+};
+
 module.exports = {
     crearPreferenciaReservacionService,
     confirmarPagoReservacionService,
     registrarReservacionManualService,
     obtenerReservacionPorCodigoService,
     confirmarReservacionService,
-    cancelarReservacionService
+    cancelarReservacionService,
+    listarMesasDisponibilidadService
 };

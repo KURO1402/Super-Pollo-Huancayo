@@ -7,7 +7,8 @@ const {
     registrarReservacionManualController,
     obtenerReservacionPorCodigoController,
     confirmarReservacionController,
-    cancelarReservacionController
+    cancelarReservacionController,
+    listarMesasDisponibilidadController
 } = require('./reservacion_controller');
 
 router.post('/crear-reserva', autenticacionToken, crearPreferenciaReservacionController);
@@ -16,5 +17,6 @@ router.post('/reserva-manual', autenticacionToken, verificarRoles(2, 3), registr
 router.get('/reservacion-codigo/:codigo', autenticacionToken, verificarRoles(2,3), obtenerReservacionPorCodigoController);
 router.patch('/confirmar-reservacion/:idReservacion', autenticacionToken, verificarRoles(2,3), confirmarReservacionController);
 router.patch('/cancelar-reservacion/:idReservacion', autenticacionToken, verificarRoles(2, 3), cancelarReservacionController);
+router.get('/mesas',listarMesasDisponibilidadController);
 
 module.exports = router;

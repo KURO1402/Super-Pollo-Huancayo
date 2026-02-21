@@ -12,6 +12,7 @@ DROP PROCEDURE IF EXISTS sp_cancelar_reservacion;
 DROP PROCEDURE IF EXISTS sp_obtener_estado_reservacion;
 DROP PROCEDURE IF EXISTS sp_contar_reservacion_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_mesas_por_id_reservacion;
+DROP PROCEDURE IF EXISTS sp_listar_mesas_disponibilidad;
 
 DELIMITER //
 
@@ -258,6 +259,37 @@ BEGIN
     FROM mesas_reservacion mr
     INNER JOIN mesas m ON mr.id_mesa = m.id_mesa
     WHERE mr.id_reservacion = p_id_reservacion;
+END //
+
+CREATE PROCEDURE sp_listar_mesas_disponibilidad(
+    IN p_fecha_hora DATETIME
+)
+BEGIN
+    DELETE FROM bloqueos_temporales_mesa
+    WHERE expira_en < NOW();
+
+    SELECT 
+        m.id_mesa,
+        m.numero_mesa,
+        m.capacidad,
+        CASE
+            WHEN EXISTS (
+                SELECT 1 FROM mesas_reservacion mr
+                INNER JOIN reservaciones r ON mr.id_reservacion = r.id_reservacion
+                WHERE mr.id_mesa = m.id_mesa
+                  AND p_fecha_hora BETWEEN mr.reserva_desde AND mr.reserva_hasta
+                  AND r.estado_reservacion <> 'cancelado'
+            ) THEN 'no disponible'
+            WHEN EXISTS (
+                SELECT 1 FROM bloqueos_temporales_mesa b
+                WHERE b.id_mesa = m.id_mesa
+                  AND p_fecha_hora BETWEEN b.bloqueado_desde AND b.bloqueado_hasta
+                  AND b.expira_en > NOW()
+            ) THEN 'no disponible'
+            ELSE 'disponible'
+        END AS estado
+    FROM mesas m
+    ORDER BY m.numero_mesa;
 END //
 
 DELIMITER ;

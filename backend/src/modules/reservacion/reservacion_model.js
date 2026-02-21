@@ -192,6 +192,19 @@ const obtenerMesasPorIdReservacionModel = async (idReservacion) => {
     }
 };
 
+const listarMesasDisponibilidadModel = async (fechaHora) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_listar_mesas_disponibilidad(?)', [fechaHora]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
     ocuparMesasModel,
     verificarMesaDisponibleModel,
@@ -203,5 +216,6 @@ module.exports = {
     obtenerEstadoReservacionModel,
     obtenerReservacionPorCodigoModel,
     contarReservacionPorIdModel,
-    obtenerMesasPorIdReservacionModel
+    obtenerMesasPorIdReservacionModel,
+    listarMesasDisponibilidadModel
 }
