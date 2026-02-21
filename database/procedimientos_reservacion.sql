@@ -13,6 +13,11 @@ DROP PROCEDURE IF EXISTS sp_obtener_estado_reservacion;
 DROP PROCEDURE IF EXISTS sp_contar_reservacion_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_mesas_por_id_reservacion;
 DROP PROCEDURE IF EXISTS sp_listar_mesas_disponibilidad;
+DROP PROCEDURE IF EXISTS sp_listar_reservaciones_por_rango;
+DROP PROCEDURE IF EXISTS sp_listar_reservaciones_por_usuario;
+DROP PROCEDURE IF EXISTS sp_obtener_reservacion_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_pago_por_reservacion;
+
 
 DELIMITER //
 
@@ -148,26 +153,20 @@ BEGIN
 END //
 
 CREATE PROCEDURE sp_insertar_pago_reservacion(
-    IN p_monto_total DECIMAL(5,2),
     IN p_monto_pagado DECIMAL(5,2),
-    IN p_porcentaje_pago INT,
     IN p_id_transaccion VARCHAR(100),
     IN p_id_reservacion INT
 )
 BEGIN
     INSERT INTO pago_reservacion(
-        monto_total,
         monto_pagado,
-        porcentaje_pago,
         id_transaccion,
         fecha_pago,
         estado_pago,
         id_reservacion
     )
     VALUES (
-        p_monto_total,
         p_monto_pagado,
-        p_porcentaje_pago,
         p_id_transaccion,
         NOW(),
         'confirmado',
@@ -290,6 +289,68 @@ BEGIN
         END AS estado
     FROM mesas m
     ORDER BY m.numero_mesa;
+END //
+
+CREATE PROCEDURE sp_listar_reservaciones_por_rango(
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE
+)
+BEGIN
+    SELECT
+        r.id_reservacion,
+        DATE_FORMAT(r.fecha_reservacion, '%d-%m-%Y') AS fecha_reservacion,
+        DATE_FORMAT(r.hora_reservacion, '%H:%i') AS hora_reservacion,
+        r.estado_reservacion
+    FROM reservaciones r
+    WHERE r.fecha_reservacion BETWEEN p_fecha_inicio AND p_fecha_fin
+    ORDER BY r.fecha_reservacion ASC, r.hora_reservacion ASC;
+END //
+
+CREATE PROCEDURE sp_listar_reservaciones_por_usuario(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT
+        r.id_reservacion,
+        DATE_FORMAT(r.fecha_reservacion, '%d-%m-%Y') AS fecha_reservacion,
+        DATE_FORMAT(r.hora_reservacion, '%H:%i') AS hora_reservacion,
+        r.estado_reservacion
+    FROM reservaciones r
+    WHERE r.id_usuario = p_id_usuario
+    ORDER BY r.fecha_reservacion ASC, r.hora_reservacion ASC;
+END //
+
+
+CREATE PROCEDURE sp_obtener_reservacion_por_id(
+    IN p_id_reservacion INT
+)
+BEGIN
+    SELECT
+        r.id_reservacion,
+        DATE_FORMAT(r.fecha_reservacion, '%d-%m-%Y') AS fecha_reservacion,
+        DATE_FORMAT(r.hora_reservacion, '%H:%i') AS hora_reservacion,
+        r.cantidad_personas,
+        r.estado_reservacion,
+        r.codigo_reservacion,
+        r.fecha_creacion,
+        r.id_usuario,
+        COALESCE(CONCAT(u.nombre_usuario, ' ', u.apellido_usuario), '----') AS nombre_completo
+    FROM reservaciones r
+    LEFT JOIN usuarios u ON r.id_usuario = u.id_usuario
+    WHERE r.id_reservacion = p_id_reservacion;
+END //
+
+CREATE PROCEDURE sp_obtener_pago_por_reservacion(
+    IN p_id_reservacion INT
+)
+BEGIN
+    SELECT
+        id_pago,
+        monto_pagado,
+        DATE_FORMAT(fecha_pago, '%d-%m-%Y %H:%i:%s') AS fecha_hora_pago,
+        estado_pago
+    FROM pago_reservacion
+    WHERE id_reservacion = p_id_reservacion;
 END //
 
 DELIMITER ;

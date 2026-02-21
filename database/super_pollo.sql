@@ -249,9 +249,7 @@ CREATE TABLE mesas_reservacion (
 -- Tabla para pagos de las reservaciones
 CREATE TABLE pago_reservacion (
     id_pago INT AUTO_INCREMENT PRIMARY KEY,
-    monto_total DECIMAL(5,2) NOT NULL,
     monto_pagado DECIMAL(5,2) NOT NULL,
-    porcentaje_pago INT NOT NULL,
     id_transaccion VARCHAR(100) NOT NULL,
     fecha_pago DATETIME NOT NULL,
     estado_pago ENUM('pendiente','confirmado','fallido') NOT NULL,

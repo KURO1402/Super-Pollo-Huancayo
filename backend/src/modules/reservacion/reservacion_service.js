@@ -17,7 +17,11 @@ const {
     obtenerReservacionPorCodigoModel,
     contarReservacionPorIdModel,
     obtenerMesasPorIdReservacionModel,
-    listarMesasDisponibilidadModel
+    listarMesasDisponibilidadModel,
+    listarReservacionesPorFechaModel,
+    listarReservacionesPorUsuarioModel,
+    obtenerReservacionPorIdModel,
+    obtenerPagoPorReservacionModel
 } = require('./reservacion_model');
 
 const { validarDatosReservacion } = require('./reservacion_validacion');
@@ -86,6 +90,9 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     const result = await preference.create({
         body: {
             items,
+            payment_methods: {
+                installments: 1
+            },
             metadata: {
                 codigo_reservacion: codigoReservacion,
                 fecha,
@@ -133,7 +140,7 @@ const confirmarPagoReservacionService = async (paymentId) => {
 
     const idReservacion = await registrarReservacionModel(fecha, hora, cantidad_personas, id_usuario, mesas, fechaHoraReserva, codigoReservacion);
 
-    await registrarPagoReservacionModel(monto_total, montoPagado, Math.round((montoPagado / monto_total) * 100), String(paymentId), idReservacion);
+    await registrarPagoReservacionModel(montoPagado, String(paymentId), idReservacion);
 
     await enviarCorreoReservacion({ correo, codigoReservacion, fecha, hora, cantidadPersonas: cantidad_personas, mesas });
 };
@@ -187,7 +194,9 @@ const registrarReservacionManualService = async (datos) => {
 
     const codigoReservacion = generarCodigoReservacion();
 
-    await registrarReservacionModel(fecha, hora, cantidadPersonas, null, mesas, fechaHoraReserva, codigoReservacion);
+    const idReservacion = await registrarReservacionModel(fecha, hora, cantidadPersonas, null, mesas, fechaHoraReserva, codigoReservacion);
+
+    await registrarPagoReservacionModel(10 * mesas.length, null, idReservacion);
 
     const info = await enviarCorreoReservacion({ correo, codigoReservacion, fecha, hora, cantidadPersonas, mesasConInfo });
 
@@ -291,6 +300,94 @@ const listarMesasDisponibilidadService = async (fecha, hora) => {
     };
 };
 
+const listarReservacionesPorFechaService = async (fechaInicio, fechaFin) => {
+    if (!fechaInicio || isNaN(Date.parse(fechaInicio))) {
+        throw crearError('La fecha de inicio es obligatoria y debe tener formato válido (YYYY-MM-DD)', 400);
+    }
+
+    if (!fechaFin || isNaN(Date.parse(fechaFin))) {
+        throw crearError('La fecha de fin es obligatoria y debe tener formato válido (YYYY-MM-DD)', 400);
+    }
+
+    if (new Date(fechaInicio) > new Date(fechaFin)) {
+        throw crearError('La fecha de inicio no puede ser mayor a la fecha de fin', 400);
+    }
+
+    const reservaciones = await listarReservacionesPorFechaModel(fechaInicio, fechaFin);
+
+    if (!reservaciones || reservaciones.length === 0) {
+        throw crearError('No hay reservaciones en este rango de fechas', 404);
+    }
+
+    return { 
+        ok: true, 
+        reservaciones 
+    };
+};
+
+const listarReservacionesPorUsuarioService = async (idUsuario) => {
+
+    const reservaciones = await listarReservacionesPorUsuarioModel(idUsuario);
+
+    if (!reservaciones || reservaciones.length === 0) {
+        throw crearError('No hay reservaciones para este usuario', 404);
+    }
+
+    return { 
+        ok: true, 
+        reservaciones 
+    };
+};
+
+const obtenerReservacionPorIdService = async (idReservacion, idUsuario, rol) => {
+    if (!idReservacion || isNaN(Number(idReservacion))) {
+        throw crearError('Se necesita especificar la reservacion', 400);
+    }
+    const reservacionID = Number(idReservacion);
+
+    const reservacion = await obtenerReservacionPorIdModel(reservacionID);
+    if (!reservacion) throw crearError('Reservación no encontrada', 404);
+    if (rol !== 2 && rol !== 3) {
+        if (reservacion.id_usuario !== idUsuario) {
+            throw crearError('No tienes permiso para ver esta reservación', 403);
+        }
+    }   
+
+    const mesas = await obtenerMesasPorIdReservacionModel(reservacion.id_reservacion);
+
+    const { id_usuario, ...reservacionSinId } = reservacion;
+
+    return {
+        ok: true,
+        reservacion: {
+            ...reservacionSinId,
+            mesas
+        }
+    };
+};
+
+const obtenerPagoPorReservacionService = async (idReservacion, idUsuario, rol) => {
+    if (!idReservacion || isNaN(Number(idReservacion))) {
+        throw crearError('Se necesita especificar la reservacion', 400);
+    }
+
+    const reservacionID = Number(idReservacion);
+
+    const reservacion = await obtenerReservacionPorIdModel(reservacionID);
+    if (!reservacion) throw crearError('Reservación no encontrada', 404);
+
+    if (rol !== 2 && rol !== 3) {
+        if (reservacion.id_usuario !== idUsuario) {
+            throw crearError('No tienes permiso para ver este pago', 403);
+        }
+    }
+
+    const pago = await obtenerPagoPorReservacionModel(reservacionID);
+    if (!pago) throw crearError('No se encontró pago para esta reservación', 404);
+
+    return { ok: true, pago };
+};
+
 module.exports = {
     crearPreferenciaReservacionService,
     confirmarPagoReservacionService,
@@ -298,5 +395,9 @@ module.exports = {
     obtenerReservacionPorCodigoService,
     confirmarReservacionService,
     cancelarReservacionService,
-    listarMesasDisponibilidadService
+    listarMesasDisponibilidadService,
+    listarReservacionesPorFechaService,
+    listarReservacionesPorUsuarioService,
+    obtenerReservacionPorIdService,
+    obtenerPagoPorReservacionService
 };

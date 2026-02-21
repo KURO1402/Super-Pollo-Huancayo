@@ -96,17 +96,14 @@ const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuari
     }
 };
 
-const registrarPagoReservacionModel = async (montoTotal, montoPagado, porcentajePago, idTransaccion, idReservacion) => {
+const registrarPagoReservacionModel = async (montoPagado, idTransaccion, idReservacion) => {
     let conexion;
-
     try {
         conexion = await pool.getConnection();
-
         await conexion.execute(
-            'CALL sp_insertar_pago_reservacion(?, ?, ?, ?, ?)',
-            [montoTotal, montoPagado, porcentajePago, idTransaccion, idReservacion]
+            'CALL sp_insertar_pago_reservacion(?, ?, ?)',
+            [montoPagado, idTransaccion, idReservacion]
         );
-
     } catch (err) {
         throw new Error('Error al registrar el pago de la reservación');
     } finally {
@@ -205,6 +202,58 @@ const listarMesasDisponibilidadModel = async (fechaHora) => {
     }
 };
 
+const listarReservacionesPorFechaModel = async (fechaInicio, fechaFin) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_listar_reservaciones_por_rango(?, ?)', [fechaInicio, fechaFin]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const listarReservacionesPorUsuarioModel = async (idUsuario) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_listar_reservaciones_por_usuario(?)', [idUsuario]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerReservacionPorIdModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_reservacion_por_id(?)', [idReservacion]);
+        return result[0][0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerPagoPorReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_pago_por_reservacion(?)', [idReservacion]);
+        return result[0][0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
     ocuparMesasModel,
     verificarMesaDisponibleModel,
@@ -217,5 +266,9 @@ module.exports = {
     obtenerReservacionPorCodigoModel,
     contarReservacionPorIdModel,
     obtenerMesasPorIdReservacionModel,
-    listarMesasDisponibilidadModel
+    listarMesasDisponibilidadModel,
+    listarReservacionesPorFechaModel,
+    listarReservacionesPorUsuarioModel,
+    obtenerReservacionPorIdModel,
+    obtenerPagoPorReservacionModel
 }

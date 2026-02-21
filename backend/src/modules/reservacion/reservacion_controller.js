@@ -5,7 +5,11 @@ const {
     obtenerReservacionPorCodigoService,
     confirmarReservacionService,
     cancelarReservacionService,
-    listarMesasDisponibilidadService
+    listarMesasDisponibilidadService,
+    listarReservacionesPorFechaService,
+    listarReservacionesPorUsuarioService,
+    obtenerReservacionPorIdService,
+    obtenerPagoPorReservacionService
 } = require('./reservacion_service');
 
 const crearPreferenciaReservacionController = async (req, res) => {
@@ -109,6 +113,64 @@ const listarMesasDisponibilidadController = async (req, res) => {
     }
 };
 
+const listarReservacionesPorFechaController = async (req, res) => {
+    try {
+        const { fecha_inicio, fecha_fin } = req.query;
+        const resultado = await listarReservacionesPorFechaService(fecha_inicio, fecha_fin);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
+const listarReservacionesPorUsuarioController = async (req, res) => {
+    try {
+        const { id_usuario } = req.usuario;
+        const resultado = await listarReservacionesPorUsuarioService(id_usuario);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
+const obtenerReservacionPorIdController = async (req, res) => {
+    try {
+        const { id_reservacion } = req.params;
+        const { id_usuario, id_rol } = req.usuario;
+        const resultado = await obtenerReservacionPorIdService(id_reservacion, id_usuario, id_rol);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
+const obtenerPagoPorReservacionController = async (req, res) => {
+    try {
+        const { id_reservacion } = req.params;
+        const { id_usuario, id_rol } = req.usuario;
+        const resultado = await obtenerPagoPorReservacionService(id_reservacion, id_usuario, id_rol);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
 module.exports = {
     crearPreferenciaReservacionController,
     webhookReservacionController,
@@ -116,5 +178,9 @@ module.exports = {
     obtenerReservacionPorCodigoController,
     confirmarReservacionController,
     cancelarReservacionController,
-    listarMesasDisponibilidadController
+    listarMesasDisponibilidadController,
+    listarReservacionesPorFechaController,
+    listarReservacionesPorUsuarioController,
+    obtenerReservacionPorIdController,
+    obtenerPagoPorReservacionController
 };
