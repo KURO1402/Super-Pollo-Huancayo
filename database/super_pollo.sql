@@ -9,11 +9,14 @@ DROP TABLE IF EXISTS movimientos_caja;
 DROP TABLE IF EXISTS eventos_caja;
 DROP TABLE IF EXISTS usuario_rol;
 DROP TABLE IF EXISTS imagenes_producto;
+DROP TABLE IF EXISTS mesas_reservacion;
+DROP TABLE IF EXISTS bloqueos_temporales_mesa;
 
 -- Tablas intermedias
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS insumos;
 DROP TABLE IF EXISTS caja;
+DROP TABLE IF EXISTS pago_reservacion;
 
 -- Tablas base
 DROP TABLE IF EXISTS categorias_producto;
@@ -23,6 +26,8 @@ DROP TABLE IF EXISTS verificacion_correos;
 DROP TABLE IF EXISTS tipo_documento;
 DROP TABLE IF EXISTS medio_pago;
 DROP TABLE IF EXISTS tipo_comprobante;
+DROP TABLE IF EXISTS mesas;
+DROP TABLE IF EXISTS reservaciones;
 
 -- Tabla para verificar correos
 CREATE TABLE verificacion_correos(
@@ -195,4 +200,59 @@ CREATE TABLE tipo_comprobante (
   serie VARCHAR(5) NOT NULL,
   correlativo INT NOT NULL DEFAULT 0,
   estado_comprobante TINYINT(1) NOT NULL DEFAULT 1
+);
+
+-- Tabla para mesas
+CREATE TABLE mesas (
+    id_mesa INT AUTO_INCREMENT PRIMARY KEY,
+    numero_mesa INT NOT NULL,
+    capacidad INT NOT NULL
+);
+
+-- Tabla para blouqeos de mesa
+CREATE TABLE bloqueos_temporales_mesa (
+    id_bloqueo INT AUTO_INCREMENT PRIMARY KEY,
+    id_mesa INT NOT NULL,
+    id_usuario INT NOT NULL,
+    bloqueado_desde DATETIME NOT NULL,
+    bloqueado_hasta DATETIME NOT NULL,
+    expira_en DATETIME NOT NULL,
+    FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+);
+
+
+-- Tabla para reservaciones
+CREATE TABLE reservaciones (
+    id_reservacion INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_reservacion DATE NOT NULL,
+    hora_reservacion TIME NOT NULL,
+    cantidad_personas INT NOT NULL,
+    estado_reservacion ENUM('pendiente','cancelado', 'completado') NOT NULL DEFAULT 'pendiente',
+    codigo_reservacion CHAR(6) DEFAULT NULL,
+    fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_usuario INT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+);
+
+-- Tabla intermedia para las mesas de una reservacion
+CREATE TABLE mesas_reservacion (
+    id_mesa INT NOT NULL,
+    id_reservacion INT NOT NULL,
+    reserva_desde DATETIME,
+    reserva_hasta DATETIME
+    PRIMARY KEY (id_mesa, id_reservacion),
+    FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_reservacion) REFERENCES reservaciones(id_reservacion) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Tabla para pagos de las reservaciones
+CREATE TABLE pago_reservacion (
+    id_pago INT AUTO_INCREMENT PRIMARY KEY,
+    monto_pagado DECIMAL(5,2) NOT NULL,
+    id_transaccion VARCHAR(100) NOT NULL,
+    fecha_pago DATETIME NOT NULL,
+    estado_pago ENUM('pendiente','confirmado','fallido') NOT NULL,
+    id_reservacion INT NOT NULL,
+    FOREIGN KEY (id_reservacion) REFERENCES reservaciones(id_reservacion)
 );

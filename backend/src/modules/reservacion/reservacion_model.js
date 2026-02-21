@@ -1,0 +1,274 @@
+const pool = require('../../config/conexion_DB');
+
+const ocuparMesasModel = async (mesas, idUsuario, fechaActual) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        await conexion.beginTransaction();
+
+        if (Array.isArray(mesas)) {
+            for (const mesa of mesas) {
+                await conexion.execute('CALL sp_bloquear_mesa(?, ?, ?)', [mesa.idMesa, idUsuario, fechaActual]
+                );
+            }
+        }
+
+        await conexion.commit();
+
+        return 'Mesas ocupadas exitosamente';
+
+    } catch (err) {
+        if (conexion) await conexion.rollback();
+        console.error("Error en el modelo:", err.message);
+        throw new Error('Error al procesar el grupo de mesas. No se realizaron cambios.');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const verificarMesaDisponibleModel = async (idMesa, fechaHora, idUsuario) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_verificar_mesa_disponible(?, ?, ?)',[idMesa, fechaHora, idUsuario]);
+        return result[0][0]?.conflictos;
+
+    } catch (err) {
+        console.log(err.message)
+        throw new Error('Error al verificar disponibilidad de la mesa');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerMesaPorIdModel = async (idMesa) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute('CALL sp_obtener_mesa_por_id(?)', [idMesa]);
+
+        return result[0][0];
+
+    } catch (err) {
+        console.error('Error en obtenerMesaPorIdModel:', err.message);
+        
+        throw new Error('Error al consultar los datos de la mesa en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuario = null, mesas, fechaHoraReserva, codigoReservacion) =>{
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+        await conexion.beginTransaction();
+
+        const [result] = await conexion.execute(
+            'CALL sp_insertar_reservacion(?, ?, ?, ?, ?)',
+            [fecha, hora, cantidadPersonas, idUsuario, codigoReservacion] 
+        );
+
+        const reservacion = result[0][0];
+
+        for (const mesa of mesas) {
+            await conexion.execute(
+                'CALL sp_insertar_mesas_reservacion(?, ?, ?)',
+                [reservacion.id_reservacion, mesa.idMesa, fechaHoraReserva]
+            );
+        }
+
+        await conexion.commit();
+        return reservacion.id_reservacion;
+
+    } catch (error) {
+        console.log("ERROR AL RESERVAR: ", error.message)
+        if (conexion) await conexion.rollback();
+        throw new Error('Error al registrar la reservación');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const registrarPagoReservacionModel = async (montoPagado, idTransaccion, idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        await conexion.execute(
+            'CALL sp_insertar_pago_reservacion(?, ?, ?)',
+            [montoPagado, idTransaccion, idReservacion]
+        );
+    } catch (err) {
+        throw new Error('Error al registrar el pago de la reservación');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const confirmarReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_confirmar_reservacion(?)', [idReservacion]);
+        return result[0][0]?.mensaje;
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const cancelarReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_cancelar_reservacion(?)', [idReservacion]);
+        return result[0][0]?.mensaje;
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerEstadoReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_estado_reservacion(?)', [idReservacion]);
+        return result[0][0]?.estado_reservacion;
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerReservacionPorCodigoModel = async (codigo) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_reservacion_por_codigo(?)', [codigo]);
+        return result[0][0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const contarReservacionPorIdModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_contar_reservacion_por_id(?)', [idReservacion]);
+        return result[0][0]?.total;
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerMesasPorIdReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_mesas_por_id_reservacion(?)', [idReservacion]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const listarMesasDisponibilidadModel = async (fechaHora) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_listar_mesas_disponibilidad(?)', [fechaHora]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const listarReservacionesPorFechaModel = async (fechaInicio, fechaFin) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_listar_reservaciones_por_rango(?, ?)', [fechaInicio, fechaFin]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const listarReservacionesPorUsuarioModel = async (idUsuario) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_listar_reservaciones_por_usuario(?)', [idUsuario]);
+        return result[0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerReservacionPorIdModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_reservacion_por_id(?)', [idReservacion]);
+        return result[0][0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerPagoPorReservacionModel = async (idReservacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_obtener_pago_por_reservacion(?)', [idReservacion]);
+        return result[0][0];
+    } catch (err) {
+        throw new Error(err.message);
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+module.exports = {
+    ocuparMesasModel,
+    verificarMesaDisponibleModel,
+    obtenerMesaPorIdModel,
+    registrarReservacionModel,
+    registrarPagoReservacionModel,
+    confirmarReservacionModel,
+    cancelarReservacionModel,
+    obtenerEstadoReservacionModel,
+    obtenerReservacionPorCodigoModel,
+    contarReservacionPorIdModel,
+    obtenerMesasPorIdReservacionModel,
+    listarMesasDisponibilidadModel,
+    listarReservacionesPorFechaModel,
+    listarReservacionesPorUsuarioModel,
+    obtenerReservacionPorIdModel,
+    obtenerPagoPorReservacionModel
+}
