@@ -240,7 +240,7 @@ CREATE TABLE mesas_reservacion (
     id_mesa INT NOT NULL,
     id_reservacion INT NOT NULL,
     reserva_desde DATETIME,
-    reserva_hasta DATETIME
+    reserva_hasta DATETIME,
     PRIMARY KEY (id_mesa, id_reservacion),
     FOREIGN KEY (id_mesa) REFERENCES mesas(id_mesa) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_reservacion) REFERENCES reservaciones(id_reservacion) ON DELETE CASCADE ON UPDATE CASCADE
