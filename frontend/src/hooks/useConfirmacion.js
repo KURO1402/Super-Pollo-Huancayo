@@ -30,9 +30,9 @@ export const useConfirmacion = () => {
     }));
   };
 
-  const confirmarAccion = () => {
+  const confirmarAccion = async () => {
     if (estadoConfirmacion.onConfirmar) {
-      estadoConfirmacion.onConfirmar();
+      await estadoConfirmacion.onConfirmar();
     }
     ocultarConfirmacion();
   };

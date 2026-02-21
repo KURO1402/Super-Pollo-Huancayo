@@ -1,14 +1,14 @@
 import { FiEdit, FiTrash2, FiMail, FiPhone } from "react-icons/fi";
 import { Tabla } from '../../ui/tabla/Tabla';
 
-const TablaUsuarios = ({ usuarios, cargando, onEditarRol }) => {
+const TablaUsuarios = ({ usuarios, cargando, onEditarRol, onEliminarUsuario  }) => {
   return (
     <Tabla encabezados={['Usuario', 'Correo', 'Teléfono', 'Rol', 'Acciones']} 
-    registros={usuarios.map(u => <FilaUsuario key={u.id_usuario} usuario={u} onEditarRol={onEditarRol} />)} cargando={cargando} />
+    registros={usuarios.map(u => <FilaUsuario key={u.id_usuario} usuario={u} onEditarRol={onEditarRol} onEliminarUsuario={onEliminarUsuario} />)} cargando={cargando} />
   );
 };
 
-const FilaUsuario = ({ usuario, onEditarRol }) => {
+const FilaUsuario = ({ usuario, onEditarRol, onEliminarUsuario }) => {
   const handleEditar = () => {
     if (onEditarRol) {
       onEditarRol(usuario);
@@ -59,7 +59,16 @@ const FilaUsuario = ({ usuario, onEditarRol }) => {
         }
       </td>
       <td className="px-6 py-4">
+        { usuario.id_rol === 3 ? 
         <div className="flex items-center gap-2">
+          <div className="p-1.5 ">
+            <FiEdit className="w-4 h-4 text-gray-500"/>
+          </div>
+          <div className="p-1.5 ">
+            <FiTrash2 className="w-4 h-4 text-gray-500"/>
+          </div>
+        </div>
+        : <div className="flex items-center gap-2">
           <button
             onClick={handleEditar}
             className="p-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
@@ -77,6 +86,7 @@ const FilaUsuario = ({ usuario, onEditarRol }) => {
           </button>
           }
         </div>
+        }
       </td>
     </tr>
   );

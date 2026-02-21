@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { actualizarRolUsuarioServicio, obtenerUsuariosServicio } from '../servicios/usuariosServicios';
+import { actualizarRolUsuarioServicio, eliminarUsuarioServicio, obtenerUsuariosServicio } from '../servicios/usuariosServicios';
 
 export const useUsuariosStore = create((set, get) => ({
     usuarios: [],

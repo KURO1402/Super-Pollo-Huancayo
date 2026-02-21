@@ -53,9 +53,9 @@ export const actualizarRolUsuarioServicio = async (id_usuario, id_rol) => {
   }
 }
 
-export const eliminarUsuarioServicio = async (idUsuario) => {
+export const eliminarUsuarioServicio = async (id_usuario) => {
   try {
-    const respuesta = await API.delete(`/usuarios/eliminar-usuario/${idUsuario}`);
+    const respuesta = await API.delete(`/usuarios/eliminar-usuario/${id_usuario}`);
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {

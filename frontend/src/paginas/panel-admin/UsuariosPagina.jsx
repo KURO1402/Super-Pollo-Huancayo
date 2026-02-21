@@ -2,16 +2,18 @@ import { useEffect, useState } from 'react';
 import { useUsuariosStore } from '../../store/useUsuarioStore';
 import { usePaginacion } from '../../hooks/usePaginacion';
 import { useModal } from '../../hooks/useModal';
-
 import FiltrosUsuarios from '../../componentes/panel-admin/usuario/FiltrosUsuarios';
 import TablaUsuarios from '../../componentes/panel-admin/usuario/TablaUsuarios';
 import { Paginacion } from '../../componentes/ui/tabla/Paginacion';
 import Modal from '../../componentes/ui/modal/Modal';
 import ModalEditarUsuario from '../../componentes/panel-admin/usuario/ModalEditarUsuario';
+import {useConfirmacion} from '../../hooks/useConfirmacion';
+import {ModalConfirmacion} from '../../componentes/ui/modal/ModalConfirmacion';
+import mostrarAlerta from '../../utilidades/toastUtilidades';
 
 const UsuariosPagina = () => {
   const {
-    usuarios, total, cargando, error, paginaActual, limite, filtros, cargarUsuarios, setPagina, setLimite, setFiltros, limpiarFiltros, limpiarError,
+    usuarios, total, cargando, error, paginaActual, limite, filtros, cargarUsuarios, setPagina, setLimite, setFiltros, limpiarFiltros, limpiarError, eliminarUsuario,
   } = useUsuariosStore();
 
   const { estaAbierto, abrir, cerrar } = useModal();
@@ -24,6 +26,18 @@ const UsuariosPagina = () => {
     onPagina: setPagina,
     onLimite: setLimite,
   });
+
+  const {
+    confirmacionVisible,
+    mensajeConfirmacion,
+    tituloConfirmacion,
+    tipoConfirmacion,
+    textoConfirmar,
+    textoCancelar,
+    solicitarConfirmacion,
+    ocultarConfirmacion,
+    confirmarAccion,
+  } = useConfirmacion();
 
   useEffect(() => {
     cargarUsuarios();
@@ -41,6 +55,22 @@ const UsuariosPagina = () => {
   const handleCerrarModal = () => {
     setUsuarioSeleccionado(null);
     cerrar();
+  };
+
+  const handleSolicitarEliminacion = (usuario) => {
+    solicitarConfirmacion(
+      `¿Estás seguro de eliminar al usuario ${usuario.nombre_usuario} ${usuario.apellido_usuario}?`,
+      async () => {
+        await eliminarUsuario(usuario.id_usuario);
+        mostrarAlerta.exito('Usuario eliminado correctamente');
+      },
+      {
+        titulo: 'Eliminar Usuario',
+        tipo: 'peligro',
+        textoConfirmar: 'Eliminar',
+        textoCancelar: 'Cancelar',
+      }
+    );
   };
 
   return (
@@ -67,6 +97,7 @@ const UsuariosPagina = () => {
           usuarios={usuarios}
           cargando={cargando}
           onEditarRol={handleEditarRol}
+          onEliminarUsuario={handleSolicitarEliminacion}
         />
 
         {total > 0 && (
@@ -91,6 +122,17 @@ const UsuariosPagina = () => {
           />
         )}
       </Modal>
+
+      <ModalConfirmacion
+        visible={confirmacionVisible}
+        onCerrar={ocultarConfirmacion}
+        onConfirmar={confirmarAccion}
+        titulo={tituloConfirmacion}
+        mensaje={mensajeConfirmacion}
+        textoConfirmar={textoConfirmar}
+        textoCancelar={textoCancelar}
+        tipo={tipoConfirmacion}
+      />
     </div>
   );
 };
