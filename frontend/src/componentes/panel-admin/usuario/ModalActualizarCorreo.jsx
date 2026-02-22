@@ -4,7 +4,8 @@ import { actualizarCorreoUsuarioServicio } from "../../../servicios/usuariosServ
 import { BotonSimple } from "../../ui/botones/BotonSimple";
 import mostrarAlerta from "../../../utilidades/toastUtilidades";
 
-const ModalActualizarCorreo = ({ idUsuario, correoActual, onClose, onCorreoActualizado }) => {
+const ModalActualizarCorreo = ({ correoActual, onClose, onCorreoActualizado }) => {
+  
   const [formData, setFormData] = useState({
     nuevoCorreo: "",
     clave: ""
@@ -29,7 +30,7 @@ const ModalActualizarCorreo = ({ idUsuario, correoActual, onClose, onCorreoActua
         clave: formData.clave
       };
 
-      const resultado = await actualizarCorreoUsuarioServicio(idUsuario, datosEnvio);
+      const resultado = await actualizarCorreoUsuarioServicio(datosEnvio);
 
       mostrarAlerta.exito(resultado.mensaje || "Correo actualizado exitosamente");
       onClose();

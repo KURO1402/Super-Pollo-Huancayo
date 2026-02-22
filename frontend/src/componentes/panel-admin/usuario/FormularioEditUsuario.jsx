@@ -1,9 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { obtenerTiposDocumento } from "../../../servicios/tiposDocService";
 
 const FormularioEditUsuario = ({ usuario, onSubmit, cerrar }) => {
-    const [tiposDocumento, setTiposDocumento] = useState([]);
     const{
         register,
         handleSubmit,
@@ -15,13 +13,10 @@ const FormularioEditUsuario = ({ usuario, onSubmit, cerrar }) => {
       if (!usuarioData) return {};
       
       return {
-        nombre: usuarioData.nombresUsuario || '',
-        apellido: usuarioData.apellidosUsuario || '',
-        tipoDocumento: usuarioData.nombreTipoDocumento || '',
-        numeroDocumento: usuarioData.numeroDocumentoUsuario || '',
-        telefono: usuarioData.telefonoUsuario || '',
-        idUsuario: usuarioData.idUsuario,
-        idTipoDocumento: usuarioData.idTipoDocumento,
+        nombre: usuarioData.nombre_usuario || '',
+        apellido: usuarioData.apellido_usuario || '',
+        telefono: usuarioData.telefono_usuario || '',
+        idUsuario: usuarioData.id_usuario,
         idRol: usuarioData.idRol
       };
     };
@@ -36,36 +31,17 @@ const FormularioEditUsuario = ({ usuario, onSubmit, cerrar }) => {
     const manejarEnvio = (datosFormulario) => {
       const datosParaBackend = {
         idUsuario: usuario.idUsuario,
-        nombresUsuario: datosFormulario.nombre,
-        apellidosUsuario: datosFormulario.apellido,
-        numeroDocumentoUsuario: datosFormulario.numeroDocumento,
+        nombreUsuario: datosFormulario.nombre,
+        apellidoUsuario: datosFormulario.apellido,
         telefonoUsuario: datosFormulario.telefono,
-        idTipoDocumento: datosFormulario.idTipoDocumento || usuario.idTipoDocumento,
-        idRol: usuario.idRol,
-        nombreRol: usuario.nombreRol,
-        nombreTipoDocumento: datosFormulario.tipoDocumento
       };
       
       onSubmit(datosParaBackend);
     };
 
-    useEffect(() => {
-        const fetchTiposDocumento = async () => {
-        try {
-            const data = await obtenerTiposDocumento();
-            const tiposFiltrados = data.filter(tipo => 
-              tipo.nombreTipoDocumento !== 'RUC'
-            );
-            setTiposDocumento(tiposFiltrados);
-        } catch (error) {
-        }
-        };
-        fetchTiposDocumento();
-    }, []);
-
     return ( 
         <form onSubmit={handleSubmit(manejarEnvio)} className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -81,6 +57,7 @@ const FormularioEditUsuario = ({ usuario, onSubmit, cerrar }) => {
                   <p className="mt-1 text-sm text-red-600">{errors.nombre.message}</p>
                 )}
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Apellido *
@@ -95,52 +72,7 @@ const FormularioEditUsuario = ({ usuario, onSubmit, cerrar }) => {
                   <p className="mt-1 text-sm text-red-600">{errors.apellido.message}</p>
                 )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Tipo de Documento *
-                </label>
-                <select
-                  {...register("tipoDocumento", { required: "Selecciona un tipo de documento" })}
-                  className="w-full h-11 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                >
-                  <option value="">Seleccione</option>
-                  {tiposDocumento.map((tipo) => (
-                    <option 
-                      key={tipo.idTipoDocumento} 
-                      value={tipo.nombreTipoDocumento}
-                      selected={tipo.nombreTipoDocumento === usuario?.nombreTipoDocumento}
-                    >
-                      {tipo.nombreTipoDocumento}
-                    </option>
-                  ))}
-                </select>
-                {errors.tipoDocumento && (
-                  <p className="mt-1 text-sm text-red-600">{errors.tipoDocumento.message}</p>
-                )}
-              </div>
-            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Número de Documento *
-                </label>
-                <input
-                  type="text"
-                  {...register("numeroDocumento", { 
-                    required: "El número de documento es requerido",
-                    pattern: {
-                      value: /^[0-9]+$/,
-                      message: "Solo se permiten números"
-                    }
-                  })}
-                  className="w-full h-11 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                  placeholder="Ingresa tu número de documento"
-                />
-                {errors.numeroDocumento && (
-                  <p className="mt-1 text-sm text-red-600">{errors.numeroDocumento.message}</p>
-                )}
-              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Teléfono

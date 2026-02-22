@@ -1,50 +1,74 @@
-import API from "./axiosConfiguracion";
+import API from './axiosConfiguracion';
 
-export const obtenerUsuariosServicio = async () => {
+export const obtenerUsuariosServicio = async ({ limite = 10, offset = 0, filtros = {}} = {}) => {
   try {
-    const respuesta = await API.get('/usuarios');
-    
+    const parametros = new URLSearchParams();
+
+    parametros.append('limit', limite);
+    parametros.append('offset', offset);
+
+    if(filtros.busqueda)parametros.append('busqueda', filtros.busqueda);
+    if(filtros.rol)parametros.append('rol', filtros.rol);
+
+    const respuesta = await API.get(`/usuarios?${parametros.toString()}`);
+
     if (respuesta.data && respuesta.data.ok) {
-      
-      return respuesta.data.usuarios;
+      return {
+        usuarios: respuesta.data.usuarios ?? [],
+        total: respuesta.data.cantidad_filas ?? 0,
+      }
     } else {
-      throw new Error(respuesta.data?.mensaje || "Error al obtener usuarios");
+      throw new Error(respuesta.data?.mensaje || 'Error al obtener usuarios');
     }
   } catch (error) {
     throw error;
   }
 };
 
-export const eliminarUsuarioServicio = async (idUsuario) => {
+export const obtenerRolesUsuariosServicio = async () => {
   try {
-    const respuesta = await API.delete(`/usuarios/${idUsuario}`);
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data;
-    } else {
-      throw new Error(respuesta.data?.mensaje || "Error al crear usuario");
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const actualizarUsuarioServicio = async (idUsuario, datosActualizados) => {
-  try {
-    const respuesta = await API.put(`/usuarios/actualizar-usuario/${idUsuario}`, datosActualizados);
-    
+    const respuesta = await API.get('/usuarios/roles');
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {
-      throw new Error(respuesta.data?.mensaje || "Error al actualizar usuario");
+      throw new Error(respuesta.data?.mensaje || 'Error al obtener roles de usuarios');
     }
   } catch (error) {
     throw error;
   }
-};
+}
 
-export const obtenerUsuarioPorIdServicio = async (idUsuario) => {
+export const actualizarRolUsuarioServicio = async (id_usuario, id_rol) => {
   try {
-    const respuesta = await API.get(`/usuarios/${idUsuario}`);
+    const respuesta = await API.patch(`/usuarios/actualizar-rol/${id_usuario}`, {
+      nuevoRol: id_rol
+    });
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al actualizar rol del usuario");
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const eliminarUsuarioServicio = async (id_usuario) => {
+  try {
+    const respuesta = await API.delete(`/usuarios/eliminar-usuario/${id_usuario}`);
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al eliminar usuario");
+    }
+  } catch (error) {
+    throw error;
+  }
+}; //
+
+export const obtenerUsuarioPorIdServicio = async () => {
+  try {
+    const respuesta = await API.get(`/usuarios/usuario`);
     
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -56,9 +80,25 @@ export const obtenerUsuarioPorIdServicio = async (idUsuario) => {
   }
 };
 
-export const actualizarCorreoUsuarioServicio = async (idUsuario, datos) => {
+export const actualizarUsuarioServicio = async (idUsuario, datosActualizados) => {
+  console.log("Actualizando usuario con ID:", idUsuario, "Datos:", datosActualizados);
   try {
-    const respuesta = await API.patch(`/usuarios/actualizar-correo/${idUsuario}`, datos);
+    const respuesta = await API.patch(`/usuarios/actualizar-usuario`, datosActualizados);
+    
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al actualizar usuario");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const actualizarCorreoUsuarioServicio = async (datos) => {
+  console.log("Actualizando correo con datos:", datos);
+  try {
+    const respuesta = await API.patch(`/usuarios/actualizar-correo`, datos);
     
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -70,44 +110,14 @@ export const actualizarCorreoUsuarioServicio = async (idUsuario, datos) => {
   }
 };
 
-export const actualizarClaveUsuarioServicio = async (idUsuario, datos) => {
+export const actualizarClaveUsuarioServicio = async (datos) => {
   try {
-    const respuesta = await API.patch(`/usuarios/actualizar-clave/${idUsuario}`, datos);
+    const respuesta = await API.patch(`/usuarios/actualizar-clave`, datos);
     
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {
       throw new Error(respuesta.data?.mensaje || "Error al actualizar contraseña");
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const listarRolesServicio = async () => {
-  try {
-    const respuesta = await API.get('/usuarios/roles');
-    
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data;
-    } else {
-      throw new Error(respuesta.data?.mensaje || 'Error al listar los roles');
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const actualizarRolUsuarioServicio  = async (idUsuario, idRolNuevo) => {
-  try {
-    const respuesta = await API.patch(`/usuarios/cambiar-rol/${idUsuario}`, {
-      nuevoRol: idRolNuevo
-    });
-    
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data;
-    } else {
-      throw new Error(respuesta.data?.mensaje || 'Error al listar los roles');
     }
   } catch (error) {
     throw error;
