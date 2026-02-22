@@ -42,9 +42,8 @@ const Perfil = () => {
       try {
         setCargando(true);
         
-        if (usuarioGlobal?.idUsuario) {
-          const respuesta = await obtenerUsuarioPorIdServicio(usuarioGlobal.idUsuario);
-          
+        if (usuarioGlobal.id_usuario) {
+          const respuesta = await obtenerUsuarioPorIdServicio();
           if (respuesta.ok && respuesta.usuario) {
             setUsuarioPerfil(respuesta.usuario);
           } else {
@@ -53,13 +52,11 @@ const Perfil = () => {
         } else {
           setUsuarioPerfil({
             idUsuario: 1,
-            nombresUsuario: "Juan",
-            apellidosUsuario: "Pérez Casas",
-            idTipoDocumento: 1,
-            numeroDocumentoUsuario: "12345678",
+            nombresUsuario: "Usuario",
+            apellidosUsuario: "Demo",
             correoUsuario: "juan@example.com",
             telefonoUsuario: "987654321",
-            idRol: 2,
+            idRol: 3,
             estadoUsuario: "activo"
           });
         }
@@ -67,13 +64,11 @@ const Perfil = () => {
         mostrarAlerta.error('Error al cargar los datos del perfil');
         
         setUsuarioPerfil({
-          idUsuario: usuarioGlobal?.idUsuario || 1,
+          idUsuario: usuarioGlobal?.id_usuario || 1,
           nombresUsuario: "Usuario",
           apellidosUsuario: "Demo",
           idTipoDocumento: 1,
-          numeroDocumentoUsuario: "00000000",
           correoUsuario: "usuario@demo.com",
-          telefonoUsuario: "000000000",
           idRol: 3,
           estadoUsuario: "activo"
         });
@@ -97,7 +92,7 @@ const Perfil = () => {
       setActualizando(true);
       
       const respuesta = await actualizarUsuarioServicio(
-        usuarioPerfil.idUsuario, 
+        usuarioPerfil.id_usuario, 
         datosActualizados
       );
       
@@ -122,25 +117,6 @@ const Perfil = () => {
     } finally {
       setActualizando(false);
     }
-  };
-
-  const obtenerTipoDocumento = (idTipoDocumento) => {
-    const tipos = {
-      1: "DNI",
-      2: "Pasaporte", 
-      3: "Carné de extranjería",
-      4: "RUC"
-    };
-    return tipos[idTipoDocumento] || "No especificado";
-  };
-
-  const obtenerRol = (idRol) => {
-    const roles = {
-      1: "Superadministrador",
-      2: "Administrador",
-      3: "Usuario"
-    };
-    return roles[idRol] || "No especificado";
   };
 
   const getIniciales = (nombres, apellidos) => {
@@ -180,21 +156,21 @@ const Perfil = () => {
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="px-8 py-8 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-6">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center shadow-md">
                 <span className="text-3xl font-bold text-white">
-                  {getIniciales(usuarioPerfil.nombresUsuario, usuarioPerfil.apellidosUsuario)}
+                  {getIniciales(usuarioPerfil.nombre_usuario, usuarioPerfil.apellido_usuario)}
                 </span>
               </div>
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {usuarioPerfil.nombresUsuario} {usuarioPerfil.apellidosUsuario}
+                {usuarioPerfil.nombre_usuario} {usuarioPerfil.apellido_usuario}
               </h1>
               <div className="flex items-center gap-4 text-gray-600 dark:text-gray-300">
                 <div className="flex items-center gap-2">
                   <FiBriefcase className="w-4 h-4" />
-                  <span>{obtenerRol(usuarioPerfil.idRol)}</span>
+                  <span>{usuarioPerfil.nombre_rol}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
@@ -214,7 +190,7 @@ const Perfil = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                <p className="font-medium text-gray-900 dark:text-white">{usuarioPerfil.correoUsuario}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{usuarioPerfil.correo_usuario}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -223,7 +199,7 @@ const Perfil = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Teléfono</p>
-                <p className="font-medium text-gray-900 dark:text-white">{usuarioPerfil.telefonoUsuario || 'No especificado'}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{usuarioPerfil.telefono_usuario || 'No especificado'}</p>
               </div>
             </div>
           </div>
@@ -249,12 +225,12 @@ const Perfil = () => {
                 <CampoInfo 
                   icono={FiUser}
                   etiqueta="Nombres"
-                  valor={usuarioPerfil.nombresUsuario}
+                  valor={usuarioPerfil.nombre_usuario}
                 />
                 <CampoInfo 
                   icono={FiUser}
                   etiqueta="Apellidos"
-                  valor={usuarioPerfil.apellidosUsuario}
+                  valor={usuarioPerfil.apellido_usuario}
                 />
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -262,7 +238,7 @@ const Perfil = () => {
                   <FiMail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   <div>
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Correo electrónico</p>
-                    <p className="text-gray-900 dark:text-white">{usuarioPerfil.correoUsuario}</p>
+                    <p className="text-gray-900 dark:text-white">{usuarioPerfil.correo_usuario}</p>
                   </div>
                 </div>
                 <BotonSimple
@@ -275,27 +251,46 @@ const Perfil = () => {
               <CampoInfo 
                 icono={FiPhone}
                 etiqueta="Teléfono"
-                valor={usuarioPerfil.telefonoUsuario || 'No especificado'}
+                valor={usuarioPerfil.telefono_usuario || 'No especificado'}
               />
             </div>
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <CampoInfo 
-                  icono={FiFileText}
-                  etiqueta="Tipo de documento"
-                  valor={obtenerTipoDocumento(usuarioPerfil.idTipoDocumento)}
-                />
-                <CampoInfo 
-                  icono={FiFileText}
-                  etiqueta="Número de documento"
-                  valor={usuarioPerfil.numeroDocumentoUsuario}
-                />
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Historial de Roles
+                </h3>
+
+                <div className="relative border-l border-gray-200 dark:border-gray-700 pl-6 space-y-6">
+                  {usuarioPerfil.roles.map((rol, index) => (
+                    <div key={index} className="relative">
+                      <span className="absolute -left-2.25 top-1.5 w-4 h-4 rounded-full bg-blue-600 dark:bg-blue-500"></span>
+
+                      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">
+                            {rol.nombre_rol}
+                          </p>
+
+                          {rol.fecha_fin === "--" && (
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                              Rol actual
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex gap-4">
+                          <span>
+                            <strong>Inicio:</strong> {rol.fecha_inicio}
+                          </span>
+                          <span>
+                            <strong>Fin:</strong> {rol.fecha_fin}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <CampoInfo 
-                icono={FiBriefcase}
-                etiqueta="Rol Usuario"
-                valor={obtenerRol(usuarioPerfil.idRol)}
-              />
 
               <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
@@ -321,7 +316,7 @@ const Perfil = () => {
         estaAbierto={modalEditarAbierto}
         onCerrar={cerrarEditar}
         titulo="Editar Perfil"
-        tamaño="lg"
+        tamaño="md"
         mostrarHeader
         mostrarFooter={false}
       >
@@ -345,8 +340,8 @@ const Perfil = () => {
       >
         {usuarioPerfil && (
           <ModalActualizarCorreo
-            idUsuario={usuarioPerfil.idUsuario}
-            correoActual={usuarioPerfil.correoUsuario}
+            idUsuario={usuarioPerfil.id_usuario}
+            correoActual={usuarioPerfil.correo_usuario}
             onClose={cerrarCorreo}
             onCorreoActualizado={handleCorreoActualizado}
           />

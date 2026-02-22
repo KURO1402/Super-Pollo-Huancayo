@@ -61,7 +61,7 @@ const ModalActualizarClave = ({ idUsuario, onClose }) => {
       nuevaClave: formData.nuevaClave
     };
 
-    const resultado = await actualizarClaveUsuarioServicio(idUsuario, datosEnvio);
+    const resultado = await actualizarClaveUsuarioServicio(datosEnvio);
   
     if (!resultado.ok) {
       throw new Error(resultado.mensaje || "Error en la respuesta del servidor");

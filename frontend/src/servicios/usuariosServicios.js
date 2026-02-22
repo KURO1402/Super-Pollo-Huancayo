@@ -64,25 +64,11 @@ export const eliminarUsuarioServicio = async (id_usuario) => {
   } catch (error) {
     throw error;
   }
-};
+}; //
 
-export const actualizarUsuarioServicio = async (idUsuario, datosActualizados) => {
+export const obtenerUsuarioPorIdServicio = async () => {
   try {
-    const respuesta = await API.put(`/usuarios/actualizar-usuario/${idUsuario}`, datosActualizados);
-    
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data;
-    } else {
-      throw new Error(respuesta.data?.mensaje || "Error al actualizar usuario");
-    }
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const obtenerUsuarioPorIdServicio = async (idUsuario) => {
-  try {
-    const respuesta = await API.get(`/usuarios/${idUsuario}`);
+    const respuesta = await API.get(`/usuarios/usuario`);
     
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -94,9 +80,25 @@ export const obtenerUsuarioPorIdServicio = async (idUsuario) => {
   }
 };
 
-export const actualizarCorreoUsuarioServicio = async (idUsuario, datos) => {
+export const actualizarUsuarioServicio = async (idUsuario, datosActualizados) => {
+  console.log("Actualizando usuario con ID:", idUsuario, "Datos:", datosActualizados);
   try {
-    const respuesta = await API.patch(`/usuarios/actualizar-correo/${idUsuario}`, datos);
+    const respuesta = await API.patch(`/usuarios/actualizar-usuario`, datosActualizados);
+    
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al actualizar usuario");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const actualizarCorreoUsuarioServicio = async (datos) => {
+  console.log("Actualizando correo con datos:", datos);
+  try {
+    const respuesta = await API.patch(`/usuarios/actualizar-correo`, datos);
     
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -108,9 +110,9 @@ export const actualizarCorreoUsuarioServicio = async (idUsuario, datos) => {
   }
 };
 
-export const actualizarClaveUsuarioServicio = async (idUsuario, datos) => {
+export const actualizarClaveUsuarioServicio = async (datos) => {
   try {
-    const respuesta = await API.patch(`/usuarios/actualizar-clave/${idUsuario}`, datos);
+    const respuesta = await API.patch(`/usuarios/actualizar-clave`, datos);
     
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
