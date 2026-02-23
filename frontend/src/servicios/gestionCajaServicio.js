@@ -72,12 +72,13 @@ export const registrarEgresoServicio = async (data) => {
 };
 
 export const registrarArqueoServicio = async (data) => {
+  console.log("Datos recibidos en registrarArqueoServicio:", data);
   try {
     const datosParaBackend = {
       montoFisico: Number(data.montoFisico) || 0,       
       montoTarjeta: Number(data.montoTarjeta) || 0,        
       montoBilleteraDigital: Number(data.montoBilleteraDigital) || 0,
-      otros:Number(data.otros) || 0
+      montoOtros:Number(data.otros) || 0
     }
     const respuesta = await API.post('/caja/arqueo-caja', datosParaBackend);
     

@@ -59,12 +59,6 @@ const CajaActualPagina = () => {
       cargarMovimientos();
     }
   }, [cajaAbierta, cajaActual.id_caja, paginaActual, limite, filtros]);
-  useEffect(() => {
-    if (error) {
-      mostrarAlerta.error(error);
-      limpiarError();
-    }
-  }, [error]);
 
   useEffect(() => {
     rehidratarCaja();
@@ -97,7 +91,8 @@ const CajaActualPagina = () => {
           await cerrarCaja();
           mostrarAlerta.exito("Caja cerrada con éxito");
         } catch (error) {
-          mostrarAlerta.error(error.message || "Error al cerrar caja");
+          console.error("Error al cerrar caja:", error);
+          mostrarAlerta.error("Primero debe hacer al menos un arqueo de caja");
         }
       },
       {
@@ -141,7 +136,7 @@ const CajaActualPagina = () => {
       modalArqueo.cerrar();
       mostrarAlerta.exito("Arqueo registrado con éxito");
     } catch (error) {
-      mostrarAlerta.error(error.message || "Error al registrar arqueo");
+      mostrarAlerta.error("Error al registrar arqueo");
     }
   };
 

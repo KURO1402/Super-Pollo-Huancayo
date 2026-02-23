@@ -30,42 +30,46 @@ API.interceptors.request.use(
 );
 
 API.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-        
-        if ((error.response?.status === 403 || error.response?.status === 401) && 
-            !originalRequest._retry && 
-            !originalRequest.url.includes('/renovar-token')) {
-            
-            originalRequest._retry = true;
-            
-            try {
-                const refreshResponse = await axios.post(
-                    `${import.meta.env.VITE_BACKEND_URL}/autenticacion/renovar-token`,
-                    {},
-                    { withCredentials: true }
-                );
-                const nuevoAccessToken = refreshResponse.data.accessToken;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-                useAutenticacionStore.getState().setAccessToken(nuevoAccessToken)
-                
-                originalRequest.headers['Authorization'] = `Bearer ${nuevoAccessToken}`;
+    const isAuthError =
+      error.response?.status === 401 &&
+      originalRequest.url.includes('/autenticacion');
 
-                return API(originalRequest);
+    if (
+      isAuthError &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes('/renovar-token')
+    ) {
+      originalRequest._retry = true;
 
-            } catch (refreshError) {
+      try {
+        const refreshResponse = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/autenticacion/renovar-token`,
+          {},
+          { withCredentials: true }
+        );
 
-                useAutenticacionStore.getState().logout();
+        const nuevoAccessToken = refreshResponse.data.accessToken;
 
-                window.location.href = '/inicio-sesion';
-                
-                return Promise.reject(refreshError);
-            }
-        }
-        
-        return Promise.reject(error);
+        useAutenticacionStore.getState().setAccessToken(nuevoAccessToken);
+
+        originalRequest.headers['Authorization'] =
+          `Bearer ${nuevoAccessToken}`;
+
+        return API(originalRequest);
+
+      } catch (refreshError) {
+        useAutenticacionStore.getState().logout();
+        window.location.href = '/inicio-sesion';
+        return Promise.reject(refreshError);
+      }
     }
+
+    return Promise.reject(error);
+  }
 );
 
 export default API;

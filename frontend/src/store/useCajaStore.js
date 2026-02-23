@@ -45,12 +45,15 @@ export const useCajaStore = create(
         try {
           const resp = await abrirCajaServicio(datos);
           const caja = resp.caja;
+
+          const saldoInicial = Number(caja.saldo_inicial) || 0;
+
           set({
             cajaActual: {
               id_caja: caja.id_caja,
               estado: 'abierta',
-              saldoInicial: Number(caja.saldo_inicial) || 0,
-              saldoActual: Number(caja.monto_actual),
+              saldoInicial,
+              saldoActual: saldoInicial,
               ingresos: 0,
               egresos: 0,
               fechaApertura: caja.fecha_caja,
@@ -75,13 +78,23 @@ export const useCajaStore = create(
         try {
           await cerrarCajaServicio();
 
-          set((state) => ({
+          set({
             cajaActual: {
-              ...state.cajaActual,
-              estado: 'cerrada'
+              id_caja: null,
+              estado: 'cerrada',
+              saldoInicial: 0,
+              saldoActual: 0,
+              ingresos: 0,
+              egresos: 0,
+              fechaApertura: null,
+              usuarioApertura: null
             },
+            movimientos: [],
+            totalMovimientos: 0,
+            paginaActual: 1,
             cargando: false
-          }));
+          });
+          
         } catch (err) {
           set({ error: err.message, cargando: false });
           throw err;
@@ -175,7 +188,6 @@ export const useCajaStore = create(
 
       cargarMovimientos: async () => {
         const { paginaActual, limite, cajaActual } = get();
-
         if (!cajaActual.id_caja) return;
 
         const offset = (paginaActual - 1) * limite;
@@ -184,16 +196,15 @@ export const useCajaStore = create(
 
         try {
           const resp = await obtenerMovimientosPorCajaServicio(
-            cajaActual.id_caja, 
+            cajaActual.id_caja,
             { limit: limite, offset }
           );
 
           set({
-            movimientos: resp.movimientos,
-            totalMovimientos: resp.cantidad_filas,
+            movimientos: resp.movimientos || [],
+            totalMovimientos: resp.cantidad_filas || 0,
             cargando: false
           });
-
         } catch (err) {
           set({ error: err.message, cargando: false });
         }
@@ -206,13 +217,10 @@ export const useCajaStore = create(
         set({ cargando: true, error: null });
 
         try {
-          const resp = await obtenerCajasCerradasServicio({
-            limite,
-            offset
-          });
+          const resp = await obtenerCajasCerradasServicio({ limite, offset });
 
           set({
-            cajasCerradas: resp.cajas || resp.data || [],
+            cajasCerradas: resp.cajas || [],
             totalCajasCerradas: resp.total || 0,
             cargando: false
           });
@@ -263,7 +271,6 @@ export const useCajaStore = create(
           error: null
         })
     }),
-
     {
       name: 'caja-minima',
       partialize: (state) => ({

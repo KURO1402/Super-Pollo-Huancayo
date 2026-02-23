@@ -1,14 +1,12 @@
 import { useForm } from "react-hook-form";
 import { FiBarChart2, FiDollarSign, FiCreditCard, FiSmartphone, FiPackage } from "react-icons/fi";
 import Modal from "../../ui/modal/Modal";
-import mostrarAlerta from "../../../utilidades/toastUtilidades";
 
 const ModalArqueo = ({ estaAbierto, onCerrar, onRegistrarArqueo, saldoActual }) => {
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
 
   const onSubmit = (data) => {
     onRegistrarArqueo(data);
-    mostrarAlerta.exito('Arqueo de caja completado!')
     reset();
   };
 
