@@ -11,12 +11,14 @@ DROP TABLE IF EXISTS usuario_rol;
 DROP TABLE IF EXISTS imagenes_producto;
 DROP TABLE IF EXISTS mesas_reservacion;
 DROP TABLE IF EXISTS bloqueos_temporales_mesa;
+DROP TABLE IF EXISTS detalle_ventas;
 
 -- Tablas intermedias
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS insumos;
 DROP TABLE IF EXISTS caja;
 DROP TABLE IF EXISTS pago_reservacion;
+DROP TABLE IF EXISTS comprobantes;
 
 -- Tablas base
 DROP TABLE IF EXISTS categorias_producto;
@@ -28,6 +30,7 @@ DROP TABLE IF EXISTS medio_pago;
 DROP TABLE IF EXISTS tipo_comprobante;
 DROP TABLE IF EXISTS mesas;
 DROP TABLE IF EXISTS reservaciones;
+DROP TABLE IF EXISTS ventas;
 
 -- Tabla para verificar correos
 CREATE TABLE verificacion_correos(
@@ -255,4 +258,49 @@ CREATE TABLE pago_reservacion (
     estado_pago ENUM('pendiente','confirmado','fallido') NOT NULL,
     id_reservacion INT NOT NULL,
     FOREIGN KEY (id_reservacion) REFERENCES reservaciones(id_reservacion)
+);
+
+-- Tabla para ventas
+CREATE TABLE ventas (
+    id_venta INT AUTO_INCREMENT PRIMARY KEY,
+    numero_documento_cliente VARCHAR(12) NOT NULL,
+    id_tipo_documento INT NOT NULL,
+    fecha_emision DATE,
+    fecha_vencimiento DATE,
+    porcentaje_igv DECIMAL(5,2),
+    total_gravada DECIMAL(10,2),
+    total_igv DECIMAL(10,2),
+    total_venta DECIMAL(10,2),
+    id_medio_pago INT,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE comprobantes (
+    id_comprobante INT AUTO_INCREMENT PRIMARY KEY,
+    id_venta INT NOT NULL,
+    id_tipo_comprobante INT NOT NULL,
+    serie VARCHAR(5) NOT NULL,
+    numero_correlativo INT NOT NULL,
+    sunat_transaccion TINYINT(4) NOT NULL,
+    aceptado_por_sunat TINYINT(1),
+    url_comprobante_pdf VARCHAR(150),
+    url_comprobante_xml VARCHAR(150),
+    fecha_envio DATETIME,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
+    FOREIGN KEY (id_tipo_comprobante) tipo_comprobante(id_tipo_comprobante) ON DELETE CASCADE
+);
+
+-- Tabla para de talles de ventas
+CREATE TABLE detalle_ventas (
+    id_detalle_venta INT AUTO_INCREMENT PRIMARY KEY,
+    cantidad_producto INT NOT NULL,
+    valor_unitario DECIMAL(10,2),
+    precio_unitario DECIMAL(10,2),
+    subtotal DECIMAL(10,2),
+    igv DECIMAL(10,2),
+    total_producto DECIMAL(10,2),
+    id_venta INT NOT NULL,
+    id_producto INT NOT NULL,
+    FOREIGN KEY (id_venta)REFERENCES ventas(id_venta) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
 );
