@@ -1,113 +1,180 @@
-import { useState, useEffect } from 'react';
-import { 
-  obtenerCajasCerradasServicio, 
-  obtenerArqueosPorCajaServicio,
-  obtenerMovimientosPorCajaServicio 
-} from '../servicios/gestionCajaServicio';
+// hooks/useHistorialCajas.js
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { obtenerCajasCerradasServicio, obtenerArqueosPorCajaServicio, obtenerMovimientosPorCajaServicio } from '../servicios/gestionCajaServicio';
 
 export const useHistorialCajas = () => {
   const [cajasCerradas, setCajasCerradas] = useState([]);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [itemsPorPagina, setItemsPorPagina] = useState(5);
+  const [loadingCajas, setLoadingCajas] = useState(false);
+  const [filtrosActivos, setFiltrosActivos] = useState({});
+  
   const [arqueosCaja, setArqueosCaja] = useState([]);
   const [movimientosCaja, setMovimientosCaja] = useState([]);
-  const [loadingCajas, setLoadingCajas] = useState(false);
   const [loadingArqueos, setLoadingArqueos] = useState(false);
   const [loadingMovimientos, setLoadingMovimientos] = useState(false);
-  const [errorCajas, setErrorCajas] = useState(null);
-  const [errorArqueos, setErrorArqueos] = useState(null);
-  const [errorMovimientos, setErrorMovimientos] = useState(null);
+
+  const isMounted = useRef(true);
+  const llamadaEnProceso = useRef(false);
+
+  const obtenerCajasCerradas = useCallback(async (filtros = {}) => {
+    if (llamadaEnProceso.current) return;
+    
+    llamadaEnProceso.current = true;
+    setLoadingCajas(true);
+    
+    try {
+      const offset = (paginaActual - 1) * itemsPorPagina;
+
+      const respuesta = await obtenerCajasCerradasServicio({
+        limit: itemsPorPagina,
+        offset,
+        fechaInicio: filtros.fechaInicio,
+        fechaFin: filtros.fechaFin,
+        estado: filtros.estado
+      });
+
+      if (isMounted.current) {
+        setCajasCerradas(respuesta.cajas || []);
+        setTotalRegistros(respuesta.total || 0);
+      }
+    } catch (error) {
+      if (isMounted.current) {
+        setCajasCerradas([]);
+        setTotalRegistros(0);
+      }
+    } finally {
+      if (isMounted.current) {
+        setLoadingCajas(false);
+      }
+      llamadaEnProceso.current = false;
+    }
+  }, [paginaActual, itemsPorPagina]);
 
   useEffect(() => {
-    cargarCajasCerradas();
+    let timeoutId;
+    
+    timeoutId = setTimeout(() => {
+      obtenerCajasCerradas(filtrosActivos);
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [paginaActual, itemsPorPagina, filtrosActivos, obtenerCajasCerradas]);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
-  const cargarCajasCerradas = async () => {
-    setLoadingCajas(true);
-    setErrorCajas(null);
-    try {
-      const cajas = await obtenerCajasCerradasServicio();
-      setCajasCerradas(cajas);
-    } catch (error) {
-      setErrorCajas(error.message);
-    } finally {
-      setLoadingCajas(false);
-    }
+  const cambiarPagina = (nuevaPagina) => {
+    setPaginaActual(nuevaPagina);
+  };
+
+  const cambiarItemsPorPagina = (nuevosItems) => {
+    setItemsPorPagina(nuevosItems);
+    setPaginaActual(1);
+  };
+
+  const aplicarFiltros = (nuevosFiltros) => {
+    setFiltrosActivos(nuevosFiltros);
+    setPaginaActual(1);
+  };
+
+  const limpiarFiltros = () => {
+    setFiltrosActivos({});
+    setPaginaActual(1);
   };
 
   const cargarArqueosCaja = async (idCaja) => {
+    if (!idCaja) return [];
+    
     setLoadingArqueos(true);
-    setErrorArqueos(null);
     try {
-      const arqueos = await obtenerArqueosPorCajaServicio(idCaja);
-      setArqueosCaja(arqueos);
-      return arqueos;
+      const respuesta = await obtenerArqueosPorCajaServicio(idCaja);
+      setArqueosCaja(respuesta || []);
+      return respuesta;
     } catch (error) {
-      setErrorArqueos(error.message);
-      throw error;
+      setArqueosCaja([]);
+      return [];
     } finally {
       setLoadingArqueos(false);
     }
   };
 
   const cargarMovimientosCaja = async (idCaja) => {
+    if (!idCaja) return [];
+    
     setLoadingMovimientos(true);
-    setErrorMovimientos(null);
     try {
-      const movimientos = await obtenerMovimientosPorCajaServicio(idCaja);
-      setMovimientosCaja(movimientos || []);
+      const respuesta = await obtenerMovimientosPorCajaServicio(idCaja);
+      setMovimientosCaja(respuesta || []);
+      return respuesta;
     } catch (error) {
-      setErrorMovimientos(error.message);
-      throw error;
+      setMovimientosCaja([]);
+      return [];
     } finally {
       setLoadingMovimientos(false);
     }
   };
-
   const cargarDetallesCompletosCaja = async (idCaja) => {
-    try {
-      await Promise.all([
-        cargarArqueosCaja(idCaja),
-        cargarMovimientosCaja(idCaja)
-      ]);
-    } catch (error) {
-      throw error;
-    }
+    await Promise.all([
+      cargarArqueosCaja(idCaja),
+      cargarMovimientosCaja(idCaja)
+    ]);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Fecha no disponible';
+  const formatDate = (fecha) => {
+    if (!fecha) return 'Fecha no disponible';
     try {
-      return new Date(dateString).toLocaleDateString('es-ES');
+      return new Date(fecha).toLocaleDateString('es-PE', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
     } catch {
-      return dateString;
+      return 'Fecha inválida';
     }
   };
 
-  const formatCurrency = (amount) => {
-    const numericAmount = parseFloat(amount) || 0;
-    return `S/ ${numericAmount.toFixed(2)}`;
+  const formatCurrency = (monto) => {
+    if (monto === undefined || monto === null) return 'S/ 0.00';
+    try {
+      return new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN',
+        minimumFractionDigits: 2
+      }).format(monto);
+    } catch {
+      return `S/ ${monto.toFixed(2)}`;
+    }
   };
 
-  function formatHora(hora) {
-    const date = new Date('1970-01-01T' + hora + ':00'); 
-    const opciones = {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true 
-    };
-    return date.toLocaleTimeString('es-ES', opciones);
-  }
+  const formatHora = (hora) => {
+    if (!hora) return 'Hora no disponible';
+    return hora;
+  };
 
   return {
     cajasCerradas,
+    totalRegistros,
+    paginaActual,
+    itemsPorPagina,
+    loadingCajas,
     arqueosCaja,
     movimientosCaja,
-    loadingCajas,
     loadingArqueos,
     loadingMovimientos,
-    errorCajas,
-    errorArqueos,
-    errorMovimientos,
-    cargarCajasCerradas,
+    filtrosActivos,
+    cambiarPagina,
+    cambiarItemsPorPagina,
+    obtenerCajasCerradas,
+    aplicarFiltros,
+    limpiarFiltros,
     cargarArqueosCaja,
     cargarMovimientosCaja,
     cargarDetallesCompletosCaja,

@@ -127,33 +127,55 @@ export const obtenerArqueosPorCajaServicio = async (idCaja) => {
   }
 };
 
-export const obtenerCajasCerradasServicio = async (limit = 10, offset = 0) => {
+export const obtenerCajasCerradasServicio = async ({ limit = 5, offset = 0, fechaInicio, fechaFin, estado } = {}) => {
   try {
-    if (limit < 0 || offset < 0) {
-      throw new Error("Los valores de limit y offset deben ser positivos");
+    const parametros = new URLSearchParams();
+    parametros.append('limit', limit);
+    parametros.append('offset', offset);
+    
+    if (fechaInicio && fechaInicio.trim() !== '') {
+      parametros.append('fechaInicio', fechaInicio);
+    }
+    
+    if (fechaFin && fechaFin.trim() !== '') {
+      parametros.append('fechaFin', fechaFin);
     }
 
-    const respuesta = await API.get(`/caja/registros-caja`, {
-      params: { limit, offset }, 
-    });
+    const url = `/caja/cajas${parametros.toString() ? `?${parametros.toString()}` : ''}`;
+    
+    const respuesta = await API.get(url);
 
-    const data = respuesta?.data;
+    if (respuesta.data) {
+      let cajas = [];
+      let total = 0;
 
-    if (!Array.isArray(data)) {
-      throw new Error("Formato de respuesta inválido: se esperaba un array");
+      if (Array.isArray(respuesta.data)) {
+        cajas = respuesta.data;
+        total = cajas.length;
+      } else if (respuesta.data.cajas) {
+        cajas = respuesta.data.cajas;
+        total = respuesta.data.cantidad_filas || cajas.length;
+      } else {
+        cajas = [];
+        total = 0;
+      }
+      return { cajas, total};
     }
-
-    const camposEsperados = ["idCaja", "fecha", "nombreUsuario", "montoActual"];
-    const formatoValido = data.every((caja) =>
-      camposEsperados.every((campo) => campo in caja)
-    );
-
-    if (!formatoValido) {
-      throw new Error("Algunas cajas cerradas no tienen los campos esperados");
-    }
-
-    return data;
+    return {
+      cajas: [],
+      total: 0
+    };
   } catch (error) {
-    throw new Error("Error al obtener las cajas cerradas");
+    
+    if (error.response?.status === 404) {
+      return {
+        cajas: [],
+        total: 0
+      };
+    }
+    return {
+      cajas: [],
+      total: 0
+    };
   }
 };

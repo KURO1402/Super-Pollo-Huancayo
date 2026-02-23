@@ -2,6 +2,7 @@ import { FiFilter, FiSearch } from "react-icons/fi";
 import { Tabla } from "../../ui/tabla/Tabla";
 import FilaCajasCerradas from "./FilaCajasCerradas";
 import { Paginacion } from "../../ui/tabla/Paginacion";
+import { usePaginacion } from "../../../hooks/usePaginacion";
 
 const TablasCajasCerradas = ({
   cajasCerradas, 
@@ -13,13 +14,23 @@ const TablasCajasCerradas = ({
   itemsPorPagina,
   onCambiarItemsPorPagina,
   onVerDetalle,
-  loading 
+  loading,
+  totalRegistros // Asegúrate de recibir esto desde el hook useHistorialCajas
 }) => {
-  const encabezados = ["Fecha", "Usuario", "Saldo Esperado", "Saldo Contado", "Diferencia", "Estado", "Acciones"];
+  const encabezados = ["Fecha", "Hora", "Saldo Inicial", "Saldo Actual", "Saldo Final", "Estado", "Acciones"];
+
+  // CORRECCIÓN: Usar totalRegistros en lugar de totalPaginas * itemsPorPagina
+  const paginacion = usePaginacion({
+    paginaActual,
+    limite: itemsPorPagina,
+    total: totalRegistros, // Aquí debe ir el total de registros, no el total de páginas
+    onPagina: onCambiarPagina,
+    onLimite: onCambiarItemsPorPagina,
+  });
 
   const registros = cajasCerradas.map((cajaCerrada) => (
     <FilaCajasCerradas
-      key={cajaCerrada.idCaja}
+      key={cajaCerrada.id_caja}
       cajaCerrada={cajaCerrada} 
       formatCurrency={formatCurrency}
       formatDate={formatDate}
@@ -55,7 +66,7 @@ const TablasCajasCerradas = ({
             Resumen de Cajas Cerradas
           </h2>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            ({cajasCerradas.length} registros)
+            ({totalRegistros} registro{totalRegistros !== 1 ? 's' : ''})
           </span>
         </div>
       </div>
@@ -64,15 +75,14 @@ const TablasCajasCerradas = ({
         <>
           <Tabla 
             encabezados={encabezados} 
-            registros={registros} />
-          <Paginacion
-            paginaActual={paginaActual}
-            totalPaginas={totalPaginas}
-            alCambiarPagina={onCambiarPagina} 
-            itemsPorPagina={itemsPorPagina}
-            alCambiarItemsPorPagina={onCambiarItemsPorPagina} 
-            mostrarSiempre={true}
+            registros={registros} 
           />
+          
+          {totalPaginas >= 1 && (
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+              <Paginacion {...paginacion} />
+            </div>
+          )}
         </>
       ) : (
         <div className="text-center py-12">
