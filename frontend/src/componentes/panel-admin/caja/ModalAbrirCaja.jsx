@@ -1,13 +1,11 @@
 import { useForm } from "react-hook-form";
 import Modal from "../../ui/modal/Modal";
-import mostrarAlerta from '../../../utilidades/toastUtilidades'
 
 const ModalAbrirCaja = ({ estaAbierto, onCerrar, onAbrirCaja }) => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   const onSubmit = (data) => {
     onAbrirCaja(data);
-    mostrarAlerta.exito('Caja abierta con éxito')
     reset();
   };
 

@@ -146,7 +146,7 @@ const ModalArqueo = ({ estaAbierto, onCerrar, onRegistrarArqueo, saldoActual }) 
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400">Saldo Sistema:</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{saldoActual.toFixed(2)}</p>
+              <p className="font-semibold text-gray-900 dark:text-white">{saldoActual}</p>
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-400">Diferencia:</p>

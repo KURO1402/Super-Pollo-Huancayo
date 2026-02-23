@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { usePaginacion } from "../../hooks/usePaginacion";
+import { useCajaStore } from "../../store/useCajaStore";
 import { useModal } from "../../hooks/useModal";
-import { useCaja } from "../../hooks/useCaja";
+import { useConfirmacion } from "../../hooks/useConfirmacion";
 import ResumenCaja from "../../componentes/panel-admin/caja/ResumenCaja";
 import AccionesCaja from "../../componentes/panel-admin/caja/AccionesCaja";
 import TablaMovimientos from "../../componentes/panel-admin/caja/TablaMovimientos";
@@ -9,90 +9,159 @@ import ModalAbrirCaja from "../../componentes/panel-admin/caja/ModalAbrirCaja";
 import ModalIngreso from "../../componentes/panel-admin/caja/ModalIngreso";
 import ModalEgreso from "../../componentes/panel-admin/caja/ModalEgreso";
 import ModalArqueo from "../../componentes/panel-admin/caja/ModalArqueo";
+import { ModalConfirmacion } from "../../componentes/ui/modal/ModalConfirmacion";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
 const CajaActualPagina = () => {
   const {
-    caja,
-    loading,
+    cajaActual,
+    movimientos,
+    totalMovimientos,
+    cargando,
     error,
-    cargarDatosCaja,
-    handleAbrirCaja,
-    handleCerrarCaja,
-    handleRegistrarIngreso,
-    handleRegistrarEgreso,
-    handleRegistrarArqueo,
+    cargarMovimientos,
+    abrirCaja,
+    cerrarCaja,
+    registrarIngreso,
+    registrarEgreso,
+    registrarArqueo,
+    paginaActual,
+    setPagina,
+    limite,
+    setLimite,
+    filtros,
+    setFiltros,
+    limpiarFiltros,
     limpiarError,
-    cajaAbierta
-  } = useCaja();
+    rehidratarCaja
+  } = useCajaStore();
 
-  const { paginaActual, setPaginaActual, paginar } = usePaginacion(5);
   const modalAbrirCaja = useModal();
   const modalIngreso = useModal();
   const modalEgreso = useModal();
   const modalArqueo = useModal();
 
+  const {
+    confirmacionVisible,
+    mensajeConfirmacion,
+    tituloConfirmacion,
+    tipoConfirmacion,
+    textoConfirmar,
+    textoCancelar,
+    solicitarConfirmacion,
+    ocultarConfirmacion,
+    confirmarAccion
+  } = useConfirmacion();
+
+  const cajaAbierta = cajaActual.estado === 'abierta';
   useEffect(() => {
-    if (cajaAbierta && caja.idCaja) {
-      cargarDatosCaja();
+    if (cajaAbierta) {
+      cargarMovimientos();
     }
-  }, [cajaAbierta, caja.idCaja]);
+  }, [cajaAbierta, cajaActual.id_caja, paginaActual, limite, filtros]);
+  useEffect(() => {
+    if (error) {
+      mostrarAlerta.error(error);
+      limpiarError();
+    }
+  }, [error]);
+
+  useEffect(() => {
+    rehidratarCaja();
+  }, []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
       currency: 'PEN'
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   const onAbrirCaja = async (data) => {
     try {
-      await handleAbrirCaja(data.montoInicial);
+      await abrirCaja({
+        montoInicial: data.montoInicial,
+      });
       modalAbrirCaja.cerrar();
+      mostrarAlerta.exito("Caja abierta con éxito");
     } catch (error) {
-
+      mostrarAlerta.error("Error al abrir caja");
     }
   };
 
-  const onCerrarCaja = async () => {
-    try {
-      await handleCerrarCaja();
-      mostrarAlerta.exito("Caja cerrada con éxito")
-    } catch (error) {
-
-    }
+  const onSolicitarCerrarCaja = () => {
+    solicitarConfirmacion(
+      `¿Estás seguro de cerrar la caja? El saldo actual es ${formatCurrency(cajaActual.saldoActual)}`,
+      async () => {
+        try {
+          await cerrarCaja();
+          mostrarAlerta.exito("Caja cerrada con éxito");
+        } catch (error) {
+          mostrarAlerta.error(error.message || "Error al cerrar caja");
+        }
+      },
+      {
+        titulo: 'Cerrar Caja',
+        tipo: 'advertencia',
+        textoConfirmar: 'Cerrar',
+        textoCancelar: 'Cancelar',
+      }
+    );
   };
 
   const onRegistrarIngreso = async (data) => {
     try {
-      await handleRegistrarIngreso(data);
+      await registrarIngreso({
+        ...data,
+        usuario: 'Usuario Actual'
+      });
       modalIngreso.cerrar();
+      mostrarAlerta.exito("Ingreso registrado con éxito");
     } catch (error) {
-
+      mostrarAlerta.error("Error al registrar ingreso");
     }
   };
 
   const onRegistrarEgreso = async (data) => {
     try {
-      await handleRegistrarEgreso(data);
+      await registrarEgreso({
+        ...data,
+        usuario: 'Usuario Actual'
+      });
       modalEgreso.cerrar();
+      mostrarAlerta.exito("Egreso registrado con éxito");
     } catch (error) {
-
+      mostrarAlerta.error("Error al registrar egreso");
     }
   };
 
   const onRegistrarArqueo = async (data) => {
     try {
-      await handleRegistrarArqueo(data);
+      await registrarArqueo(data);
       modalArqueo.cerrar();
+      mostrarAlerta.exito("Arqueo registrado con éxito");
     } catch (error) {
-
+      mostrarAlerta.error(error.message || "Error al registrar arqueo");
     }
   };
 
-  const { datosPaginados: movimientosPaginados, totalPaginas } = paginar(caja.movimientos);
+  const onCambiarPagina = (nuevaPagina) => {
+    setPagina(nuevaPagina);
+  };
 
-  if (loading) {
+  const onCambiarLimite = (nuevoLimite) => {
+    setLimite(nuevoLimite);
+  };
+
+  const onAplicarFiltros = (nuevosFiltros) => {
+    setFiltros(nuevosFiltros);
+  };
+
+  const onLimpiarFiltros = () => {
+    limpiarFiltros();
+  };
+
+  if (cargando && !movimientos.length) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -102,13 +171,12 @@ const CajaActualPagina = () => {
 
   return (
     <div className="w-full mx-auto p-2 space-y-6">
-
       <ResumenCaja
-        caja={caja}
+        caja={cajaActual}
         formatCurrency={formatCurrency}
         onAbrirCaja={modalAbrirCaja.abrir}
-        onCerrarCaja={onCerrarCaja}
-        loading={loading}
+        onCerrarCaja={onSolicitarCerrarCaja}
+        cargando={cargando}
       />
 
       <AccionesCaja
@@ -116,45 +184,64 @@ const CajaActualPagina = () => {
         onIngreso={modalIngreso.abrir}
         onEgreso={modalEgreso.abrir}
         onArqueo={modalArqueo.abrir}
-        loading={loading}
+        cargando={cargando}
       />
 
       <TablaMovimientos
-        movimientos={movimientosPaginados}
+        movimientos={movimientos}
+        totalMovimientos={totalMovimientos}
+        cargando={cargando}
         formatCurrency={formatCurrency}
         paginaActual={paginaActual}
-        totalPaginas={totalPaginas}
-        onCambiarPagina={setPaginaActual}
-        loading={loading}
+        limite={limite}
+        totalPaginas={Math.ceil(totalMovimientos / limite)}
+        onCambiarPagina={onCambiarPagina}
+        onCambiarLimite={onCambiarLimite}
+        filtros={filtros}
+        onAplicarFiltros={onAplicarFiltros}
+        onLimpiarFiltros={onLimpiarFiltros}
+        cajaAbierta={cajaAbierta}
+        cajaEstado={cajaActual.estado}
       />
 
       <ModalAbrirCaja
         estaAbierto={modalAbrirCaja.estaAbierto}
         onCerrar={modalAbrirCaja.cerrar}
         onAbrirCaja={onAbrirCaja}
-        loading={loading}
+        cargando={cargando}
       />
 
       <ModalIngreso
         estaAbierto={modalIngreso.estaAbierto}
         onCerrar={modalIngreso.cerrar}
         onRegistrarIngreso={onRegistrarIngreso}
-        loading={loading}
+        cargando={cargando}
       />
 
       <ModalEgreso
         estaAbierto={modalEgreso.estaAbierto}
         onCerrar={modalEgreso.cerrar}
         onRegistrarEgreso={onRegistrarEgreso}
-        loading={loading}
+        cargando={cargando}
       />
 
       <ModalArqueo
         estaAbierto={modalArqueo.estaAbierto}
         onCerrar={modalArqueo.cerrar}
         onRegistrarArqueo={onRegistrarArqueo}
-        saldoActual={caja.saldoActual}
-        loading={loading}
+        saldoActual={cajaActual.saldoActual}
+        cargando={cargando}
+      />
+
+      <ModalConfirmacion
+        visible={confirmacionVisible}
+        onCerrar={ocultarConfirmacion}
+        onConfirmar={confirmarAccion}
+        titulo={tituloConfirmacion}
+        mensaje={mensajeConfirmacion}
+        textoConfirmar={textoConfirmar}
+        textoCancelar={textoCancelar}
+        tipo={tipoConfirmacion}
       />
     </div>
   );

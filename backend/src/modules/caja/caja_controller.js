@@ -103,6 +103,7 @@ const obtenerCajasController = async (req, res) => {
 
 const obtenerMovimientosPorCajaController = async (req, res) => {
   const { idCaja } = req.params;
+  const querys = req.query;
   
   try {
     const resultado = await obtenerMovimientosPorCajaService(idCaja, querys);

@@ -1,14 +1,12 @@
 import { useForm } from "react-hook-form";
 import { FiMinus } from "react-icons/fi";
 import Modal from "../../ui/modal/Modal";
-import mostrarAlerta from "../../../utilidades/toastUtilidades";
 
 const ModalEgreso = ({ estaAbierto, onCerrar, onRegistrarEgreso }) => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   const onSubmit = (data) => {
     onRegistrarEgreso(data);
-    mostrarAlerta.exito('Egreso registrado exitosamente')
     reset();
   };
 

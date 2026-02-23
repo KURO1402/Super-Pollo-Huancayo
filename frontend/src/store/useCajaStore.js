@@ -1,136 +1,276 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import {
+  abrirCajaServicio,
+  cerrarCajaServicio,
+  registrarIngresoServicio,
+  registrarEgresoServicio,
+  registrarArqueoServicio,
+  obtenerMovimientosPorCajaServicio,
+  obtenerCajasCerradasServicio
+} from '../servicios/gestionCajaServicio';
+
 export const useCajaStore = create(
-  persist( 
+  persist(
     (set, get) => ({
-      caja: {
-        idCaja: null,
-        estado: "cerrada",
+      cajaActual: {
+        id_caja: null,
+        estado: 'cerrada',
         saldoInicial: 0,
         saldoActual: 0,
         ingresos: 0,
         egresos: 0,
-        movimientos: []
+        fechaApertura: null,
+        usuarioApertura: null
       },
-      loading: false,
+
+      movimientos: [],
+      totalMovimientos: 0,
+
+      arqueos: [],
+
+      cajasCerradas: [],
+      totalCajasCerradas: 0,
+
+      paginaActual: 1,
+      limite: 10,
+
+      cargando: false,
       error: null,
-      calcularTotales: (movimientos) => {
-        let ingresos = 0;
-        let egresos = 0;
-        
-        movimientos.forEach(movimiento => {
-          if (movimiento.tipoMovimiento === 'Ingreso') {
-            ingresos += parseFloat(movimiento.montoMovimiento) || 0;
-          } else if (movimiento.tipoMovimiento === 'Egreso') {
-            egresos += parseFloat(movimiento.montoMovimiento) || 0;
-          }
-        });
 
-        return { ingresos, egresos };
-      },
+      abrirCaja: async (datos) => {
+        set({ cargando: true, error: null });
 
-      setCaja: (cajaData) => set({ 
-        caja: { ...get().caja, ...cajaData },
-        error: null 
-      }),
+        try {
+          const resp = await abrirCajaServicio(datos);
+          const caja = resp.caja;
+          set({
+            cajaActual: {
+              id_caja: caja.id_caja,
+              estado: 'abierta',
+              saldoInicial: Number(caja.saldo_inicial) || 0,
+              saldoActual: Number(caja.monto_actual),
+              ingresos: 0,
+              egresos: 0,
+              fechaApertura: caja.fecha_caja,
+              usuarioApertura: caja.usuario || null
+            },
+            movimientos: [],
+            totalMovimientos: 0,
+            paginaActual: 1,
+            cargando: false
+          });
 
-      setCajaCompleta: (cajaData) => {
-        const { ingresos, egresos } = get().calcularTotales(cajaData.movimientos || []);
-        
-        const cajaCompleta = {
-          ...cajaData,
-          ingresos,
-          egresos,
-          saldoActual: (cajaData.saldoInicial || 0) + ingresos - egresos
-        }; 
-
-        set({ 
-          caja: cajaCompleta,
-          error: null 
-        });
-      },
-
-      setMovimientos: (movimientos) => {
-        const state = get();
-        const { ingresos, egresos } = get().calcularTotales(movimientos);
-        
-        set({
-          caja: { 
-            ...state.caja, 
-            movimientos,
-            ingresos,
-            egresos,
-            saldoActual: (state.caja.saldoInicial || 0) + ingresos - egresos
-          }
-        });
-      },
-
-      agregarMovimiento: (nuevoMovimiento) => {
-        const state = get();
-        const movimientosActualizados = [nuevoMovimiento, ...state.caja.movimientos];
-        
-        let nuevosIngresos = state.caja.ingresos;
-        let nuevosEgresos = state.caja.egresos;
-
-        if (nuevoMovimiento.tipoMovimiento === 'ingreso') {
-          nuevosIngresos += parseFloat(nuevoMovimiento.monto) || 0;
-        } else if (nuevoMovimiento.tipoMovimiento === 'egreso') {
-          nuevosEgresos += parseFloat(nuevoMovimiento.monto) || 0;
+          return resp;
+        } catch (err) {
+          set({ error: err.message, cargando: false });
+          throw err;
         }
-
-        const nuevoSaldoActual = state.caja.saldoInicial + nuevosIngresos - nuevosEgresos;
-
-        set({
-          caja: {
-            ...state.caja,
-            movimientos: movimientosActualizados,
-            ingresos: nuevosIngresos,
-            egresos: nuevosEgresos,
-            saldoActual: nuevoSaldoActual
-          },
-          error: null
-        });
       },
-      abrirCaja: (cajaData) => set({ 
-        caja: {
-          idCaja: cajaData.idCaja,      
-          estado: "abierta",
-          saldoInicial: parseFloat(cajaData.saldoInicial) || 0,
-          saldoActual: parseFloat(cajaData.saldoActual) || 0,
-          ingresos: 0,  
-          egresos: 0,
-          movimientos: []
+
+      cerrarCaja: async () => {
+        set({ cargando: true, error: null });
+
+        try {
+          await cerrarCajaServicio();
+
+          set((state) => ({
+            cajaActual: {
+              ...state.cajaActual,
+              estado: 'cerrada'
+            },
+            cargando: false
+          }));
+        } catch (err) {
+          set({ error: err.message, cargando: false });
+          throw err;
         }
-      }),
+      },
 
-      cerrarCaja: () => set({
-        caja: {
-          idCaja: null,
-          estado: "cerrada",
-          saldoInicial: 0,
-          saldoActual: 0,
-          ingresos: 0,
-          egresos: 0,
-          movimientos: []
+      registrarIngreso: async (datos) => {
+        set({ cargando: true, error: null });
+
+        try {
+          await registrarIngresoServicio(datos);
+
+          set((state) => {
+            const monto = Number(datos.monto) || 0;
+            const ingresos = state.cajaActual.ingresos + monto;
+
+            return {
+              cajaActual: {
+                ...state.cajaActual,
+                ingresos,
+                saldoActual:
+                  state.cajaActual.saldoInicial +
+                  ingresos -
+                  state.cajaActual.egresos
+              },
+              cargando: false
+            };
+          });
+
+          get().cargarMovimientos();
+        } catch (err) {
+          set({ error: err.message, cargando: false });
+          throw err;
         }
-      }),
+      },
 
-      setLoading: (isLoading) => set({ loading: isLoading }),
+      registrarEgreso: async (datos) => {
+        set({ cargando: true, error: null });
 
-      setError: (errorMessage) => set({ error: errorMessage }),
+        try {
+          await registrarEgresoServicio(datos);
+
+          set((state) => {
+            const monto = Number(datos.monto) || 0;
+            const egresos = state.cajaActual.egresos + monto;
+
+            return {
+              cajaActual: {
+                ...state.cajaActual,
+                egresos,
+                saldoActual:
+                  state.cajaActual.saldoInicial +
+                  state.cajaActual.ingresos -
+                  egresos
+              },
+              cargando: false
+            };
+          });
+
+          get().cargarMovimientos();
+        } catch (err) {
+          set({ error: err.message, cargando: false });
+          throw err;
+        }
+      },
+
+      registrarArqueo: async (datos) => {
+        set({ cargando: true, error: null });
+
+        try {
+          const resp = await registrarArqueoServicio(datos);
+
+          set((state) => ({
+            arqueos: [
+              {
+                id: resp.id || Date.now(),
+                ...datos,
+                fecha: new Date().toISOString()
+              },
+              ...state.arqueos
+            ],
+            cargando: false
+          }));
+
+          return resp;
+        } catch (err) {
+          set({ error: err.message, cargando: false });
+          throw err;
+        }
+      },
+
+      cargarMovimientos: async () => {
+        const { paginaActual, limite, cajaActual } = get();
+
+        if (!cajaActual.id_caja) return;
+
+        const offset = (paginaActual - 1) * limite;
+
+        set({ cargando: true, error: null });
+
+        try {
+          const resp = await obtenerMovimientosPorCajaServicio(
+            cajaActual.id_caja, 
+            { limit: limite, offset }
+          );
+
+          set({
+            movimientos: resp.movimientos,
+            totalMovimientos: resp.cantidad_filas,
+            cargando: false
+          });
+
+        } catch (err) {
+          set({ error: err.message, cargando: false });
+        }
+      },
+
+      cargarCajasCerradas: async () => {
+        const { paginaActual, limite } = get();
+        const offset = (paginaActual - 1) * limite;
+
+        set({ cargando: true, error: null });
+
+        try {
+          const resp = await obtenerCajasCerradasServicio({
+            limite,
+            offset
+          });
+
+          set({
+            cajasCerradas: resp.cajas || resp.data || [],
+            totalCajasCerradas: resp.total || 0,
+            cargando: false
+          });
+        } catch (err) {
+          set({ error: err.message, cargando: false });
+        }
+      },
+
+      setPagina: (pagina) => {
+        set({ paginaActual: pagina });
+        get().cargarMovimientos();
+      },
+
+      setLimite: (nuevoLimite) => {
+        set({ limite: nuevoLimite, paginaActual: 1 });
+        get().cargarMovimientos();
+      },
+
+      rehidratarCaja: () => {
+        const { cajaActual } = get();
+        if (cajaActual.id_caja && cajaActual.estado === 'abierta') {
+          get().cargarMovimientos();
+        }
+      },
 
       limpiarError: () => set({ error: null }),
 
-      getEstado: () => {
-        const state = get();
-        return state;
-      }
+      reset: () =>
+        set({
+          cajaActual: {
+            id_caja: null,
+            estado: 'cerrada',
+            saldoInicial: 0,
+            saldoActual: 0,
+            ingresos: 0,
+            egresos: 0,
+            fechaApertura: null,
+            usuarioApertura: null
+          },
+          movimientos: [],
+          totalMovimientos: 0,
+          arqueos: [],
+          cajasCerradas: [],
+          totalCajasCerradas: 0,
+          paginaActual: 1,
+          limite: 10,
+          cargando: false,
+          error: null
+        })
     }),
+
     {
-      name: 'caja-storage',
+      name: 'caja-minima',
       partialize: (state) => ({
-        caja: state.caja
+        cajaActual: {
+          id_caja: state.cajaActual.id_caja,
+          estado: state.cajaActual.estado
+        }
       })
     }
   )

@@ -1,6 +1,7 @@
 import API from "./axiosConfiguracion";
 
 export const abrirCajaServicio = async (data) => {
+  console.log("Datos recibidos en abrirCajaServicio:", data);
   try {
     const respuesta = await API.post('/caja/abrir-caja', {
       montoInicial: Number(data.montoInicial)
@@ -10,10 +11,9 @@ export const abrirCajaServicio = async (data) => {
       throw new Error(respuesta.data.mensaje || "Error al abrir una caja");
     }
     
-    if (!respuesta.data.idCaja) {
+    if (!respuesta.data.caja.id_caja) {
       throw new Error("No se recibió el ID de la caja");
     }
-    
     return respuesta.data;
   } catch (error) {
     throw error;
@@ -41,8 +41,7 @@ export const registrarIngresoServicio = async (data) => {
       descripcion: data.descripcion.trim(),
     };
     
-    const respuesta = await API.post('/caja/ingreso-caja', datosParaBackend);
-    
+    const respuesta = await API.post('/caja/registrar-ingreso', datosParaBackend);
     if (!respuesta.data.ok) {
       throw new Error(respuesta.data.mensaje || "Error al registrar ingreso");
     }
@@ -60,7 +59,7 @@ export const registrarEgresoServicio = async (data) => {
       descripcion: data.descripcion.trim(),
     };
     
-    const respuesta = await API.post('/caja/egreso-caja', datosParaBackend);
+    const respuesta = await API.post('/caja/registrar-egreso', datosParaBackend);
     
     if (!respuesta.data.ok) {
       throw new Error(respuesta.data.mensaje || "Error al registrar egreso");
@@ -72,7 +71,6 @@ export const registrarEgresoServicio = async (data) => {
   }
 };
 
-// Servicio para registrar arqueo
 export const registrarArqueoServicio = async (data) => {
   try {
     const datosParaBackend = {
@@ -93,78 +91,21 @@ export const registrarArqueoServicio = async (data) => {
   }
 };
 
-// Servicio para obtener movimientos de caja
-export const obtenerMovimientosCajaServicio = async () => {
-  try {
-    const respuesta = await API.get('/caja/movimientos-caja');
-    
-    const movimientosData = respuesta.data;
+export const obtenerMovimientosPorCajaServicio = async (
+  idCaja,
+  { limit = 10, offset = 0 } = {}
+) => {
+  const { data } = await API.get(
+    `/caja/movimientos-caja/${idCaja}`,
+    { params: { limit, offset } }
+  );
 
-    // Validar que sea un array
-    if (Array.isArray(movimientosData)) {
-      // Mapear a la estructura
-      const movimientosFormateados = movimientosData.map(mov => ({
-        id: mov.id || Date.now() + Math.random(), // generamos un id temporal ya que no viene del backend
-        tipo: mov.tipoMovimiento?.toLowerCase() || 'ingreso',
-        descripcion: mov.descripcionMovCaja,
-        monto: parseFloat(mov.montoMovimiento) || 0,
-        fecha: mov.fecha,
-        hora: mov.hora,
-        usuario: mov.nombreUsuario
-      }));
-      
-      return {
-        ok: true,
-        data: movimientosFormateados
-      };
-    } else {
-      return {
-        ok: true,
-        data: []
-      };
-    }
-    
-  } catch (error) {
-    
-    const errorMessage = error.response?.data?.message || 
-                        error.response?.data?.mensaje ||
-                        error.message || 
-                        'Error al obtener movimientos';
-    
-    throw new Error(errorMessage);
-  }
+  return {
+    movimientos: data.movimientos || [],
+    cantidad_filas: Number(data.cantidad_filas) || 0
+  };
 };
 
-export const obtenerMovimientosPorCajaServicio = async (idCaja) => {
-  try {
-    const respuesta = await API.get(`/caja/movimientos-caja/${idCaja}`);
-    const data = respuesta.data;
-
-    if (Array.isArray(data)) {
-      return data.map((mov, index) => ({
-        ...mov,
-        id: `mov-${idCaja}-${index}-${Date.now()}`,
-      }));
-    }
-    return [];
-  } catch (error) {
-
-    if (error.response?.status === 404) {
-      return [];
-    }
-
-    const errorMessage =
-      error.response?.data?.message ||
-      error.response?.data?.mensaje ||
-      error.message ||
-      "Error al obtener movimientos";
-
-    throw new Error(errorMessage);
-  }
-};
-
-
-// Servicio para obtener arqueos de una caja específica
 export const obtenerArqueosPorCajaServicio = async (idCaja) => {
   try {
     if (!idCaja) {

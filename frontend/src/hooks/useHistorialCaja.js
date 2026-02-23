@@ -1,4 +1,3 @@
-// hooks/useHistorialCajas.js
 import { useState, useEffect } from 'react';
 import { 
   obtenerCajasCerradasServicio, 
@@ -74,7 +73,6 @@ export const useHistorialCajas = () => {
     }
   };
 
-  // Funcion para formatear fecha
   const formatDate = (dateString) => {
     if (!dateString) return 'Fecha no disponible';
     try {
@@ -84,7 +82,6 @@ export const useHistorialCajas = () => {
     }
   };
 
-  // Función para formatear moneda
   const formatCurrency = (amount) => {
     const numericAmount = parseFloat(amount) || 0;
     return `S/ ${numericAmount.toFixed(2)}`;
