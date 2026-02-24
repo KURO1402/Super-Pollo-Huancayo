@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { FiUpload, FiX, FiImage } from 'react-icons/fi';
 import { actualizarImagenProductoServicio } from '../../../servicios/productoServicios';
 import mostrarAlerta from '../../../utilidades/toastUtilidades';
+import { useProductos } from '../../../hooks/useProductos';
 
 export const ModalModificarImagen = ({ producto, onClose, onGuardar }) => {
   const {
@@ -16,6 +17,8 @@ export const ModalModificarImagen = ({ producto, onClose, onGuardar }) => {
       imagen: null
     }
   });
+
+  const { refetch } = useProductos();
 
   const handleImagenChange = (e) => {
     const file = e.target.files[0];
@@ -44,12 +47,12 @@ export const ModalModificarImagen = ({ producto, onClose, onGuardar }) => {
       }
 
       const formData = new FormData();
-      formData.append('image', data.imagen);
-      
-      await actualizarImagenProductoServicio(producto.idProducto, formData);
+      formData.append('imagenProducto', data.imagen);
+      console.log('FormData antes de enviar:', formData.get('image'));
+      await actualizarImagenProductoServicio(producto.id_imagen_producto, formData);
       
       mostrarAlerta.exito('Imagen actualizada correctamente');
-      
+      await refetch()
       onGuardar();
       onClose();
       
@@ -72,8 +75,8 @@ export const ModalModificarImagen = ({ producto, onClose, onGuardar }) => {
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex items-center space-x-3">
             <img
-              src={producto.urlImagen}
-              alt={producto.nombreProducto}
+              src={producto.url_imagen}
+              alt={producto.nombre_producto}
               className="w-16 h-16 rounded-lg object-cover"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/64?text=IMG';
@@ -81,10 +84,10 @@ export const ModalModificarImagen = ({ producto, onClose, onGuardar }) => {
             />
             <div>
               <h4 className="font-semibold text-blue-800 dark:text-blue-300">
-                {producto.nombreProducto}
+                {producto.nombre_producto}
               </h4>
               <p className="text-sm text-blue-700 dark:text-blue-400">
-                ID: {producto.idProducto} • S/ {parseFloat(producto.precio).toFixed(2)}
+                ID: {producto.id_imagen_producto}
               </p>
             </div>
           </div>
@@ -95,8 +98,8 @@ export const ModalModificarImagen = ({ producto, onClose, onGuardar }) => {
           </label>
           <div className="flex justify-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <img
-              src={producto.urlImagen}
-              alt={`Imagen actual de ${producto.nombreProducto}`}
+              src={producto.url_imagen}
+              alt={`Imagen actual de ${producto.nombre_producto}`}
               className="max-h-64 max-w-full rounded-lg object-contain"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/300x200?text=Imagen+No+Disponible';

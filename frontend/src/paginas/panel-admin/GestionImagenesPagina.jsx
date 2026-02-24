@@ -7,12 +7,12 @@ import Modal from '../../componentes/ui/modal/Modal';
 import { useModal } from '../../hooks/useModal';
 
 const GestionImagenesPagina = () => {
-  const { productos, cargando, refetch } = useProductos();
+  const { imagenesProductos, cargando, refetch } = useProductos();
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const modalModificarImagen = useModal(false);
 
-  const handleModificarImagen = (producto) => {
-    setProductoSeleccionado(producto);
+  const handleModificarImagen = (imagen) => {
+    setProductoSeleccionado(imagen);
     modalModificarImagen.abrir();
   };
 
@@ -44,10 +44,10 @@ const GestionImagenesPagina = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {productos.map((producto) => (
+        {imagenesProductos.map((imagen) => (
           <TarjetaProducto
-            key={producto.idProducto}
-            producto={producto}
+            key={imagen.id_imagen_producto}
+            imagen={imagen}
             onModificarImagen={handleModificarImagen}
           />
         ))}

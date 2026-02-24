@@ -137,10 +137,26 @@ export const obtenerInsumosProductoServicio = async (idProducto) => {
   }
 };
 
+export const obtenerImagenesProductoServicio = async () => {
+  try {
+    const respuesta = await API.get('/productos/imagenes');
+
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al obtener las imágenes de productos");
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const actualizarImagenProductoServicio = async (idProducto, formData) => {
+  console.log('ID del producto para actualizar imagen:', idProducto);
+  console.log('FormData en actualizarImagenProductoServicio:', formData);
   try {
     
-    const respuesta = await API.put(`/productos/actualizar-imagen/${idProducto}`, formData);
+    const respuesta = await API.put(`/productos/actualizar-imagen/${idProducto}`, formData,);
 
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
