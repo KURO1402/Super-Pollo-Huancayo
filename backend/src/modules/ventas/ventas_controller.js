@@ -1,8 +1,8 @@
-const { generarBoletaVentaService } = require('./ventas_service');
+const { generarVentaService } = require('./ventas_service');
 
-const generarBoletaVentaController = async (req, res) => {
+const generarVentaController = async (req, res) => {
     try {
-        const resultado = await generarBoletaVentaService(req.body);
+        const resultado = await generarVentaService(req.body);
         return res.status(200).json(resultado);
     } catch (err) {
         const statusCode = err.status || 500;
@@ -14,5 +14,5 @@ const generarBoletaVentaController = async (req, res) => {
 };
 
 module.exports = {
-    generarBoletaVentaController
+    generarVentaController
 }

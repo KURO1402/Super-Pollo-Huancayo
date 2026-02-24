@@ -13,7 +13,7 @@ const obtenerTokenApisPeru = async () => {
     console.log('Generando nuevo token APISPERU...');
 
     const response = await axios.post(
-        'https://facturacion.apisperu.com/api/v1/auth/login',
+        `${process.env.APISPERU_URL}/auth/login`,
         {
             username: process.env.APISPERU_USER,
             password: process.env.APISPERU_PASS

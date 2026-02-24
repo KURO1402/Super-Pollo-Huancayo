@@ -416,6 +416,7 @@ const obtenerProductoIdModel = async (idProducto) => {
         return result[0][0];
 
     } catch (err) {
+        console.log(err.message);
         throw new Error('Error al obtener el producto de la base de datos');
     } finally {
         if (conexion) conexion.release();

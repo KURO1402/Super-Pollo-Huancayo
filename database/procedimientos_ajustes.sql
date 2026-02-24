@@ -31,6 +31,10 @@ DROP PROCEDURE IF EXISTS sp_eliminar_medio_pago;
 DROP PROCEDURE IF EXISTS sp_listar_medios_pago;
 DROP PROCEDURE IF EXISTS sp_obtener_medio_pago_por_id;
 
+-- Procedimientos para tipo de comprobante
+DROP PROCEDURE IF EXISTS sp_contar_tipo_comprobante_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_tipo_comprobante_por_id;
+
 -- Procedimientos de categorias de productos
 DELIMITER //
 
@@ -468,6 +472,31 @@ BEGIN
     FROM medio_pago
     WHERE id_medio_pago = p_id_medio_pago
       AND estado_medio_pago = 1;
+END //
+
+-- Procedimientos para tipos_comprobante
+CREATE PROCEDURE sp_contar_tipo_comprobante_por_id(
+    IN p_id_tipo_comprobante INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM tipo_comprobante
+    WHERE id_tipo_comprobante = p_id_tipo_comprobante
+    AND estado_comprobante = 1;
+END //
+
+CREATE PROCEDURE sp_obtener_tipo_comprobante_por_id(
+    IN p_id_tipo_comprobante INT
+)
+BEGIN
+    SELECT 
+        id_tipo_comprobante,
+        nombre_tipo_comprobante,
+        serie,
+        correlativo
+    FROM tipo_comprobante
+    WHERE id_tipo_comprobante = p_id_tipo_comprobante
+    AND estado_comprobante = 1;
 END //
 
 DELIMITER ;
