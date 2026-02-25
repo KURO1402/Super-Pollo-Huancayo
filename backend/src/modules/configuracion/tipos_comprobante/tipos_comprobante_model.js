@@ -35,7 +35,27 @@ const obtenerTipoComprobantePorIdModel = async (idComprobante) => {
     }
 };
 
+const actualizarCorrelativoComprobanteModel = async (idComprobante, nuevoCorrelativo) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.execute(
+            'CALL sp_actualizar_correlativo_tipo_comprobante(?, ?)',
+            [idComprobante, nuevoCorrelativo]
+        );
+
+        return result[0]; 
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al actualizar correlativo en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
     contarTipoComprobanteIdModel,
-    obtenerTipoComprobantePorIdModel
+    obtenerTipoComprobantePorIdModel,
+    actualizarCorrelativoComprobanteModel
 }

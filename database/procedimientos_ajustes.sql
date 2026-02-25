@@ -34,6 +34,7 @@ DROP PROCEDURE IF EXISTS sp_obtener_medio_pago_por_id;
 -- Procedimientos para tipo de comprobante
 DROP PROCEDURE IF EXISTS sp_contar_tipo_comprobante_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_tipo_comprobante_por_id;
+DROP PROCEDURE IF EXISTS sp_actualizar_correlativo_tipo_comprobante;
 
 -- Procedimientos de categorias de productos
 DELIMITER //
@@ -497,6 +498,26 @@ BEGIN
     FROM tipo_comprobante
     WHERE id_tipo_comprobante = p_id_tipo_comprobante
     AND estado_comprobante = 1;
+END //
+
+CREATE PROCEDURE sp_actualizar_correlativo_tipo_comprobante(
+    IN p_id_tipo_comprobante INT,
+    IN p_nuevo_correlativo INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE tipo_comprobante
+    SET correlativo = p_nuevo_correlativo
+    WHERE id_tipo_comprobante = p_id_tipo_comprobante;
+
+    COMMIT;
 END //
 
 DELIMITER ;

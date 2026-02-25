@@ -2,14 +2,20 @@ const axios = require('axios');
 const crearError = require('../../utilidades/crear_error');
 const subirArchivoCloudinary = require('../../utilidades/helpers/subir_archivo_cludinary');
 
-const { obtenerTokenApisPeru } = require('../../config/auth_ApisPeru');
 const { validarDatosVenta } = require('./ventas_validacion');
 const { generarDatosComprobante } = require('./venta_helpers');
 const { contarMedioPagoPorIdModel } = require('../configuracion/medios_pago/medios_pago_model');
+const { registrarIngresoCajaModel } = require('../caja/caja_model');
+const { actualizarCorrelativoComprobanteModel } = require('../configuracion/tipos_comprobante/tipos_comprobante_model');
+const { consultarCajaAbiertaModel } = require('../caja/caja_model');
 
-const { insertarVentaModel } = require('./ventas_model');
+const { insertarVentaModel,
+    obtenerVentaPorIdModel,
+    obtenerDetalleVentaPorIdVentaModel,
+    obtenerComprobantePorIdVentaModel 
+ } = require('./ventas_model');
 
-const generarVentaService = async (datos) => {
+const generarVentaService = async (datos, idUsuario) => {
     validarDatosVenta(datos);
     const { tipoComprobante, medioPago, cliente, productos } = datos;
 
@@ -19,32 +25,92 @@ const generarVentaService = async (datos) => {
     }
 
     const datosParaComprobante = await generarDatosComprobante(tipoComprobante, cliente, productos);
-    const token = await obtenerTokenApisPeru();
+    const token = process.env.TOKEN_APIS_PERU;
+    const caja = await consultarCajaAbiertaModel();
+    if (!caja) {
+        throw crearError('No se puede registrar una venta si no hay una caja abierta.', 400);
+    }
 
     // ─── 1. Obtener PDF ───────────────────────────────────────────────────────
-    const respuestaPdf = await axios.post(
-        `${process.env.APISPERU_URL}/invoice/pdf`,
-        datosParaComprobante,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            responseType: 'arraybuffer',
+    let respuestaPdf;
+
+    try {
+        respuestaPdf = await axios.post(
+            `${process.env.APISPERU_URL}/invoice/pdf`,
+            datosParaComprobante,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                responseType: 'arraybuffer',
+            }
+        );
+    } catch (error) {
+
+        if (error.response) {
+            const status = error.response.status;
+            const data = error.response.data;
+
+            console.error("❌ Error API PDF:", {
+                status,
+                data: data?.toString?.() || data
+            });
+
+            throw crearError(
+                `ApisPeru PDF respondió con estado ${status}. ${data?.message || 'Error en generación de PDF'}`,
+                502
+            );
         }
-    );
+
+        if (error.request) {
+            console.error("❌ No hubo respuesta del servidor ApisPeru (PDF)");
+            throw crearError("No hubo respuesta del servidor ApisPeru al generar el PDF", 504);
+        }
+
+        console.error("❌ Error interno PDF:", error.message);
+        throw crearError("Error interno al generar el PDF", 500);
+    }
 
     // ─── 2. Obtener XML y respuesta SUNAT ─────────────────────────────────────
-    const respuestaXml = await axios.post(
-        `${process.env.APISPERU_URL}/invoice/send`,
-        datosParaComprobante,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
+    let respuestaXml;
+
+    try {
+        respuestaXml = await axios.post(
+            `${process.env.APISPERU_URL}/invoice/send`,
+            datosParaComprobante,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+    } catch (error) {
+
+        if (error.response) {
+            const status = error.response.status;
+            const data = error.response.data;
+
+            console.error("❌ Error API SEND:", {
+                status,
+                data
+            });
+
+            throw crearError(
+                `Error al enviar comprobante a SUNAT (ApisPeru ${status}). ${data?.message || 'Error desconocido'}`,
+                502
+            );
         }
-    );
+
+        if (error.request) {
+            console.error("❌ No hubo respuesta del servidor ApisPeru (SEND)");
+            throw crearError("No hubo respuesta del servidor ApisPeru al enviar el comprobante", 504);
+        }
+
+        console.error("❌ Error interno SEND:", error.message);
+        throw crearError("Error interno al enviar el comprobante", 500);
+    }
 
     const { xml, sunatResponse } = respuestaXml.data;
     const aceptadoPorSunat = sunatResponse?.cdrResponse?.code === '0' ? 1 : 0;
@@ -86,16 +152,22 @@ const generarVentaService = async (datos) => {
             subtotal: d.mtoValorVenta,
             igv: d.igv,
             totalProducto: d.mtoValorVenta + d.igv,
-            idProducto: d.idProducto, // ojo aquí abajo
+            idProducto: d.idProducto,
         })),
     });
+    await actualizarCorrelativoComprobanteModel(tipoComprobante, datosParaComprobante.correlativo);
+    await registrarIngresoCajaModel(datosParaComprobante.mtoImpVenta, 'Venta realizada', idUsuario);
+    const venta = await obtenerVentaPorIdModel(idVenta);
+    const detallesVenta = await obtenerDetalleVentaPorIdVentaModel(idVenta);
+    venta.detalles = detallesVenta;
 
     return {
         ok: true,
-        mensaje: "Venta registrada exitosamente",
+        mensaje: 'Venta y comprobante realizados exitosamente',
         aceptadoPorSunat: aceptadoPorSunat === 1,
+        codigoSunat: sunatResponse?.cdrResponse?.code,
         mensajeSunat: sunatResponse?.cdrResponse?.description,
-        idVenta,
+        venta,
         urlPdf,
         urlXml,
     };
@@ -103,4 +175,4 @@ const generarVentaService = async (datos) => {
 
 module.exports = {
     generarVentaService
-}
+};

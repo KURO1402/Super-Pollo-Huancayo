@@ -6,14 +6,7 @@ const obtenerFechaActual = require('../../utilidades/obtener_fecha_actual');
 const { company, IGV, TIPO_COMPROBANTE_CODIGO, TIPO_DOCUMENTO_CODIGO } = require('../../utilidades/helpers/constantes_venta');
 const numeroALetras = require('../../utilidades/numero_letras');
 
-
-//  Helpers privados 
-
-const sumarCorrelativo = async (idTipoComprobante, correlativo) => {
-    const nuevoCorrelativo = correlativo + 1;
-    // await actualizarCorrelativoModel(idTipoComprobante, nuevoCorrelativo);
-    return nuevoCorrelativo;
-};
+ 
 
 const validarDocumentoPorTipo = (nombreDoc, nroDoc) => {
     if (nombreDoc === 'ruc') {
@@ -100,11 +93,7 @@ const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
     const mtoOperGravadas = parseFloat(productosDetalle.reduce((acc, p) => acc + p.mtoValorVenta, 0).toFixed(2));
     const totalIgv = parseFloat(productosDetalle.reduce((acc, p) => acc + p.igv, 0).toFixed(2));
     const mtoImpVenta = parseFloat((mtoOperGravadas + totalIgv).toFixed(2));
-
-    const nuevoCorrelativo = await sumarCorrelativo(
-        tipoComprobanteExiste.id_tipo_comprobante,
-        tipoComprobanteExiste.correlativo
-    );
+    
 
     const fecha = obtenerFechaActual();
 
@@ -114,7 +103,7 @@ const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
         tipoOperacion: "0101",
         tipoDoc: TIPO_COMPROBANTE_CODIGO[nombreComprobante],
         serie: tipoComprobanteExiste.serie,
-        correlativo: nuevoCorrelativo,
+        correlativo: tipoComprobanteExiste.correlativo + 1,
         fechaEmision: fecha,
         formaPago: {
             moneda: "PEN",

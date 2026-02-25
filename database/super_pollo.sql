@@ -265,8 +265,6 @@ CREATE TABLE ventas (
     id_venta INT AUTO_INCREMENT PRIMARY KEY,
     numero_documento_cliente VARCHAR(12) NOT NULL,
     id_tipo_documento INT NOT NULL,
-    fecha_emision DATE,
-    fecha_vencimiento DATE,
     porcentaje_igv DECIMAL(5,2),
     total_gravada DECIMAL(10,2),
     total_igv DECIMAL(10,2),
@@ -281,13 +279,15 @@ CREATE TABLE comprobantes (
     id_tipo_comprobante INT NOT NULL,
     serie VARCHAR(5) NOT NULL,
     numero_correlativo INT NOT NULL,
+    fecha_emision DATE,
+    fecha_vencimiento DATE,
     sunat_transaccion TINYINT(4) NOT NULL,
     aceptado_por_sunat TINYINT(1),
     url_comprobante_pdf VARCHAR(150),
     url_comprobante_xml VARCHAR(150),
     fecha_envio DATETIME,
     FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
-    FOREIGN KEY (id_tipo_comprobante) tipo_comprobante(id_tipo_comprobante) ON DELETE CASCADE
+    FOREIGN KEY (id_tipo_comprobante) REFERENCES tipo_comprobante(id_tipo_comprobante) ON DELETE CASCADE
 );
 
 -- Tabla para de talles de ventas

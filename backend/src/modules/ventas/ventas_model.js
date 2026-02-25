@@ -1,30 +1,22 @@
 const pool = require('../../config/conexion_DB');
 
 const insertarVentaModel = async ({ numeroDocumentoCliente, idTipoDocumento, fechaEmision, fechaVencimiento, porcentajeIgv, totalGravada, totalIgv, totalVenta, idMedioPago, idTipoComprobante, serie, numeroCorrelativo, sunatTransaccion, aceptadoPorSunat, urlComprobantePdf, urlComprobanteXml, fechaEnvio, detalles }) => {
-    const conexion = await pool.getConnection();
-
+    let conexion;
     try {
+        conexion = await pool.getConnection();
         await conexion.beginTransaction();
 
-        // ─── 1. Insertar venta ────────────────────────────────────────────────
-        const [ventaResult] = await conexion.query(
-            'CALL sp_insertar_venta(?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [numeroDocumentoCliente, idTipoDocumento, fechaEmision, fechaVencimiento, porcentajeIgv, totalGravada, totalIgv, totalVenta, idMedioPago]
-        );
+        // ─── 1. Insertar venta ───────────────────────────────────
+        const [ventaResult] = await conexion.query('CALL sp_insertar_venta(?, ?, ?, ?, ?, ?, ?)',[numeroDocumentoCliente,idTipoDocumento,porcentajeIgv, totalGravada, totalIgv, totalVenta, idMedioPago]);
+
         const idVenta = ventaResult[0][0].id_venta;
 
-        // ─── 2. Insertar comprobante ──────────────────────────────────────────
-        await conexion.query(
-            'CALL sp_insertar_comprobante(?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [idVenta, idTipoComprobante, serie, numeroCorrelativo, sunatTransaccion, aceptadoPorSunat, urlComprobantePdf, urlComprobanteXml, fechaEnvio]
-        );
+        // ─── 2. Insertar comprobante  ───────────────────
+        await conexion.query('CALL sp_insertar_comprobante(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [idVenta,idTipoComprobante,serie,numeroCorrelativo,fechaEmision, fechaVencimiento, sunatTransaccion,aceptadoPorSunat,urlComprobantePdf,urlComprobanteXml,fechaEnvio]);
 
         // ─── 3. Insertar detalles ─────────────────────────────────────────────
         for (const detalle of detalles) {
-            await conexion.query(
-                'CALL sp_insertar_detalle_venta(?, ?, ?, ?, ?, ?, ?, ?)',
-                [detalle.cantidad, detalle.valorUnitario, detalle.precioUnitario, detalle.subtotal, detalle.igv, detalle.totalProducto, idVenta, detalle.idProducto]
-            );
+            await conexion.query('CALL sp_insertar_detalle_venta(?, ?, ?, ?, ?, ?, ?, ?)',[detalle.cantidad,detalle.valorUnitario,detalle.precioUnitario,detalle.subtotal,detalle.igv,detalle.totalProducto,idVenta,detalle.idProducto]);
         }
 
         await conexion.commit();
@@ -38,4 +30,60 @@ const insertarVentaModel = async ({ numeroDocumentoCliente, idTipoDocumento, fec
     }
 };
 
-module.exports = { insertarVentaModel };
+const obtenerVentaPorIdModel = async (idVenta) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.query('CALL sp_obtener_venta_por_id(?)', [idVenta]);
+
+        return result[0][0];
+
+    } catch (error) {
+        throw new Error('Error al obtener la venta');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerComprobantePorIdVentaModel = async (idVenta) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.query('CALL sp_obtener_comprobante_por_id_venta(?)', [idVenta]);
+
+        return result[0][0];
+
+    } catch (error) {
+        throw new Error('Error al obtener el comprobante');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const obtenerDetalleVentaPorIdVentaModel = async (idVenta) => {
+    let conexion;
+
+    try {
+        conexion = await pool.getConnection();
+
+        const [result] = await conexion.query('CALL sp_obtener_detalle_venta_por_id_venta(?)', [idVenta]);
+
+        return result[0];
+
+    } catch (error) {
+        throw new Error('Error al obtener el detalle de la venta');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+module.exports = { 
+    insertarVentaModel,
+    obtenerVentaPorIdModel,
+    obtenerDetalleVentaPorIdVentaModel,
+    obtenerComprobantePorIdVentaModel 
+};
