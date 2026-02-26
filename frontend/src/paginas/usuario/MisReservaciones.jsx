@@ -142,7 +142,7 @@ const MisReservaciones = () => {
 
   if (cargando) {
     return (
-      <section className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+      <section className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-700 rounded w-1/3 mx-auto mb-4"></div>
@@ -159,7 +159,7 @@ const MisReservaciones = () => {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         
         <div className="text-center mb-12">

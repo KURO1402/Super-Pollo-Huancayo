@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import { registrarEntradaServicio } from '../../../servicios/movientosStockServicio';
+import { registrarSalidaServicio } from '../../../servicios/movientosStockServicio';
 import { listarInsumoServicio } from '../../../servicios/insumosServicios';
 import {alertasCRUD} from '../../../utilidades/toastUtilidades';
 
-export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
+export const ModalMovimientoSalidas = ({ onClose, onGuardar }) => {
   const {
     register, handleSubmit, formState: { errors, isSubmitting }, reset, setValue, watch
   } = useForm({
@@ -49,13 +49,13 @@ export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
         cantidadMovimiento: parseFloat(data.cantidadMovimiento),
         detalleMovimiento: data.detalle || '',
       };
-      await registrarEntradaServicio(movimientoData);
-      alertasCRUD.creado('Entrada');
+      await registrarSalidaServicio(movimientoData);
+      alertasCRUD.creado('Salida');
       onGuardar(); 
       reset();
       onClose();
     } catch (error) {
-      alertasCRUD.error('Error al registrar el movimiento');
+      alertasCRUD.error('Error al registrar la salida');
     }
   };
 
@@ -80,7 +80,7 @@ export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
               validate: value => value !== "" || "Seleccione un insumo"
             })}
             disabled={cargando}
-            className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+            className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent ${
               errors.idInsumo 
                 ? 'border-red-500 dark:border-red-400' 
                 : 'border-gray-300 dark:border-gray-600'
@@ -100,11 +100,11 @@ export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
           )}
           
           {insumoActual && (
-            <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <p className="text-xs text-green-700 dark:text-green-300">
+            <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <p className="text-xs text-red-700 dark:text-red-300">
                 Stock actual: <strong>{insumoActual.stock_insumo || insumoActual.stockInsumo} {insumoActual.unidad_medida}</strong>
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400">
+              <p className="text-xs text-red-600 dark:text-red-400">
                 Categoría: {insumoActual.categoriaProducto === 'bebida' ? 'Bebida' : 'Insumo'}
               </p>
             </div>
@@ -124,9 +124,18 @@ export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
               min: {
                 value: 0.01,
                 message: "La cantidad debe ser mayor a 0"
+              },
+              validate: {
+                stockSuficiente: (value) => {
+                  if (insumoActual) {
+                    return parseFloat(value) <= (insumoActual.stock_insumo || insumoActual.stockInsumo) || 
+                      'No hay suficiente stock disponible';
+                  }
+                  return true;
+                }
               }
             })}
-            className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+            className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
               errors.cantidadMovimiento 
                 ? 'border-red-500 dark:border-red-400' 
                 : 'border-gray-300 dark:border-gray-600'
@@ -147,27 +156,27 @@ export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
           <textarea
             {...register("detalle")}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-            placeholder="Ingrese detalles adicionales (ej: proveedor, factura, motivo, etc.)"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+            placeholder="Ingrese detalles adicionales (ej: motivo, destino, pedido, etc.)"
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Descripción opcional de la entrada
+            Descripción opcional de la salida
           </p>
         </div>
 
         {insumoActual && (
-          <div className="p-4 rounded-lg border bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
-            <h4 className="font-semibold text-sm text-green-800 dark:text-green-300">
-              Resumen de la Entrada:
+          <div className="p-4 rounded-lg border bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">
+            <h4 className="font-semibold text-sm text-red-800 dark:text-red-300">
+              Resumen de la Salida:
             </h4>
             <div className="text-xs mt-1 space-y-1">
-              <p className="text-green-700 dark:text-green-400">
-                <strong>+{watch('cantidadMovimiento') || '0'} {insumoActual?.unidad_medida}</strong> de {insumoActual?.nombre_insumo}
+              <p className="text-red-700 dark:text-red-400">
+                <strong>-{watch('cantidadMovimiento') || '0'} {insumoActual?.unidad_medida}</strong> de {insumoActual?.nombre_insumo}
               </p>
               <p className="text-gray-600 dark:text-gray-400">
                 Stock actual: {insumoActual.stock_insumo || insumoActual.stockInsumo} {insumoActual.unidad_medida} → 
                 Stock nuevo: <strong>
-                  {(parseFloat(insumoActual.stock_insumo || insumoActual.stockInsumo) + parseFloat(watch('cantidadMovimiento') || 0)).toFixed(2)} {insumoActual.unidad_medida}
+                  {(parseFloat(insumoActual.stock_insumo || insumoActual.stockInsumo) - parseFloat(watch('cantidadMovimiento') || 0)).toFixed(2)} {insumoActual.unidad_medida}
                 </strong>
               </p>
               {watch('detalle') && (
@@ -191,9 +200,9 @@ export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
           <button
             type="submit"
             disabled={isSubmitting || cargando}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Registrando...' : 'Registrar Entrada'}
+            {isSubmitting ? 'Registrando...' : 'Registrar Salida'}
           </button>
         </div>
       </form>

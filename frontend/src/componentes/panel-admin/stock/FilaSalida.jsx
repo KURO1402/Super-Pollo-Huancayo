@@ -11,7 +11,7 @@ export const FilaSalida = ({ salida  }) => {
           </div>
           <div>
             <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {salida.nombreInsumo}
+              {salida.nombre_insumo}
             </div>
           </div>
         </div>
@@ -20,33 +20,33 @@ export const FilaSalida = ({ salida  }) => {
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-            -{salida.cantidadMovimiento}
+            -{salida.cantidad_movimiento}
           </span>
         </div>
       </td>
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900 dark:text-white">
-          {salida.fechaMovimiento}
+          {salida.fecha_movimiento}
         </div>
       </td>
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900 dark:text-white">
-          {salida.horaMovimiento}
+          {salida.hora_movimiento}
         </div>
       </td>
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-1 text-sm text-gray-900 dark:text-white">
           <FiUser size={14} className="text-gray-400" />
-          {salida.nombreUsuario}
+          {salida.encargado_movimiento}
         </div>
       </td>
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900 dark:text-white">
-          {salida.detallesMovimiento == "-" ? "No hay detalle": salida.detallesMovimiento}
+          {salida.detalle_movimiento == "-" ? "No hay detalle": salida.detalle_movimiento}
         </div>
       </td>
     </tr>

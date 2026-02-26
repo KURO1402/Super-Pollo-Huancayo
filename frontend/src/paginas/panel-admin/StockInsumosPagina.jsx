@@ -155,7 +155,7 @@ const handleEliminarInsumo = async (idInsumo) => {
               onClick={handleMovimientoStock}
               className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer text-sm sm:text-base flex-1 sm:flex-none min-w-0"
             >
-              <BsBoxSeam className="text-lg flex-shrink-0" />
+              <BsBoxSeam className="text-lg shrink-0" />
               <span className="truncate">Movimiento Stock</span>
             </button>
             

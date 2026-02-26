@@ -31,7 +31,7 @@ export const Paginacion = ({
         </span>
       </div>
 
-      {totalPaginas > 1 && (
+      {totalPaginas >= 1 && (
         <>
           <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
             Página <span className="font-medium">{paginaActual}</span> de{" "}

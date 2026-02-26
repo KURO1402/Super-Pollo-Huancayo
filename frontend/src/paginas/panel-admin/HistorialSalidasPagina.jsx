@@ -1,162 +1,158 @@
+import { useEffect } from 'react';
 import { MdHistory } from "react-icons/md";
-import { useEffect, useState } from "react";
 import { BsPlusLg } from "react-icons/bs";
+import { useStockStore } from '../../store/useStockStore';
+import { usePaginacion } from '../../hooks/usePaginacion';
+import { useModal } from '../../hooks/useModal';
+import { useBusqueda } from '../../hooks/useBusqueda';
 import { Tabla } from "../../componentes/ui/tabla/Tabla";
 import { BarraBusqueda } from "../../componentes/busqueda-filtros/BarraBusqueda"; 
 import { Paginacion } from "../../componentes/ui/tabla/Paginacion";
 import Modal from "../../componentes/ui/modal/Modal";
-import { useBusqueda } from "../../hooks/useBusqueda"; 
-import { usePaginacion } from "../../hooks/usePaginacion";
-import { useModal } from "../../hooks/useModal";
-import { FilaSalida } from "../../componentes/panel-admin/stock/FilaSalida"; 
-import { listarMovimientosServicio } from "../../servicios/movientosStockServicio";
-import { ModalMovimientoStock } from "../../componentes/panel-admin/stock/ModalMovimientoStock";
+import { FilaSalida } from "../../componentes/panel-admin/stock/FilaSalida";
+import { ModalMovimientoSalidas } from '../../componentes/panel-admin/stock/ModalMovimientoSalidas';
 
 const HistorialSalidasPagina = () => {
-  const { 
-    paginaActual, 
-    setPaginaActual, 
-    itemsPorPagina, 
-    setItemsPorPagina, 
-    paginar 
-  } = usePaginacion(5);
+  const {
+    salidas,
+    totalSalidas,
+    cargando,
+    error,
+    paginaSalida,
+    limitSalida,
+    cargarSalidas,
+    setPaginaSalida,
+    setLimitSalida,
+    limpiarError,
+  } = useStockStore();
 
-  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda(); 
-  const [movimientos, setMovimientos] = useState([]);
-  const [cargando, setCargando] = useState(false);
+  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
+  const modalSalida = useModal(false);
 
-  const modalMovimientoStock = useModal(false);
-
-  const obtenerMovimientos = async () => {
-    try {
-      setCargando(true);
-      const data = await listarMovimientosServicio();
-      const movimientosConId = data.map((mov, index) => ({
-        ...mov,
-        idMovimientoStock: `mov-${index}-${Date.now()}`,
-        idMovimiento: `mov-${index}-${Date.now()}`
-      }));
-
-      setMovimientos(movimientosConId);
-    } catch (error) {
-
-    } finally {
-      setCargando(false);
-    }
-  };
+  const paginacion = usePaginacion({
+    paginaActual: paginaSalida,
+    limite: limitSalida,
+    total: totalSalidas,
+    onPagina: setPaginaSalida,
+    onLimite: setLimitSalida,
+  });
 
   useEffect(() => {
-    obtenerMovimientos();
-  }, []);
+    cargarSalidas();
+  }, [paginaSalida, limitSalida]);
 
-  const salidas = movimientos.filter(mov => mov.nombreMovimiento === 'salida');
+  useEffect(() => {
+    if (error) limpiarError();
+  }, [error]);
 
   const handleMovimientoStock = () => {
-    modalMovimientoStock.abrir();
+    modalSalida.abrir();
   };
 
   const handleMovimientoCreado = async () => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      await obtenerMovimientos();
-      
-      modalMovimientoStock.cerrar();
-    } catch (error) {
-
-    }
+    await cargarSalidas();
+    modalSalida.cerrar();
   };
 
-  let filtrados = filtrarPorBusqueda(salidas, [
-    "nombreInsumo",
-    "cantidadMovimiento",
-    "detalleMovimiento",
-    "nombreUsuario"
+  const salidasFiltradas = filtrarPorBusqueda(salidas, [
+    "nombre_insumo",
+    "cantidad_movimiento",
+    "detalle_movimiento",
+    "encargado_movimiento"
   ]);
 
-  const { datosPaginados, totalPaginas } = paginar(filtrados);
-
-  const handleCambiarPagina = (nuevaPagina) => {
-    setPaginaActual(nuevaPagina);
-  };
-
-  const handleCambiarItemsPorPagina = (nuevoItemsPorPagina) => {
-    setItemsPorPagina(nuevoItemsPorPagina);
-  };
-
-  const filasSalidas = datosPaginados.map((salida) => (
-    <FilaSalida
-      key={salida.idMovimientoStock} 
+  const filasSalidas = salidasFiltradas.map((salida) => (
+    <FilaSalida 
+      key={salida.id_movimiento_stock || salida.idMovimientoStock} 
       salida={salida}
     />
   ));
 
   return (
-    <div className="p-2">
-      <div className="mb-4">
-        <div className="mb-4 flex items-center">
-          <MdHistory className="text-3xl text-red-600 dark:text-red-500 mr-2"/>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Historial de Salidas</h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MdHistory className="text-3xl text-red-500 dark:text-red-400 mr-2" />
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Historial de Salidas
+              </h1>
+            </div>
+            <button 
+              onClick={handleMovimientoStock}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer text-sm"
+            >
+              <BsPlusLg className="text-lg" />
+              <span>Nueva salida</span>
+            </button>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            {totalSalidas > 0
+              ? `${totalSalidas} salida${totalSalidas !== 1 ? 's' : ''} registrada${totalSalidas !== 1 ? 's' : ''}`
+              : 'Sin salidas registradas'}
+          </p>
         </div>
-        <p className="text-gray-600 dark:text-gray-400">Registro de consumos y ventas de insumos</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-        <div className="md:col-span-2">
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
           <BarraBusqueda
             valor={terminoBusqueda} 
             onChange={setTerminoBusqueda}
-            placeholder="Buscar por insumo, ID movimiento o cantidad..."
+            placeholder="Buscar por insumo, cantidad, encargado o detalle..."
           />
         </div>
-        <button 
-          onClick={handleMovimientoStock}
-          className="bg-transparent hover:bg-red-500 text-red-600 hover:text-white px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer text-sm border-2 border-red-500 hover:border-red-600"
-        >
-          <BsPlusLg className="text-lg flex-shrink-0" />
-          <span className="truncate">Nueva Salida</span>
-        </button>
+
+        {cargando ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando salidas...</p>
+          </div>
+        ) : (
+          <>
+            <Tabla
+              encabezados={["Insumo", "Cantidad", "Fecha", "Hora", "Encargado", "Detalle"]}
+              registros={filasSalidas}
+            />
+            
+            {salidasFiltradas.length === 0 && (
+              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <MdHistory className="text-5xl text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  {terminoBusqueda 
+                    ? "No se encontraron salidas que coincidan con la búsqueda" 
+                    : "No hay salidas registradas aún"}
+                </p>
+                {!terminoBusqueda && (
+                  <button
+                    onClick={handleMovimientoStock}
+                    className="mt-4 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium flex items-center gap-2 mx-auto cursor-pointer"
+                  >
+                    <BsPlusLg size={16} />
+                    <span>Registrar primera salida</span>
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {totalSalidas > 0 && (
+              <div className="mt-6">
+                <Paginacion {...paginacion} />
+              </div>
+            )}
+          </>
+        )}
       </div>
 
-      {cargando ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto"></div>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Cargando salidas...</p>
-        </div>
-      ) : (
-        <>
-          <Tabla
-            encabezados={["Insumo", "Cantidad", "Fecha", "Hora", "Usuario", "Detalle"]}
-            registros={filasSalidas}
-          /> 
-          
-          {datosPaginados.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              {salidas.length === 0 ? "No hay salidas registradas" : "No se encontraron entradas que coincidan con la búsqueda"}
-            </div>
-          )}
-          
-          <Paginacion
-            paginaActual={paginaActual}
-            totalPaginas={totalPaginas}
-            alCambiarPagina={handleCambiarPagina}
-            itemsPorPagina={itemsPorPagina}
-            alCambiarItemsPorPagina={handleCambiarItemsPorPagina}
-            mostrarSiempre={true}
-          />
-        </>
-      )}
-      
       <Modal
-        estaAbierto={modalMovimientoStock.estaAbierto}
-        onCerrar={modalMovimientoStock.cerrar}
+        estaAbierto={modalSalida.estaAbierto} 
+        onCerrar={modalSalida.cerrar} 
         titulo="Registrar Movimiento de Stock"
         tamaño="md"
-        mostrarHeader={true}
+        mostrarHeader
         mostrarFooter={false}
       >
-        <ModalMovimientoStock 
-          onClose={modalMovimientoStock.cerrar}
+        <ModalMovimientoSalidas 
+          onClose={modalSalida.cerrar}
           onGuardar={handleMovimientoCreado}
         />
       </Modal>
