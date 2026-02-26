@@ -2,7 +2,7 @@ import API from "./axiosConfiguracion";
 
 export const obtenerCategoriasServicio = async () => {
   try {
-    const respuesta = await API.get('/productos/categorias/all');
+    const respuesta = await API.get('/categorias-producto');
     
     if (respuesta.data.ok) {
       return respuesta.data.categorias;

@@ -7,7 +7,6 @@ import { useCategorias } from '../../../hooks/useCategorias';
 export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
   const { categorias, loading: cargandoCategorias, cargarCategorias } = useCategorias();
   const [categoriasCargadas, setCategoriasCargadas] = useState(false);
-
   const {
     register, 
     handleSubmit, 
@@ -16,10 +15,10 @@ export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
     setValue
   } = useForm({
     defaultValues: {
-      nombreProducto: producto.nombreProducto,
-      descripcionProducto: producto.descripcionProducto,
-      precio: parseFloat(producto.precio),
-      idCategoria: ''
+      nombreProducto: producto.nombre_producto,
+      descripcionProducto: producto.descripcion_producto,
+      precio: parseFloat(producto.precio_producto),
+      idCategoria: producto.id_categoria
     }
   });
 
@@ -35,16 +34,16 @@ export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
   }, [cargarCategorias, categoriasCargadas]);
 
   useEffect(() => {
-    if (categoriasCargadas && categorias.length > 0 && producto.nombreCategoria) {
+    if (categoriasCargadas && categorias.length > 0 && producto.nombre_categoria) {
       const categoriaEncontrada = categorias.find(
-        cat => cat.nombreCategoria === producto.nombreCategoria
+        cat => cat.nombre_categoria === producto.nombre_categoria
       );
       
       if (categoriaEncontrada) {
-        setValue('idCategoria', categoriaEncontrada.idCategoria);
+        setValue('idCategoria', categoriaEncontrada.id_categoria);
       }
     }
-  }, [categoriasCargadas, categorias, producto.nombreCategoria, setValue]);
+  }, [categoriasCargadas, categorias, producto.id_categoria, setValue]);
 
   const onSubmit = async (data) => {
     try {
@@ -56,17 +55,17 @@ export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
       const datosActualizados = {
         nombreProducto: data.nombreProducto,
         descripcionProducto: data.descripcionProducto,
-        precio: parseFloat(data.precio),
-        idCategoria: parseInt(data.idCategoria)
+        precioProducto: Number(data.precio),
+        idCategoria: Number(data.idCategoria),
       };
 
-      await actualizarProductoServicio(producto.idProducto, datosActualizados);
-      
+      await actualizarProductoServicio(producto.id_producto, datosActualizados);
+
       mostrarAlerta.exito('Producto actualizado exitosamente');
-      onGuardar(); 
-      
+      onGuardar();
+
     } catch (error) {
-      mostrarAlerta.error("No se subió el productos");
+      mostrarAlerta.error("No se pudo actualizar el producto");
     }
   };
 
@@ -125,10 +124,10 @@ export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
             ) : (
               categorias.map(categoria => (
                 <option 
-                  key={categoria.idCategoria} 
-                  value={categoria.idCategoria}
+                  key={categoria.id_categoria} 
+                  value={categoria.id_categoria}
                 >
-                  {categoria.nombreCategoria}
+                  {categoria.nombre_categoria}
                 </option>
               ))
             )}
@@ -138,9 +137,9 @@ export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
               {errors.idCategoria.message}
             </p>
           )}
-          {producto.nombreCategoria && (
+          {producto.nombre_categoria && (
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Categoría actual: <strong>{producto.nombreCategoria}</strong>
+              Categoría actual: <strong>{producto.nombre_categoria}</strong>
             </p>
           )}
         </div>
@@ -193,7 +192,7 @@ export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-blue-700 dark:text-blue-400">ID:</span>
-              <span className="ml-1 text-blue-900 dark:text-blue-200">{producto.idProducto}</span>
+              <span className="ml-1 text-blue-900 dark:text-blue-200">{producto.id_producto}</span>
             </div>
             <div>
               <span className="text-blue-700 dark:text-blue-400">Usa Insumos:</span>
@@ -201,16 +200,10 @@ export const ModalEditarProducto = ({ producto, onClose, onGuardar }) => {
                 {producto.usaInsumos === 1 ? 'Sí' : 'No'}
               </span>
             </div>
-            <div>
-              <span className="text-blue-700 dark:text-blue-400">Estado:</span>
-              <span className="ml-1 text-blue-900 dark:text-blue-200">
-                {producto.estadoProducto === 1 ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
             <div className="col-span-2">
               <span className="text-blue-700 dark:text-blue-400">Categoría Actual:</span>
               <span className="ml-1 text-blue-900 dark:text-blue-200">
-                {producto.nombreCategoria || 'Sin categoría'}
+                {producto.nombre_categoria || 'Sin categoría'}
               </span>
             </div>
           </div>

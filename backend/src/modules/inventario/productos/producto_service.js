@@ -384,7 +384,7 @@ const obtenerProductosCatalogoService = async (idCategoria) => {
 };
 
 const obtenerProductosGestionService = async (querys) => {
-    const allowedQuerys = ['limit', 'offset', 'nombre', 'usaInsumos', 'contarCategoriasPorIdModel'];
+    const allowedQuerys = ['limit', 'offset', 'nombre', 'usaInsumos', 'contarCategoriasPorIdModel', 'categoria'];
 
     const keysInvalidas = Object.keys(querys).filter(
         key => !allowedQuerys.includes(key)
@@ -393,7 +393,7 @@ const obtenerProductosGestionService = async (querys) => {
     if (keysInvalidas.length > 0) {
         throw crearError('Filtro no valido',400);
     }
-    const { limit, offset, nombre, usaInsumos, contarCategoriasPorIdModel } = querys;
+    const { limit, offset, nombre, usaInsumos, contarCategoriasPorIdModel, categoria  } = querys;
 
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;

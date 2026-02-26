@@ -46,8 +46,7 @@ export const obtenerProductoCatalogoServicio = async ( categoriaId = null) => {
 
 export const actualizarProductoServicio = async (idProducto, datosActualizados) => {
   try {
-    
-    const respuesta = await API.put(`/productos/actualizar-producto/${idProducto}`, datosActualizados);
+    const respuesta = await API.patch(`/productos/actualizar-producto/${idProducto}`, datosActualizados);
 
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -58,6 +57,7 @@ export const actualizarProductoServicio = async (idProducto, datosActualizados) 
     throw error;
   }
 };
+
 export const eliminarProductoServicio = async (idProducto) => {
   try {
     const respuesta = await API.delete(`/productos/eliminar-producto/${idProducto}`);
@@ -72,10 +72,9 @@ export const eliminarProductoServicio = async (idProducto) => {
   }
 };
 
-export const agregarInsumoProductoServicio = async (datos) => {
+export const agregarInsumoProductoServicio = async (idProducto, datos) => {
   try {
-    
-    const respuesta = await API.post('/productos/agregar-cantidad', datos);
+    const respuesta = await API.post(`/productos/agregar-cantidad-insumo/${idProducto}`, datos);
 
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -87,10 +86,9 @@ export const agregarInsumoProductoServicio = async (datos) => {
   }
 };
 
-export const modificarCantidadInsumoServicio = async (datos) => {
+export const modificarCantidadInsumoServicio = async (idProducto, datos) => {
   try {
-    
-    const respuesta = await API.patch('/productos/modificar-cantidad', datos);
+    const respuesta = await API.patch(`/productos/actualizar-cantidad-insumo/${idProducto}`, datos);
 
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -102,10 +100,9 @@ export const modificarCantidadInsumoServicio = async (datos) => {
   }
 };
 
-export const eliminarInsumoProductoServicio = async (datos) => {
+export const eliminarInsumoProductoServicio = async (idProducto, datos) => {
   try {
-    
-    const respuesta = await API.delete('/productos/eliminar-cantidad', { data: datos });
+    const respuesta = await API.delete(`/productos/eliminar-cantidad-insumo/${idProducto}`, { data: datos });
 
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -119,7 +116,7 @@ export const eliminarInsumoProductoServicio = async (datos) => {
 
 export const obtenerInsumosProductoServicio = async (idProducto) => {
   try {
-    const respuesta = await API.get(`/productos/insumos-cantidad/${idProducto}`);
+    const respuesta = await API.get(`/productos/insumos/${idProducto}`);
 
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -152,8 +149,6 @@ export const obtenerImagenesProductoServicio = async () => {
 }
 
 export const actualizarImagenProductoServicio = async (idProducto, formData) => {
-  console.log('ID del producto para actualizar imagen:', idProducto);
-  console.log('FormData en actualizarImagenProductoServicio:', formData);
   try {
     
     const respuesta = await API.put(`/productos/actualizar-imagen/${idProducto}`, formData,);
@@ -167,3 +162,27 @@ export const actualizarImagenProductoServicio = async (idProducto, formData) => 
     throw error;
   }
 };
+
+export const habilitarProductoServicio = async (idProducto) => {
+  try {
+    const respuesta = await API.patch(`/productos/habilitar-producto/${idProducto}`);
+
+    if (respuesta.data && respuesta.data.ok){
+      return respuesta.data;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const deshabilitarProductoServicio = async (idProducto) => {
+  try {
+    const respuesta = await API.patch(`/productos/deshabilitar-producto/${idProducto}`);
+
+    if (respuesta.data && respuesta.data.ok){
+      return respuesta.data;
+    }
+  } catch (error) {
+    throw error;
+  }
+}

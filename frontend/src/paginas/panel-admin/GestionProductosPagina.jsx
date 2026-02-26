@@ -2,18 +2,14 @@ import { BsBoxSeam } from "react-icons/bs";
 import { useState } from 'react';
 import { Tabla } from "../../componentes/ui/tabla/Tabla";
 import { BarraBusqueda } from "../../componentes/busqueda-filtros/BarraBusqueda";
-import { Paginacion } from "../../componentes/ui/tabla/Paginacion";
 import Modal from "../../componentes/ui/modal/Modal";
-import { ModalConfirmacion } from "../../componentes/ui/modal/ModalConfirmacion";
 import { useModal } from "../../hooks/useModal";
-import { useConfirmacion } from "../../hooks/useConfirmacion";
 import { useBusqueda } from "../../hooks/useBusqueda";
-import { usePaginacion } from "../../hooks/usePaginacion";
 import { useProductos } from "../../hooks/useProductos";
 import { ModalReceta } from '../../componentes/panel-admin/productos/ModalReceta';
 import { ModalNuevoProducto } from '../../componentes/panel-admin/productos/ModalNuevoProducto'
 import { FilaProducto } from '../../componentes/panel-admin/productos/FilaProductos';
-import { eliminarProductoServicio } from "../../servicios/productoServicios";
+import { habilitarProductoServicio, deshabilitarProductoServicio } from "../../servicios/productoServicios";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 import { ModalEditarProducto } from "../../componentes/panel-admin/productos/ModalEditarProducto";
 import ModalGestionCategorias from "../../componentes/panel-admin/productos/ModalGestionCategorias";
@@ -21,15 +17,12 @@ import ModalGestionCategorias from "../../componentes/panel-admin/productos/Moda
 const GestionProductosPagina = () => {
   const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
   const { productos, cargando, error, refetch } = useProductos();
-  const { paginaActual, setPaginaActual, paginar, itemsPorPagina, setItemsPorPagina } = usePaginacion(8);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-  const [productoAEliminar, setProductoAEliminar] = useState(null);
 
   const modalReceta = useModal(false);
   const modalNuevoProducto = useModal(false);
   const modalEditarProducto = useModal(false);
   const modalGestionCategorias = useModal(false);
-  const confirmacionEliminar = useConfirmacion();
 
   function handleGestionarInsumos(producto) {
     setProductoSeleccionado(producto);
@@ -45,53 +38,27 @@ const GestionProductosPagina = () => {
     modalEditarProducto.abrir();
   }
 
-  const handleCambiarPagina = (nuevaPagina) => {
-    setPaginaActual(nuevaPagina);
-  };
-
-  const handleCambiarItemsPorPagina = (nuevoItemsPorPagina) => {
-    setItemsPorPagina(nuevoItemsPorPagina);
-  };
-
-  function handleAbrirCategorias() {
-    modalGestionCategorias.abrir();
-  }
-
-  function handleSolicitarEliminar(producto) {
-    setProductoAEliminar(producto);
-    
-    confirmacionEliminar.solicitarConfirmacion(
-      `¿Estás seguro de eliminar el producto "${producto.nombreProducto}"? Esta acción no se puede deshacer.`,
-      () => {
-        handleEliminarProducto(producto.idProducto);
-      },
-      {
-        titulo: "Eliminar Producto",
-        tipo: "peligro",
-        textoConfirmar: "Sí, eliminar",
-        textoCancelar: "Cancelar"
-      }
-    );
-  }
-
-  function cancelarEliminacion() {
-    setProductoAEliminar(null);
-    confirmacionEliminar.ocultarConfirmacion();
-  }
-
-  async function handleEliminarProducto(idProducto) {
+  const handleToggleProducto = async (producto) => {
     try {
-      await eliminarProductoServicio(idProducto);
+      const idProducto = producto.id_producto;
+      const estadoActual = producto.estado === 1;
+      
+      if (estadoActual) {
+        await deshabilitarProductoServicio(idProducto);
+        mostrarAlerta.exito('Producto deshabilitado correctamente');
+      } else {
+        await habilitarProductoServicio(idProducto);
+        mostrarAlerta.exito('Producto habilitado correctamente');
+      }
       
       refetch();
-      mostrarAlerta.exito('Producto eliminado exitosamente');
       
     } catch (error) {
-
-    } finally {
-      setProductoAEliminar(null);
+      const mensajeError = error.response?.data?.mensaje || error.message || 'Error al cambiar estado del producto';
+      mostrarAlerta.error(mensajeError);
     }
-  }
+  };
+
   function handleGuardarProducto() {
     refetch();
     modalNuevoProducto.cerrar();
@@ -99,19 +66,17 @@ const GestionProductosPagina = () => {
   }
 
   let productosFiltrados = filtrarPorBusqueda(productos, [
-    "nombreProducto", 
-    "descripcionProducto"
+    "nombre_producto", 
+    "descripcion_producto"
   ]);
 
-  const { datosPaginados, totalPaginas } = paginar(productosFiltrados);
-
-  const filasProductos = datosPaginados.map((producto) => (
+  const filasProductos = productosFiltrados.map((producto) => (
     <FilaProducto 
-      key={producto.idProducto}
+      key={producto.id_producto}
       producto={producto}
       onGestionarInsumos={handleGestionarInsumos}
       onEditarProducto={handleEditarProducto}
-      onEliminarProducto={handleSolicitarEliminar} 
+      onToggleProducto={handleToggleProducto}
     />
   ));
 
@@ -147,11 +112,6 @@ const GestionProductosPagina = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap cursor-pointer">
             + Nuevo Producto
           </button>
-          <button 
-            onClick={handleAbrirCategorias}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap cursor-pointer">
-            Gestión de Categorías
-          </button>
         </div>
       </div>
 
@@ -160,19 +120,10 @@ const GestionProductosPagina = () => {
         registros={filasProductos}
       />
 
-      <Paginacion
-        paginaActual={paginaActual}
-        totalPaginas={totalPaginas}
-        alCambiarPagina={handleCambiarPagina}
-        itemsPorPagina={itemsPorPagina}
-        alCambiarItemsPorPagina={handleCambiarItemsPorPagina}
-        mostrarSiempre={true}
-      />
-
       <Modal
         estaAbierto={modalReceta.estaAbierto}
         onCerrar={modalReceta.cerrar}
-        titulo={`Insumos: ${productoSeleccionado?.nombreProducto || ''}`}
+        titulo={`Insumos: ${productoSeleccionado?.nombre_producto || ''}`}
         tamaño="xl"
         mostrarHeader={true}
       >
@@ -202,7 +153,7 @@ const GestionProductosPagina = () => {
       <Modal
         estaAbierto={modalEditarProducto.estaAbierto}
         onCerrar={modalEditarProducto.cerrar}
-        titulo={`Editar Producto: ${productoSeleccionado?.nombreProducto || ''}`}
+        titulo={`Editar Producto: ${productoSeleccionado?.nombre_producto || ''}`}
         tamaño="lg"
         mostrarHeader={true}
         mostrarFooter={false}
@@ -215,18 +166,6 @@ const GestionProductosPagina = () => {
           />
         )}
       </Modal>
-      <div className="p-2">
-        <ModalConfirmacion
-          visible={confirmacionEliminar.confirmacionVisible}
-          onCerrar={cancelarEliminacion}
-          onConfirmar={confirmacionEliminar.confirmarAccion}
-          titulo={confirmacionEliminar.tituloConfirmacion}
-          mensaje={confirmacionEliminar.mensajeConfirmacion}
-          tipo={confirmacionEliminar.tipoConfirmacion}
-          textoConfirmar={confirmacionEliminar.textoConfirmar}
-          textoCancelar={confirmacionEliminar.textoCancelar}
-        />
-      </div>
 
       <Modal
         estaAbierto={modalGestionCategorias.estaAbierto}

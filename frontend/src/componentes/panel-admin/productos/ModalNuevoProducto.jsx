@@ -153,14 +153,14 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
 
       const formData = new FormData();
       
-      formData.append('image', data.imagen);
+      formData.append('imagenProducto', data.imagen);
       
       const datosProducto = {
         nombreProducto: data.nombreProducto,
         descripcionProducto: data.descripcionProducto || '',
-        precio: parseFloat(data.precio),
+        precioProducto: parseFloat(data.precio),
         idCategoria: parseInt(data.idCategoria),
-        usaInsumo: data.usaInsumo ? 1 : 0,
+        usaInsumos: data.usaInsumo ? 1 : 0,
         insumos: data.usaInsumo ? insumosSeleccionados
           .filter(insumo => insumo.idInsumo && insumo.cantidad)
           .map(insumo => ({
@@ -175,6 +175,7 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
       }
       
       formData.append('datos', JSON.stringify(datosProducto));
+      console.log('Contenido de FormData:', formData.get('datos'), formData.get('imageProducto'));
       await crearProductoServicio(formData);
       
       mostrarAlerta.exito('Producto creado exitosamente');
@@ -236,8 +237,8 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
                 <option value="" disabled>Cargando categorías...</option>
               ) : (
                 categorias.map(categoria => (
-                  <option key={categoria.idCategoria} value={categoria.idCategoria}>
-                    {categoria.nombreCategoria}
+                  <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                    {categoria.nombre_categoria}
                   </option>
                 ))
               )}
@@ -294,7 +295,7 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
               {...register("usaInsumo")}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
           </label>
         </div>
 

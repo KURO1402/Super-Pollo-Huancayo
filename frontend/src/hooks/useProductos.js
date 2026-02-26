@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { obtenerImagenesProductoServicio } from '../servicios/productoServicios';
+import { obtenerImagenesProductoServicio, obtenerProductosServicio } from '../servicios/productoServicios';
 
 export const useProductos = () => {
+  const [productos, setProductos] = useState([]);
   const [imagenesProductos, setImagenesProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -19,16 +20,32 @@ export const useProductos = () => {
     }
   }, []);
 
+  const obtenerProductos = useCallback(async () => {
+    try {
+      setCargando(true);
+      setError(null);
+      const respuesta = await obtenerProductosServicio();
+      setProductos(respuesta.productos || []);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
   const refetch = useCallback(async () => {
     await obtenerImagenesProductos();
-  }, [obtenerImagenesProductos]);
+    await obtenerProductos();
+  }, [obtenerImagenesProductos, obtenerProductos]);
 
   useEffect(() => {
     obtenerImagenesProductos();
-  }, [obtenerImagenesProductos]);
+      obtenerProductos();
+  }, [obtenerImagenesProductos, obtenerProductos]);
 
   return {
     imagenesProductos,
+    productos,
     cargando,
     error,
     refetch,

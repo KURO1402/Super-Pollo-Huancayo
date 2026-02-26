@@ -23,22 +23,25 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
   const confirmacionEliminar = useConfirmacion();
 
   useEffect(() => {
-    cargarDatos();
-  }, [producto.idProducto]);
+    cargarInsumosDisponibles();
+    cargarInsumosProducto();
+  }, [producto.id_producto]);
 
-  const cargarDatos = async () => {
+  const cargarInsumosDisponibles = async () => {
     try {
-      setCargando(true);
-      setError(null);
-      
-      const respuestaInsumosProducto = await obtenerInsumosProductoServicio(producto.idProducto);
-      setInsumosProducto(respuestaInsumosProducto.insumos || []);
-      
-      const respuestaInsumosDisponibles = await listarInsumoServicio();
-      setInsumosDisponibles(respuestaInsumosDisponibles || []);
-      
-    } catch (err) {
-      setError(err.message);
+      const respuesta = await listarInsumoServicio();
+      setInsumosDisponibles(Array.isArray(respuesta) ? respuesta : []);
+    } catch {
+      setInsumosDisponibles([]);
+    }
+  };
+
+  const cargarInsumosProducto = async () => {
+    try {
+      const respuesta = await obtenerInsumosProductoServicio(producto.id_producto);
+      setInsumosProducto(respuesta?.insumos ?? []);
+    } catch {
+      setInsumosProducto([]);
     } finally {
       setCargando(false);
     }
@@ -54,15 +57,16 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
     }
 
     try {
+      const idProducto = producto.id_producto;
       const datos = {
-        idProducto: producto.idProducto,
         idInsumo: parseInt(nuevoInsumo.idInsumo),
         cantidadUso: cantidad
       };
 
-      await agregarInsumoProductoServicio(datos);
+      await agregarInsumoProductoServicio(idProducto, datos);
       
-      await cargarDatos();
+      await cargarInsumosDisponibles();
+      await cargarInsumosProducto();
       
       setNuevoInsumo({ idInsumo: "", cantidadUso: "" });
       
@@ -74,8 +78,8 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
   };
 
   const iniciarEdicion = (insumo) => {
-    setEditandoInsumo(insumo.idInsumo);
-    setNuevaCantidad(insumo.cantidaUso || insumo.cantidadUso);
+    setEditandoInsumo(insumo.id_insumo);
+    setNuevaCantidad(insumo.cantidad_uso);
   };
 
   const guardarCantidad = async (idInsumo) => {
@@ -85,14 +89,15 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
     }
 
     try {
+      const idProducto = producto.id_producto;
       const datos = {
-        idProducto: producto.idProducto,
         idInsumo: idInsumo,
-        nuevaCantidad: parseFloat(nuevaCantidad)
+        cantidadUso: parseFloat(nuevaCantidad)
       };
-      await modificarCantidadInsumoServicio(datos);
+      await modificarCantidadInsumoServicio(idProducto, datos);
       
-      await cargarDatos();
+      await cargarInsumosDisponibles();
+      await cargarInsumosProducto();
       
       setEditandoInsumo(null);
       setNuevaCantidad(0);
@@ -111,13 +116,13 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
   };
 
   const solicitarEliminarInsumo = (insumo) => {
-    const nombreInsumo = obtenerNombreInsumo(insumo.idInsumo);
+    const nombreInsumo = insumo.nombre_insumo;
     setInsumoAEliminar(insumo);
     
     confirmacionEliminar.solicitarConfirmacion(
       `¿Estás seguro de eliminar el insumo "${nombreInsumo}" de este producto? Esta acción no se puede deshacer.`,
       () => {
-        handleEliminarInsumo(insumo.idInsumo);
+        handleEliminarInsumo(insumo.id_insumo);
       },
       {
         titulo: "Eliminar Insumo del Producto",
@@ -135,14 +140,15 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
 
   const handleEliminarInsumo = async (idInsumo) => {
     try {
+      const idProducto = producto.id_producto;
       const datos = {
-        idProducto: producto.idProducto,
         idInsumo: idInsumo
       };
 
-      await eliminarInsumoProductoServicio(datos);
+      await eliminarInsumoProductoServicio(idProducto, datos);
       
-      await cargarDatos();
+      await cargarInsumosDisponibles();
+      await cargarInsumosProducto();
       
       mostrarAlerta.exito('Insumo eliminado correctamente');
       
@@ -152,16 +158,6 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
     } finally {
       setInsumoAEliminar(null);
     }
-  };
-
-  const obtenerNombreInsumo = (idInsumo) => {
-    const insumo = insumosDisponibles.find(ins => ins.idInsumo === idInsumo);
-    return insumo ? insumo.nombreInsumo : 'Insumo no encontrado';
-  };
-
-  const obtenerUnidadInsumo = (idInsumo) => {
-    const insumo = insumosDisponibles.find(ins => ins.idInsumo === idInsumo);
-    return insumo ? insumo.unidadMedida : 'N/A';
   };
 
   if (cargando) {
@@ -174,26 +170,10 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-red-800 dark:text-red-300">Error: {error}</p>
-          <button
-            onClick={cargarDatos}
-            className="mt-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg cursor-pointer"
-          >
-            Reintentar
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <p className="text-gray-600 dark:text-gray-400">
-        Gestiona los insumos necesarios para preparar "{producto.nombreProducto}"
+        Gestiona los insumos necesarios para preparar "{producto.nombre_producto}"
       </p>
 
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
@@ -213,8 +193,8 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
             >
               <option value="">Seleccione un insumo</option>
               {insumosDisponibles.map(insumo => (
-                <option key={insumo.idInsumo} value={insumo.idInsumo}>
-                  {insumo.nombreInsumo} ({insumo.unidadMedida})
+                <option key={insumo.id_insumo} value={insumo.id_insumo}>
+                  {insumo.nombre_insumo}
                 </option>
               ))}
             </select>
@@ -264,19 +244,18 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
                 <tr>
                   <th className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">INSUMO</th>
                   <th className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">CANTIDAD</th>
-                  <th className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">UNIDAD</th>
                   <th className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">ACCIONES</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {insumosProducto.map((insumo) => (
-                  <tr key={insumo.idInsumo} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={insumo.id_insumo} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="px-4 py-3 text-gray-900 dark:text-white">
-                      {obtenerNombreInsumo(insumo.idInsumo)}
+                      {insumo.nombre_insumo}
                     </td>
                     
                     <td className="px-4 py-3">
-                      {editandoInsumo === insumo.idInsumo ? (
+                      {editandoInsumo === insumo.id_insumo ? (
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
@@ -287,7 +266,7 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
                             className="w-24 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded dark:text-gray-100 text-sm"
                           />
                           <button
-                            onClick={() => guardarCantidad(insumo.idInsumo)}
+                            onClick={() => guardarCantidad(insumo.id_insumo)}
                             className="text-green-600 hover:text-green-800 cursor-pointer"
                             title="Guardar"
                           >
@@ -304,7 +283,7 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-600 dark:text-gray-400">
-                            {insumo.cantidaUso || insumo.cantidadUso}
+                            {insumo.cantidad_uso}
                           </span>
                           <button
                             onClick={() => iniciarEdicion(insumo)}
@@ -315,10 +294,6 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
                           </button>
                         </div>
                       )}
-                    </td>
-                    
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                      {obtenerUnidadInsumo(insumo.idInsumo)}
                     </td>
                     
                     <td className="px-4 py-3">
