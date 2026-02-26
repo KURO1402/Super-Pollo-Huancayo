@@ -114,7 +114,6 @@ const GestionImagenesPagina = () => {
         ))}
       </div>
 
-      {/* Modal para modificar imagen existente */}
       <Modal
         estaAbierto={modalModificarImagen.estaAbierto}
         onCerrar={modalModificarImagen.cerrar}
@@ -132,7 +131,6 @@ const GestionImagenesPagina = () => {
         )}
       </Modal>
 
-      {/* Modal para agregar nueva imagen */}
       <Modal
         estaAbierto={modalAgregarImagen.estaAbierto}
         onCerrar={modalAgregarImagen.cerrar}

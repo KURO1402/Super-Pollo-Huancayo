@@ -175,7 +175,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
       }
       
       formData.append('datos', JSON.stringify(datosProducto));
-      console.log('Contenido de FormData:', formData.get('datos'), formData.get('imageProducto'));
       await crearProductoServicio(formData);
       
       mostrarAlerta.exito('Producto creado exitosamente');
