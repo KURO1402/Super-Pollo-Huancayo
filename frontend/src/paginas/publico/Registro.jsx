@@ -39,7 +39,7 @@ const Registro = () => {
       
       if (usuarioRegistrado) {
         mostrarAlerta.exito('¡Cuenta verificada y creada exitosamente!');
-        if (usuarioRegistrado.idRol === ROLES.USUARIO) {
+        if (usuarioRegistrado.id_rol === ROLES.USUARIO) {
           navigate("/usuario", { replace: true });
         }
       }
