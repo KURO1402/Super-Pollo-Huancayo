@@ -336,14 +336,14 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
                           Insumo *
                         </label>
                         <select
-                          value={insumo.idInsumo}
+                          value={insumo.id_insumo}
                           onChange={(e) => actualizarInsumo(index, 'idInsumo', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           <option value="">Seleccionar insumo</option>
                           {insumosDisponibles.map(insumo => (
-                            <option key={insumo.idInsumo} value={insumo.idInsumo}>
-                              {insumo.nombreInsumo} ({insumo.unidadMedida})
+                            <option key={insumo.id_insumo} value={insumo.id_insumo}>
+                              {insumo.nombre_insumo}
                             </option>
                           ))}
                         </select>
