@@ -20,7 +20,7 @@ export const listarInsumoServicio = async () => {
     if (!respuesta.data.ok) {
       throw new Error(respuesta.data.mensaje || "Error al listar los insumos");
     }
-    return respuesta.data.insumos;
+    return respuesta.data;
   }
   catch (error) {
     throw error;

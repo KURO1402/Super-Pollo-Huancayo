@@ -39,7 +39,7 @@ export const FilaInsumo = ({ insumo, onEditarStock, onEliminarInsumo  }) => {
     };
   };
 
-  const estado = getEstadoStock(insumo.stockInsumo);
+  const estado = getEstadoStock(insumo.stock_insumo);
 
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -50,7 +50,7 @@ export const FilaInsumo = ({ insumo, onEditarStock, onEliminarInsumo  }) => {
           </div>
           <div>
             <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {insumo.nombreInsumo}
+              {insumo.nombre_insumo}
             </div>
           </div>
         </div>
@@ -64,13 +64,13 @@ export const FilaInsumo = ({ insumo, onEditarStock, onEliminarInsumo  }) => {
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-gray-900 dark:text-white">
-          {insumo.stockInsumo}
+          {insumo.stock_insumo}
         </div>
       </td>
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900 dark:text-white">
-          {insumo.unidadMedida}
+          {insumo.unidad_medida}
         </div>
       </td>
 
