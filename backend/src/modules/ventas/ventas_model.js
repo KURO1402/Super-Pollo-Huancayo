@@ -81,9 +81,39 @@ const obtenerDetalleVentaPorIdVentaModel = async (idVenta) => {
     }
 };
 
+const obtenerVentasModel = async (fechaInicio = null, fechaFin = null, limit, offset) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute('CALL sp_obtener_ventas(?, ?, ?, ?)', [fechaInicio, fechaFin, limit, offset]);
+        return rows[0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al obtener las ventas en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const contarVentasModel = async (fechaInicio = null, fechaFin = null) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute('CALL sp_contar_ventas(?, ?)', [fechaInicio, fechaFin]);
+        return rows[0][0]?.total_registros;
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al contar las ventas en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = { 
     insertarVentaModel,
     obtenerVentaPorIdModel,
     obtenerDetalleVentaPorIdVentaModel,
-    obtenerComprobantePorIdVentaModel 
+    obtenerComprobantePorIdVentaModel,
+    obtenerVentasModel,
+    contarVentasModel 
 };

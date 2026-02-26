@@ -12,7 +12,9 @@ const { consultarCajaAbiertaModel } = require('../caja/caja_model');
 const { insertarVentaModel,
     obtenerVentaPorIdModel,
     obtenerDetalleVentaPorIdVentaModel,
-    obtenerComprobantePorIdVentaModel 
+    obtenerComprobantePorIdVentaModel,
+    obtenerVentasModel,
+    contarVentasModel  
  } = require('./ventas_model');
 
 const generarVentaService = async (datos, idUsuario) => {
@@ -173,6 +175,61 @@ const generarVentaService = async (datos, idUsuario) => {
     };
 };
 
+const obtenerVentasService = async (querys) => {
+    const allowedQuerys = ['limit', 'offset', 'fechaInicio', 'fechaFin'];
+
+    const keysInvalidas = Object.keys(querys).filter(
+        key => !allowedQuerys.includes(key)
+    );
+
+    if (keysInvalidas.length > 0) {
+        throw crearError('Filtro no valido', 400);
+    }
+
+    const { fechaInicio, fechaFin, limit, offset } = querys;
+
+    const limite = parseInt(limit) || 10;
+    const desplazamiento = parseInt(offset) || 0;
+
+    const cacheKey = `ventas:count:${fechaInicio || 'null'}:${fechaFin || 'null'}`;
+    const cachedTotal = cache.get(cacheKey);
+
+    if (cachedTotal !== undefined) {
+        console.log('Cache hit');
+
+        const ventas = await obtenerVentasModel(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
+
+        if (!ventas || ventas.length === 0) {
+            throw crearError('No se encontraron ventas', 404);
+        }
+
+        return {
+            ok: true,
+            cantidad_filas: cachedTotal,
+            ventas
+        };
+    }
+
+    console.log('Cache miss');
+
+    const totalVentas = await contarVentasModel(fechaInicio ?? null, fechaFin ?? null);
+
+    cache.set(cacheKey, totalVentas);
+
+    const ventas = await obtenerVentasModel(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
+
+    if (!ventas || ventas.length === 0) {
+        throw crearError('No se encontraron ventas', 404);
+    }
+
+    return {
+        ok: true,
+        cantidad_filas: totalVentas,
+        ventas
+    };
+};
+
 module.exports = {
-    generarVentaService
+    generarVentaService,
+    obtenerVentasService
 };

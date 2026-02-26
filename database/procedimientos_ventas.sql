@@ -6,6 +6,8 @@ DROP PROCEDURE IF EXISTS sp_insertar_detalle_venta;
 DROP PROCEDURE IF EXISTS sp_obtener_detalle_venta_por_id_venta;
 DROP PROCEDURE IF EXISTS sp_obtener_comprobante_por_id_venta;
 DROP PROCEDURE IF EXISTS sp_obtener_venta_por_id;
+DROP PROCEDURE IF EXISTS sp_obtener_ventas;
+DROP PROCEDURE IF EXISTS sp_contar_ventas;
 
 -- ─── SP: Insertar Venta ───────────────────────────────────────────────────────
 DELIMITER //
@@ -86,8 +88,6 @@ BEGIN
 END //
 
 
-
--- ─── SP: Insertar Detalle Venta ───────────────────────────────────────────────
 CREATE PROCEDURE sp_insertar_detalle_venta(
     IN p_cantidad_producto INT,
     IN p_valor_unitario DECIMAL(10,2),
@@ -177,6 +177,45 @@ BEGIN
     INNER JOIN productos p 
         ON dv.id_producto = p.id_producto
     WHERE dv.id_venta = p_id_venta;
+END //
+
+CREATE PROCEDURE sp_obtener_ventas(
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE,
+    IN p_limit INT,
+    IN p_offset INT
+)
+BEGIN
+    SELECT 
+        v.id_venta,
+        v.numero_documento_cliente,
+        v.id_tipo_documento,
+        v.porcentaje_igv,
+        v.total_gravada,
+        v.total_igv,
+        v.total_venta,
+        mp.nombre_medio_pago,
+        DATE_FORMAT(v.fecha_registro, '%d-%m-%Y') AS fecha,
+        DATE_FORMAT(v.fecha_registro, '%H:%i:%s') AS hora
+    FROM ventas v
+    LEFT JOIN medio_pago mp
+        ON v.id_medio_pago = mp.id_medio_pago
+    WHERE (p_fecha_inicio IS NULL OR DATE(v.fecha_registro) >= p_fecha_inicio)
+      AND (p_fecha_fin IS NULL OR DATE(v.fecha_registro) <= p_fecha_fin)
+    ORDER BY v.fecha_registro DESC
+    LIMIT p_limit OFFSET p_offset;
+END //
+
+CREATE PROCEDURE sp_contar_ventas(
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE
+)
+BEGIN
+    SELECT 
+        COUNT(*) AS total_registros
+    FROM ventas v
+    WHERE (p_fecha_inicio IS NULL OR DATE(v.fecha_registro) >= p_fecha_inicio)
+      AND (p_fecha_fin IS NULL OR DATE(v.fecha_registro) <= p_fecha_fin);
 END //
 
 DELIMITER ;
