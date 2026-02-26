@@ -186,3 +186,34 @@ export const deshabilitarProductoServicio = async (idProducto) => {
     throw error;
   }
 }
+
+export const eliminarImagenProductoServicio = async (idImagenProducto) => {
+  try {
+    
+    const formData = new FormData();
+    formData.append('imagenProducto', '');
+    formData.append('datos', JSON.stringify({
+      idProducto: idImagenProducto
+    }));
+    
+    const { data } = await API.delete(
+      `/productos/eliminar-imagen/${idImagenProducto}`, formData);
+    return data;
+  } catch (error) {
+    const mensaje = error.response?.data?.mensaje || error.message || 'Error al eliminar la imagen';
+    throw new Error(mensaje);
+  }
+};
+
+export const agregarImagenProductoServicio = async (idProducto, formData) => {
+  try {
+    const { data } = await API.post(
+      `/productos/agregar-imagen/${idProducto}`, 
+      formData,
+    );
+    return data;
+  } catch (error) {
+    const mensaje = error.response?.data?.mensaje || error.message || 'Error al agregar la imagen';
+    throw new Error(mensaje);
+  }
+};
