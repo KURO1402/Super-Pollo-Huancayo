@@ -109,11 +109,30 @@ const contarVentasModel = async (fechaInicio = null, fechaFin = null) => {
     }
 };
 
+const contarVentaPorIdModel = async (idVenta) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute(
+            'CALL sp_contar_venta_por_id(?)',
+            [idVenta]
+        );
+
+        return rows[0][0]?.total;
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al contar la venta en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = { 
     insertarVentaModel,
     obtenerVentaPorIdModel,
     obtenerDetalleVentaPorIdVentaModel,
     obtenerComprobantePorIdVentaModel,
     obtenerVentasModel,
-    contarVentasModel 
+    contarVentasModel,
+    contarVentaPorIdModel 
 };

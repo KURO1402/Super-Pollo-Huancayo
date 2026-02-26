@@ -8,6 +8,7 @@ DROP PROCEDURE IF EXISTS sp_obtener_comprobante_por_id_venta;
 DROP PROCEDURE IF EXISTS sp_obtener_venta_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_ventas;
 DROP PROCEDURE IF EXISTS sp_contar_ventas;
+DROP PROCEDURE IF EXISTS sp_contar_venta_por_id;
 
 -- ─── SP: Insertar Venta ───────────────────────────────────────────────────────
 DELIMITER //
@@ -128,8 +129,6 @@ CREATE PROCEDURE sp_obtener_venta_por_id(
 BEGIN
     SELECT 
         v.id_venta,
-        v.numero_documento_cliente,
-        v.id_tipo_documento,
         v.porcentaje_igv,
         v.total_gravada,
         v.total_igv,
@@ -150,8 +149,8 @@ BEGIN
         c.id_tipo_comprobante,
         c.serie,
         c.numero_correlativo,
-        c.fecha_emision,
-        c.fecha_vencimiento,
+        DATE_FORMAT(c.fecha_emision, '%d-%m-%Y') AS fecha_emision,
+        DATE_FORMAT(c.fecha_vencimiento, '%d-%m-%Y') AS fecha_vencimiento,
         c.sunat_transaccion,
         c.aceptado_por_sunat,
         c.url_comprobante_pdf,
@@ -188,8 +187,6 @@ CREATE PROCEDURE sp_obtener_ventas(
 BEGIN
     SELECT 
         v.id_venta,
-        v.numero_documento_cliente,
-        v.id_tipo_documento,
         v.porcentaje_igv,
         v.total_gravada,
         v.total_igv,
@@ -216,6 +213,15 @@ BEGIN
     FROM ventas v
     WHERE (p_fecha_inicio IS NULL OR DATE(v.fecha_registro) >= p_fecha_inicio)
       AND (p_fecha_fin IS NULL OR DATE(v.fecha_registro) <= p_fecha_fin);
+END //
+
+CREATE PROCEDURE sp_contar_venta_por_id(
+    IN p_id_venta INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM ventas
+    WHERE id_venta = p_id_venta;
 END //
 
 DELIMITER ;

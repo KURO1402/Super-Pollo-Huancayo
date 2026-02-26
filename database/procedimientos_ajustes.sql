@@ -35,6 +35,12 @@ DROP PROCEDURE IF EXISTS sp_obtener_medio_pago_por_id;
 DROP PROCEDURE IF EXISTS sp_contar_tipo_comprobante_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_tipo_comprobante_por_id;
 DROP PROCEDURE IF EXISTS sp_actualizar_correlativo_tipo_comprobante;
+DROP PROCEDURE IF EXISTS sp_insertar_tipo_comprobante;
+DROP PROCEDURE IF EXISTS sp_contar_tipo_comprobante_por_nombre_serie;
+DROP PROCEDURE IF EXISTS sp_actualizar_tipo_comprobante;
+DROP PROCEDURE IF EXISTS sp_contar_tipo_comprobante_nombre_serie_excluyendo_id;
+DROP PROCEDURE IF EXISTS sp_eliminar_tipo_comprobante;
+DROP PROCEDURE IF EXISTS sp_listar_tipos_comprobante;
 
 -- Procedimientos de categorias de productos
 DELIMITER //
@@ -476,16 +482,6 @@ BEGIN
 END //
 
 -- Procedimientos para tipos_comprobante
-CREATE PROCEDURE sp_contar_tipo_comprobante_por_id(
-    IN p_id_tipo_comprobante INT
-)
-BEGIN
-    SELECT COUNT(*) AS total
-    FROM tipo_comprobante
-    WHERE id_tipo_comprobante = p_id_tipo_comprobante
-    AND estado_comprobante = 1;
-END //
-
 CREATE PROCEDURE sp_obtener_tipo_comprobante_por_id(
     IN p_id_tipo_comprobante INT
 )
@@ -518,6 +514,159 @@ BEGIN
     WHERE id_tipo_comprobante = p_id_tipo_comprobante;
 
     COMMIT;
+END //
+
+CREATE PROCEDURE sp_insertar_tipo_comprobante (
+    IN p_nombre_tipo_comprobante VARCHAR(50),
+    IN p_serie VARCHAR(5)
+)
+BEGIN
+    DECLARE v_id INT;
+    DECLARE v_estado TINYINT(1);
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+        SELECT id_tipo_comprobante, estado_comprobante
+        INTO v_id, v_estado
+        FROM tipo_comprobante
+        WHERE nombre_tipo_comprobante = p_nombre_tipo_comprobante
+          AND serie = p_serie
+        LIMIT 1;
+
+        IF v_id IS NULL THEN
+            INSERT INTO tipo_comprobante (nombre_tipo_comprobante, serie, correlativo, estado_comprobante)
+            VALUES (p_nombre_tipo_comprobante, p_serie, 0, 1);
+
+            SET v_id = LAST_INSERT_ID();
+
+        ELSEIF v_estado = 0 THEN
+            UPDATE tipo_comprobante
+            SET estado_comprobante = 1
+            WHERE id_tipo_comprobante = v_id;
+        END IF;
+
+    COMMIT;
+
+    SELECT 
+        id_tipo_comprobante,
+        nombre_tipo_comprobante,
+        serie,
+        correlativo
+    FROM tipo_comprobante
+    WHERE id_tipo_comprobante = v_id;
+
+END //
+
+
+CREATE PROCEDURE sp_contar_tipo_comprobante_por_nombre_serie (
+    IN p_nombre VARCHAR(50),
+    IN p_serie VARCHAR(5)
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM tipo_comprobante
+    WHERE nombre_tipo_comprobante = p_nombre
+      OR serie = p_serie
+      AND estado_comprobante = 1;
+END //
+
+
+CREATE PROCEDURE sp_actualizar_tipo_comprobante (
+    IN p_id_tipo_comprobante INT,
+    IN p_nombre_tipo_comprobante VARCHAR(50),
+    IN p_serie VARCHAR(5)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+        UPDATE tipo_comprobante
+        SET nombre_tipo_comprobante = p_nombre_tipo_comprobante,
+            serie = p_serie
+        WHERE id_tipo_comprobante = p_id_tipo_comprobante;
+
+    COMMIT;
+
+    SELECT 
+        id_tipo_comprobante,
+        nombre_tipo_comprobante,
+        serie,
+        correlativo
+    FROM tipo_comprobante
+    WHERE id_tipo_comprobante = p_id_tipo_comprobante;
+
+END //
+
+CREATE PROCEDURE sp_contar_tipo_comprobante_por_id (
+    IN p_id_tipo_comprobante INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM tipo_comprobante
+    WHERE id_tipo_comprobante = p_id_tipo_comprobante
+      AND estado_comprobante = 1;
+END //
+
+
+CREATE PROCEDURE sp_contar_tipo_comprobante_nombre_serie_excluyendo_id (
+    IN p_nombre_tipo_comprobante VARCHAR(50),
+    IN p_serie VARCHAR(5),
+    IN p_id_tipo_comprobante INT
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM tipo_comprobante
+    WHERE (nombre_tipo_comprobante = p_nombre_tipo_comprobante
+      OR serie = p_serie)
+      AND id_tipo_comprobante <> p_id_tipo_comprobante
+      AND estado_comprobante = 1;
+END //
+
+
+CREATE PROCEDURE sp_eliminar_tipo_comprobante (
+    IN p_id_tipo_comprobante INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+        UPDATE tipo_comprobante
+        SET estado_comprobante = 0
+        WHERE id_tipo_comprobante = p_id_tipo_comprobante;
+
+    COMMIT;
+
+    SELECT 'Tipo de comprobante eliminado correctamente' AS mensaje;
+
+END //
+
+
+CREATE PROCEDURE sp_listar_tipos_comprobante ()
+BEGIN
+    SELECT 
+        id_tipo_comprobante,
+        nombre_tipo_comprobante,
+        serie,
+        correlativo
+    FROM tipo_comprobante
+    WHERE estado_comprobante = 1
+    ORDER BY nombre_tipo_comprobante;
 END //
 
 DELIMITER ;

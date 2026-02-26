@@ -14,7 +14,8 @@ const { insertarVentaModel,
     obtenerDetalleVentaPorIdVentaModel,
     obtenerComprobantePorIdVentaModel,
     obtenerVentasModel,
-    contarVentasModel  
+    contarVentasModel,
+    contarVentaPorIdModel 
  } = require('./ventas_model');
 
 const generarVentaService = async (datos, idUsuario) => {
@@ -229,7 +230,51 @@ const obtenerVentasService = async (querys) => {
     };
 };
 
+const obtenerDetalleVentaPorIdVentaService = async (idVenta) => {
+    if(!idVenta || isNaN(Number(idVenta))) {
+        throw crearError('Se necesita especificar la venta', 400);
+    }
+
+    const ventaID = Number(idVenta);
+
+    const ventaExiste = await contarVentaPorIdModel(ventaID);
+
+    if(ventaExiste === 0){
+        throw crearError('Venta especificada no existente', 404);
+    }
+
+    const detalles_venta = await obtenerDetalleVentaPorIdVentaModel(ventaID);
+
+    return {
+        ok: true,
+        detalles_venta
+    }
+};
+
+const obtenerComprobantePorIdVentaService = async (idVenta) => {
+    if(!idVenta || isNaN(Number(idVenta))) {
+        throw crearError('Se necesita especificar la venta', 400);
+    }
+
+    const ventaID = Number(idVenta);
+
+    const ventaExiste = await contarVentaPorIdModel(ventaID);
+
+    if(ventaExiste === 0){
+        throw crearError('Venta especificada no existente', 404);
+    }
+
+    const comprobante = await obtenerComprobantePorIdVentaModel(ventaID);
+    console.log(comprobante);
+    return {
+        ok: true,
+        comprobante
+    }
+};
+
 module.exports = {
     generarVentaService,
-    obtenerVentasService
+    obtenerVentasService,
+    obtenerDetalleVentaPorIdVentaService,
+    obtenerComprobantePorIdVentaService
 };

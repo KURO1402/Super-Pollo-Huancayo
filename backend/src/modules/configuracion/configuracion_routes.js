@@ -27,6 +27,13 @@ const {
     obtenerMedioPagoPorIdController
 } = require('./medios_pago/medios_pago_controller');
 
+const {
+    insertarTipoComprobanteController,
+    actualizarTipoComprobanteController,
+    eliminarTipoComprobanteController,
+    listarTiposComprobanteController
+} = require('./tipos_comprobante/tipos_comprobante_controller');
+
 //Rutas para categorias de productos
 router.post('/categorias-producto/agregar', autenticacionToken, verificarRoles(2, 3), insertarCategoriaProductoController);
 router.put('/categorias-producto/actualizar/:idCategoria', autenticacionToken, verificarRoles(2, 3), actualizarCategoriaProductoController);
@@ -47,5 +54,11 @@ router.put('/medios-pago/actualizar/:idMedioPago', autenticacionToken, verificar
 router.delete('/medios-pago/eliminar/:idMedioPago', autenticacionToken, verificarRoles(2, 3), eliminarMedioPagoController);
 router.get('/medios-pago', autenticacionToken, verificarRoles(2, 3), listarMediosPagoController);
 router.get('/medios-pago/:idMedioPago', autenticacionToken, verificarRoles(2, 3), obtenerMedioPagoPorIdController);
+
+//Rutas para tipos de comprobante
+router.post('/tipos-comprobante/agregar', autenticacionToken, verificarRoles(2, 3), insertarTipoComprobanteController);
+router.put('/tipos-comprobante/actualizar/:idTipoComprobante', autenticacionToken, verificarRoles(2, 3), actualizarTipoComprobanteController);
+router.delete('/tipos-comprobante/eliminar/:idTipoComprobante', autenticacionToken, verificarRoles(2, 3), eliminarTipoComprobanteController);
+router.get('/tipos-comprobante', autenticacionToken, verificarRoles(2, 3), listarTiposComprobanteController);
 
 module.exports = router;

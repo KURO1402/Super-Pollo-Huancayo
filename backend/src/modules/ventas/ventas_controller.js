@@ -1,6 +1,8 @@
 const { 
     generarVentaService, 
-    obtenerVentasService
+    obtenerVentasService,
+    obtenerDetalleVentaPorIdVentaService,
+    obtenerComprobantePorIdVentaService
 } = require('./ventas_service');
 
 const generarVentaController = async (req, res) => {
@@ -32,7 +34,47 @@ const obtenerVentasController = async (req, res) => {
     }
 };
 
+const obtenerDetalleVentaPorIdVentaController = async (req, res) => {
+    try {
+
+        const {idVenta} = req.params;
+
+        const resultado = await obtenerDetalleVentaPorIdVentaService(idVenta);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
+const obtenerComprobantePorIdVentaController = async (req, res) => {
+    try {
+
+        const {idVenta} = req.params;
+
+        const resultado = await obtenerComprobantePorIdVentaService(idVenta);
+
+        return res.status(200).json(resultado);
+
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+}
+
 module.exports = {
     generarVentaController,
-    obtenerVentasController
+    obtenerVentasController,
+    obtenerDetalleVentaPorIdVentaController,
+    obtenerComprobantePorIdVentaController
 }
