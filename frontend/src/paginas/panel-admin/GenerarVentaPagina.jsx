@@ -17,6 +17,8 @@ import { FormularioCliente } from "../../componentes/panel-admin/ventas/Formular
 import { ModalComprobanteGenerado } from "../../componentes/panel-admin/ventas/ModalComprobanteGenerado";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
+const LIMITE_MONTO = 700; 
+
 const GenerarVentaPagina = () => {
   const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
   const { detalle, limpiarVenta } = useVentaStore();
@@ -34,6 +36,7 @@ const GenerarVentaPagina = () => {
   const [datosComprobante, setDatosComprobante] = useState(null);
   const [productos, setProductos] = useState([]);
   const [cargandoProductos, setCargandoProductos] = useState(true);
+  const [mostrarAlertaLimite, setMostrarAlertaLimite] = useState(false);
 
   useEffect(() => {
     const cargarProductos = async () => {
@@ -149,10 +152,28 @@ const GenerarVentaPagina = () => {
     return { subtotal, impuesto, total };
   };
 
+  const { subtotal, impuesto, total } = calcularTotales();
+  
+  const excedeLimite = total >= LIMITE_MONTO;
+
+  useEffect(() => {
+    if (excedeLimite && !mostrarAlertaLimite) {
+      mostrarAlerta.advertencia(`El monto total de S/ ${total.toFixed(2)} supera o iguala el límite de S/ ${LIMITE_MONTO}. No se pueden generar comprobantes por montos mayores o iguales a S/ ${LIMITE_MONTO}.`);
+      setMostrarAlertaLimite(true);
+    } else if (!excedeLimite && mostrarAlertaLimite) {
+      setMostrarAlertaLimite(false);
+    }
+  }, [excedeLimite, total, mostrarAlertaLimite]);
+
   const handleGenerarComprobante = async () => {
     
     if (detalle.length === 0) {
       mostrarAlerta.advertencia("Debe agregar al menos un producto");
+      return;
+    }
+
+    if (excedeLimite) {
+      mostrarAlerta.error(`No se puede generar el comprobante. El monto total de S/ ${total.toFixed(2)} supera el límite permitido de S/ ${LIMITE_MONTO}.`);
       return;
     }
 
@@ -228,6 +249,7 @@ const GenerarVentaPagina = () => {
         limpiarVenta();
         setObservaciones("");
         setDatosCliente(null);
+        setMostrarAlertaLimite(false);
       }
     } catch (error) {
       mostrarAlerta.error(error.message || "Error al generar el comprobante");
@@ -244,6 +266,7 @@ const GenerarVentaPagina = () => {
           limpiarVenta();
           setObservaciones("");
           setDatosCliente(null);
+          setMostrarAlertaLimite(false);
           mostrarAlerta.exito("Venta limpiada correctamente");
         },
         "Limpiar venta"
@@ -276,8 +299,6 @@ const GenerarVentaPagina = () => {
     }
   };
 
-  const { subtotal, impuesto, total } = calcularTotales();
-
   let filtrados = filtrarPorBusqueda(productos, [
     "nombre_producto", 
     "descripcion_producto"
@@ -291,6 +312,13 @@ const GenerarVentaPagina = () => {
         </h1>
         <FiShoppingCart className="text-2xl text-blue-500" />
       </div>
+
+      {excedeLimite && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
+          <span className="font-bold">⚠️ Límite excedido:</span>
+          <span>El monto total de S/ {total.toFixed(2)} supera el límite permitido de S/ {LIMITE_MONTO}. No se pueden generar comprobantes.</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
@@ -463,8 +491,13 @@ const GenerarVentaPagina = () => {
             </button>
             <button
               onClick={handleGenerarComprobante}
-              disabled={detalle.length === 0 || cargando || (tipoComprobante === 2 && !datosCliente) || !metodoPagoSeleccionado}
-              className="flex-1 sm:flex-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              disabled={detalle.length === 0 || cargando || excedeLimite || (tipoComprobante === 2 && !datosCliente) || !metodoPagoSeleccionado}
+              className={`flex-1 sm:flex-2 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                excedeLimite
+                  ? 'bg-gray-400 cursor-not-allowed text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white'
+              }`}
+              title={excedeLimite ? `No se puede generar comprobantes por montos ≥ S/ ${LIMITE_MONTO}` : ''}
             >
               {cargando ? (
                 <>
