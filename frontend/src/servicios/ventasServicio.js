@@ -1,27 +1,22 @@
 import API from "./axiosConfiguracion"
-export const generarBoletaServicio = async (datos) => {
-    const respuesta = await API.post("/ventas/generar-boleta", datos)
-    if(!respuesta.data.ok){
-        throw new Error(respuesta.data.mensaje || "Error al obtener los tipos de comprobantes");
-    }
-    return respuesta.data;
-}
 
-export const generarFacturaServicio = async (datos) => {
-    const respuesta = await API.post("/ventas/generar-factura", datos)
-    if(!respuesta.data.ok){
-        
-        throw new Error(respuesta.data.mensaje || "Error al obtener los tipos de comprobantes");
-    }
+export const generarVentaServicio = async (ventaData) => {
+  try {
+    const respuesta = await API.post('/ventas/generar-venta', ventaData);
     return respuesta.data;
-}
+  } catch (error) {
+    const mensaje = error.response?.data?.mensaje || error.message || 'Error al generar la venta';
+    throw new Error(mensaje);
+  }
+};
+
 export const obtenerMetodosPagoServicio = async () => {
     try {
-        const respuesta = await API.get("/ventas/medios-pago")
+        const respuesta = await API.get("/medios-pago")
         if(!respuesta.data.ok){
         throw new Error(respuesta.data.mensaje || "Error al obtener los medios de pago");
     }
-    return respuesta.data.medios;
+    return respuesta.data.medios_pago;
     } catch (error) {
     }
 }

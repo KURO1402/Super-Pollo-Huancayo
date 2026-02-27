@@ -15,13 +15,20 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
   const {
     register, handleSubmit, watch, setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      tipoDocumento: "1" 
+    }
+  });
 
   useEffect(() => {
     const cargarTipos = async () => { 
       try {
-        const data = await obtenerTiposDocumento(); 
-        setTiposDocumento(data); 
+        const data = await obtenerTiposDocumento();
+        const tiposFiltrados = data.filter(doc => 
+          doc.id_tipo_documento === 1 || doc.id_tipo_documento === 2
+        );
+        setTiposDocumento(tiposFiltrados); 
       } catch (error) { 
         setErrorCarga(error.message); 
       } finally {
@@ -34,10 +41,17 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
   const tipo = watch("tipoDocumento"); 
   const numeroDoc = watch("numeroDocumento")
 
-  const { placeholder, busquedaHabilitada } = useConfiguracionDocumento(tipo, setValue);
+  const getPlaceholder = () => {
+    if (tipo === "1") return "12345678";
+    if (tipo === "2") return "10123456789";
+    return "Número de documento";
+  };
 
   const handleBuscar = async () => {
-    if (!busquedaHabilitada) return;
+    if (!numeroDoc) {
+      setMensajeBusqueda("Ingrese un número de documento");
+      return;
+    }
     
     setBuscando(true);
     setMensajeBusqueda("");
@@ -45,9 +59,15 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
     try {
       let data; 
       let nombreCompleto = "";
-      let datosFormateados = ""
+      let datosFormateados = "";
 
       if (tipo === "1") { 
+        if (numeroDoc.length !== 8) {
+          setMensajeBusqueda("El DNI debe tener 8 dígitos");
+          setBuscando(false);
+          return;
+        }
+        
         data = await buscarPorDNI(numeroDoc);
         
         if (data.success === true) {
@@ -60,7 +80,13 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
           setValue("nombre", ""); 
         }
         
-      } else if (tipo === "3") {
+      } else if (tipo === "2") {
+        if (numeroDoc.length !== 11) {
+          setMensajeBusqueda("El RUC debe tener 11 dígitos");
+          setBuscando(false);
+          return;
+        }
+        
         data = await buscarPorRUC(numeroDoc);
         
         if (data && data.ruc) {
@@ -81,10 +107,6 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
           setValue("direccion", "");
           setValue("nombreComercial", "");
         }
-        
-      } else {
-        setMensajeBusqueda("Búsqueda solo disponible para DNI y RUC");
-        return;
       }
     } catch (err) {
       setMensajeBusqueda("Error en la búsqueda: " + err.message);
@@ -118,8 +140,8 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
             >
               <option value="" disabled>Selecciona un tipo</option>
               {tiposDocumento.map((doc) => (
-                <option key={doc.idTipoDocumento} value={doc.idTipoDocumento}>
-                  {doc.nombreTipoDocumento}
+                <option key={doc.id_tipo_documento} value={doc.id_tipo_documento}>
+                  {doc.nombre_tipo_documento}
                 </option>
               ))}
             </select>
@@ -137,18 +159,15 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
           <div className="relative flex rounded-lg shadow-sm">
             <input
               type="text"
-              placeholder={placeholder}
+              placeholder={getPlaceholder()}
               {...register("numeroDocumento", {
                 required: "Este campo es obligatorio",
                 validate: (value) => {
                   if (tipo === "1" && value.length !== 8) {
                     return "El DNI debe tener 8 dígitos";
                   }
-                  if (tipo === "3" && value.length !== 11) {
+                  if (tipo === "2" && value.length !== 11) {
                     return "El RUC debe tener 11 dígitos";
-                  }
-                  if (tipo === "2" && !/^[A-Z0-9]{6,12}$/i.test(value)) {
-                    return "Carné de extranjería inválido";
                   }
                   return true;
                 },
@@ -158,9 +177,9 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
             <button
               onClick={handleBuscar}
               type="button"
-              disabled={!busquedaHabilitada || buscando}
+              disabled={buscando}
               className={`px-3 flex items-center justify-center rounded-r-lg transition-colors duration-200 ${
-                busquedaHabilitada && !buscando
+                !buscando
                   ? "bg-blue-500 hover:bg-blue-600 text-white"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
@@ -202,37 +221,39 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
             type="text"
             {...register("nombre", { required: "Este campo es obligatorio" })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Nombre completo o razón social"
+            placeholder={tipo === "2" ? "Razón social de la empresa" : "Nombre completo"}
           />
           {errors.nombre && (
             <span className="text-xs text-red-500">{errors.nombre.message}</span>
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Nombre Comercial
-          </label>
-          <input
-            type="text"
-            {...register("nombreComercial")}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Nombre comercial (opcional)"
-          />
-        </div>
+        {tipo === "2" && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Nombre Comercial
+            </label>
+            <input
+              type="text"
+              {...register("nombreComercial")}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Nombre comercial (opcional)"
+            />
+          </div>
+        )}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Dirección *
+          Dirección {tipo === "2" && "*"}
         </label>
         <input
           type="text"
           {...register("direccion", { 
-            required: tipo === "3" ? "Este campo es obligatorio para RUC" : false 
+            required: tipo === "2" ? "La dirección fiscal es obligatoria para RUC" : false 
           })}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder={tipo === "3" ? "Dirección fiscal (obligatoria)" : "Dirección completa"}
+          placeholder={tipo === "2" ? "Dirección fiscal (obligatoria)" : "Dirección completa (opcional)"}
         />
         {errors.direccion && (
           <span className="text-xs text-red-500">{errors.direccion.message}</span>
@@ -281,16 +302,18 @@ export const FormularioCliente = ({ onSubmit, onCancelar }) => {
         </div>
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-        <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
-          Requisitos para Factura:
-        </h4>
-        <ul className="text-xs text-blue-700 dark:text-blue-300 list-disc list-inside space-y-1">
-          <li>RUC obligatorio (11 dígitos)</li>
-          <li>Dirección fiscal requerida</li>
-          <li>Razón social de la empresa</li>
-        </ul>
-      </div>
+      {tipo === "2" && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+          <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
+            Requisitos para Factura con RUC:
+          </h4>
+          <ul className="text-xs text-blue-700 dark:text-blue-300 list-disc list-inside space-y-1">
+            <li>RUC válido de 11 dígitos (ej: 10123456789)</li>
+            <li>Dirección fiscal requerida</li>
+            <li>Razón social de la empresa</li>
+          </ul>
+        </div>
+      )}
 
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button

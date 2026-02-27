@@ -1,7 +1,7 @@
 import { FiShoppingCart, FiUser, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa6";
 import { useState, useEffect } from "react";
-import { generarBoletaServicio, generarFacturaServicio, obtenerMetodosPagoServicio } from '../../servicios/ventasServicio';
+import { generarVentaServicio, obtenerMetodosPagoServicio } from '../../servicios/ventasServicio';
 import { obtenerProductosServicio } from "../../servicios/productoServicios";
 import { useVentaStore } from '../../store/useVentaStore';
 import Modal from "../../componentes/ui/modal/Modal";
@@ -10,28 +10,28 @@ import { BarraBusqueda } from "../../componentes/busqueda-filtros/BarraBusqueda"
 import { useModal } from "../../hooks/useModal";
 import { useConfirmacion } from "../../hooks/useConfirmacion";
 import { useBusqueda } from "../../hooks/useBusqueda";
-import TarjetaProducto from "../../componentes/ui/tarjetas/TarjetaProducto";
+import {TarjetaProducto} from "../../componentes/panel-admin/ventas/TarjetaProducto";
 import { DetalleVenta } from "../../componentes/panel-admin/ventas/DetalleVenta";
 import { ResumenVenta } from "../../componentes/panel-admin/ventas/ResumenVenta";
 import { FormularioCliente } from "../../componentes/panel-admin/ventas/FormularioCliente";
+import { ModalComprobanteGenerado } from "../../componentes/panel-admin/ventas/ModalComprobanteGenerado";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
 const GenerarVentaPagina = () => {
   const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
-  const { detalle, subtotal, impuesto, total, limpiarVenta } = useVentaStore();
+  const { detalle, limpiarVenta } = useVentaStore();
   const { estaAbierto, abrir, cerrar } = useModal();
   const { confirmacionVisible, mensajeConfirmacion, tituloConfirmacion, solicitarConfirmacion, ocultarConfirmacion, confirmarAccion} = useConfirmacion();
   
-  const [tipoComprobante, setTipoComprobante] = useState(2);
-  const [tipoPago, setTipoPago] = useState("contado");
+  const [tipoComprobante, setTipoComprobante] = useState(1);
   const [cargandoMetodoPago, setCargandoMetodoPago] = useState(true);
   const [metodosPago, setMetodosPago] = useState([]);
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState("");
   const [observaciones, setObservaciones] = useState("");
   const [datosCliente, setDatosCliente] = useState(null);
   const [cargando, setCargando] = useState(false);
-  const [mostrarPDF, setMostrarPDF] = useState(false);
-  const [urlPDF, setUrlPDF] = useState(null);
+  const [mostrarModalComprobante, setMostrarModalComprobante] = useState(false);
+  const [datosComprobante, setDatosComprobante] = useState(null);
   const [productos, setProductos] = useState([]);
   const [cargandoProductos, setCargandoProductos] = useState(true);
 
@@ -39,9 +39,11 @@ const GenerarVentaPagina = () => {
     const cargarProductos = async () => {
       try {
         setCargandoProductos(true);
-        const productosData = await obtenerProductosServicio();
-        setProductos(productosData.productos);
+        const respuesta = await obtenerProductosServicio();
+        const productosData = respuesta.productos || respuesta || [];
+        setProductos(productosData);
       } catch (error) {
+        console.error('Error al cargar productos:', error);
         setProductos([]);
       } finally {
         setCargandoProductos(false);
@@ -59,12 +61,13 @@ const GenerarVentaPagina = () => {
         
         if (respuesta && respuesta.length > 0) {
           setMetodosPago(respuesta);
-          setMetodoPagoSeleccionado(respuesta[0].idMedioPago.toString());
+          setMetodoPagoSeleccionado(respuesta[0].id_medio_pago.toString());
         } else {
           setMetodosPago([]);
           setMetodoPagoSeleccionado("");
         }
       } catch (error) {
+        console.error('Error al cargar métodos de pago:', error);
         setMetodosPago([]);
         setMetodoPagoSeleccionado("");
       } finally {
@@ -77,7 +80,10 @@ const GenerarVentaPagina = () => {
 
   const handleTipoComprobante = (tipo) => {
     setTipoComprobante(tipo);
-    if (tipo === 2 && datosCliente && datosCliente.tipoDocumento === "3") {
+    if (tipo === 2 && datosCliente && datosCliente.tipoDocumento !== "2") {
+      setDatosCliente(null);
+    }
+    if (tipo === 1 && datosCliente && datosCliente.tipoDocumento !== "1") {
       setDatosCliente(null);
     }
   };
@@ -91,9 +97,9 @@ const GenerarVentaPagina = () => {
   };
 
   const handleClienteGuardado = (cliente) => {
-    if (tipoComprobante === 1) {
-      if (cliente.tipoDocumento !== "3") {
-        mostrarAlerta.error("Para factura se requiere RUC (Tipo de documento 3)");
+    if (tipoComprobante === 2) {
+      if (cliente.tipoDocumento !== "2") {
+        mostrarAlerta.error("Para factura se requiere RUC");
         return;
       }
       if (cliente.numeroDocumento.length !== 11) {
@@ -102,6 +108,15 @@ const GenerarVentaPagina = () => {
       }
       if (!cliente.direccion || cliente.direccion.trim() === "") {
         mostrarAlerta.error("La dirección es obligatoria para factura");
+        return;
+      }
+    } else { 
+      if (cliente.tipoDocumento !== "1") {
+        mostrarAlerta.error("Para boleta se requiere DNI");
+        return;
+      }
+      if (cliente.numeroDocumento.length !== 8) {
+        mostrarAlerta.error("El DNI debe tener 8 dígitos");
         return;
       }
     }
@@ -121,12 +136,17 @@ const GenerarVentaPagina = () => {
       "Quitar cliente"
     );
   };
-  const validarClienteFactura = (cliente) => {
-    if (!cliente) return "Cliente es obligatorio para factura";
-    if (cliente.tipoDocumento !== "3") return "Para factura se requiere RUC (Tipo de documento 3)";
-    if (cliente.numeroDocumento.length !== 11) return "El RUC debe tener 11 dígitos";
-    if (!cliente.direccion || cliente.direccion.trim() === "") return "La dirección es obligatoria para factura";
-    return null;
+
+  const calcularTotales = () => {
+    const subtotal = detalle.reduce((acc, item) => {
+      const precio = item.precio_unitario || item.precioProducto || item.precio || 0;
+      return acc + (precio * item.cantidad);
+    }, 0);
+    
+    const impuesto = subtotal * 0.18;
+    const total = subtotal + impuesto;
+    
+    return { subtotal, impuesto, total };
   };
 
   const handleGenerarComprobante = async () => {
@@ -136,12 +156,9 @@ const GenerarVentaPagina = () => {
       return;
     }
 
-    if (tipoComprobante === 1) {
-      const errorCliente = validarClienteFactura(datosCliente);
-      if (errorCliente) {
-        mostrarAlerta.advertencia(errorCliente);
-        return;
-      }
+    if (tipoComprobante === 2 && !datosCliente) {
+      mostrarAlerta.advertencia("Para factura debe seleccionar un cliente con RUC");
+      return;
     }
 
     if (!metodoPagoSeleccionado) {
@@ -152,57 +169,62 @@ const GenerarVentaPagina = () => {
     setCargando(true);
 
     try {
-      const productosVenta = detalle.map((item) => ({
-        idProducto: item.id,
-        cantidad: item.cantidad,
-      }));
-
-      const venta = {
+      const ventaData = {
         tipoComprobante: Number(tipoComprobante),
-        productos: productosVenta,
-        idMetodoPago: Number(metodoPagoSeleccionado),
+        medioPago: Number(metodoPagoSeleccionado),
+        cliente: {}
       };
 
-      if (datosCliente) {
-        venta.datosCliente = {
-          tipoDoc: Number(datosCliente.tipoDocumento),
-          numeroDoc: datosCliente.numeroDocumento,
-          nombreCliente: datosCliente.nombre,
-          correoCliente: datosCliente.email || "",
-          direccionCliente: datosCliente.direccion || ""
-        };
-      } else if (tipoComprobante === 2) {
-        venta.datosCliente = {
-          tipoDoc: 1, 
-          numeroDoc: "00000000",
-          nombreCliente: "Clientes Varios",
-          correoCliente: "",
-          direccion: ""
-        };
+      if (tipoComprobante === 2) {
+        if (datosCliente) {
+          ventaData.cliente = {
+            idTipoDoc: 2,
+            numDoc: Number(datosCliente.numeroDocumento),
+            denominacionCliente: datosCliente.nombre,
+            direccionCliente: datosCliente.direccion || "",
+            email: datosCliente.email || ""
+          };
+        }
+      } else {
+        if (datosCliente) {
+          ventaData.cliente = {
+            idTipoDoc: 1,
+            numDoc: Number(datosCliente.numeroDocumento),
+            denominacionCliente: datosCliente.nombre,
+            email: datosCliente.email || ""
+          };
+        } else {
+          ventaData.cliente = {
+            idTipoDoc: 1,
+            numDoc: 10000000,
+            denominacionCliente: "Clientes Varios",
+            email: ""
+          };
+        }
       }
+
+      ventaData.productos = detalle.map((item) => ({
+        idProducto: item.id_producto || item.idProducto || item.id,
+        cantidad: item.cantidad
+      }));
 
       if (observaciones.trim() !== "") {
-        venta.observaciones = observaciones;
+        ventaData.observaciones = observaciones;
       }
 
-      let respuestaCompleta;
-      if (tipoComprobante === 1) {
-        respuestaCompleta = await generarFacturaServicio(venta);
-      } else {
-        respuestaCompleta = await generarBoletaServicio(venta);
-      }
+      console.log("Enviando venta:", ventaData);
+
+      const respuesta = await generarVentaServicio(ventaData);
       
-      if (respuestaCompleta) {
+      if (respuesta && respuesta.ok) {
+        setDatosComprobante({
+          ...respuesta,
+          tipoComprobante,
+          tipoComprobanteTexto: tipoComprobante === 2 ? 'Factura' : 'Boleta'
+        });
         
-        if (respuestaCompleta.comprobanteNubefact && respuestaCompleta.comprobanteNubefact.enlacePDF) {
-          setUrlPDF(respuestaCompleta.comprobanteNubefact.enlacePDF);
-          setMostrarPDF(true);
-          mostrarAlerta.exito("¡Venta registrada con éxito! Comprobante generado.");
-        } else {
-          mostrarAlerta.error("No se pudo generar el comprobante PDF");
-          return;
-        }
-
+        setMostrarModalComprobante(true);
+        
         limpiarVenta();
         setObservaciones("");
         setDatosCliente(null);
@@ -229,27 +251,37 @@ const GenerarVentaPagina = () => {
     }
   };
 
-  const handleCerrarModalPDF = () => {
-    setMostrarPDF(false);
-    setUrlPDF(null);
+  const handleCerrarModalComprobante = () => {
+    setMostrarModalComprobante(false);
+    setDatosComprobante(null);
   };
 
   const handleDescargarPDF = () => {
-    if (urlPDF) {
-      window.open(urlPDF, '_blank');
+    if (datosComprobante?.urlPdf) {
+      window.open(datosComprobante.urlPdf, '_blank');
+    }
+  };
+
+  const handleDescargarXML = () => {
+    if (datosComprobante?.urlXml) {
+      window.open(datosComprobante.urlXml, '_blank');
     }
   };
 
   const getTipoDocumentoTexto = (tipoDoc) => {
     switch(tipoDoc) {
       case "1": return "DNI";
-      case "2": return "Carnet Extranjería";
-      case "3": return "RUC";
+      case "2": return "RUC";
       default: return "Documento";
     }
   };
 
-  let filtrados = filtrarPorBusqueda(productos, ["nombreProducto", "descripcionProducto"]);
+  const { subtotal, impuesto, total } = calcularTotales();
+
+  let filtrados = filtrarPorBusqueda(productos, [
+    "nombre_producto", 
+    "descripcion_producto"
+  ]);
 
   return (
     <div className="p-2">
@@ -285,7 +317,7 @@ const GenerarVentaPagina = () => {
           ) : (
             <div className="grid grid-cols-1 gap-2 max-h-[70vh] overflow-y-auto">
               {filtrados.map((producto) => (
-                <TarjetaProducto key={producto.idProducto} producto={producto} />
+                <TarjetaProducto key={producto.id_producto} producto={producto} />
               ))}
             </div>
           )}
@@ -296,43 +328,44 @@ const GenerarVentaPagina = () => {
             <div className="flex w-full lg:w-auto">
               <button
                 className={`flex-1 lg:flex-none px-4 lg:px-8 py-3 font-medium cursor-pointer border-b-2 lg:border-b-3 transition-colors duration-200 text-sm lg:text-base ${
-                  tipoComprobante === 2 
+                  tipoComprobante === 1
                     ? "border-blue-500 text-blue-600 dark:text-blue-400"
                     : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 }`}
-                onClick={() => handleTipoComprobante(2)}
+                onClick={() => handleTipoComprobante(1)}
               >
                 Boleta
               </button>
               <button
                 className={`flex-1 lg:flex-none px-4 lg:px-8 py-3 font-medium cursor-pointer border-b-2 lg:border-b-3 transition-colors duration-200 text-sm lg:text-base ${
-                  tipoComprobante === 1 
+                  tipoComprobante === 2
                     ? "border-blue-500 text-blue-600 dark:text-blue-400"
                     : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 }`}
-                onClick={() => handleTipoComprobante(1)}
+                onClick={() => handleTipoComprobante(2)}
               >
                 Factura
               </button>
             </div>
             <div className="w-full lg:w-auto lg:ml-auto">
               <input
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full lg:w-48 xl:w-56"
-                value={tipoComprobante === 2 ? "B001" : "F001"}
-                disabled
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full lg:w-48 xl:w-56 cursor-default"
+                value={tipoComprobante === 1 ? "B001" : "F001"}
+                readOnly
               />
             </div>
           </div>
+          
           <div className="py-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Cliente 
-              {tipoComprobante === 1 && <span className="text-red-500"> *</span>} 
-              {tipoComprobante === 2 && <span className="text-gray-500 text-xs ml-1">(Opcional)</span>}
+              {tipoComprobante === 2 && <span className="text-red-500"> *</span>} 
+              {tipoComprobante === 1 && <span className="text-gray-500 text-xs ml-1">(Opcional)</span>}
             </label>
 
             {datosCliente ? (
               <div className="flex items-center gap-2 p-3 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20">
-                <FiCheck className="text-green-600 dark:text-green-400 flex-shrink-0" size={20} />
+                <FiCheck className="text-green-600 dark:text-green-400 shrink-0" size={20} />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {datosCliente.nombre}
@@ -359,39 +392,26 @@ const GenerarVentaPagina = () => {
               </div>
             ) : (
               <div className="flex gap-2 w-full">
-                <div className="flex-grow flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                <div className="grow flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
                   <FiUser className="text-gray-400" />
                   <span className="text-gray-500 dark:text-gray-500 text-sm">
-                    {tipoComprobante === 2 ? "Clientes Varios" : "Sin cliente asignado"}
-                    {tipoComprobante === 1 && " (Se requiere RUC y dirección)"}
+                    {tipoComprobante === 1 ? "Clientes Varios" : "Seleccione un cliente con RUC"}
                   </span>
                 </div>
                 <button
                   onClick={handleAbrirModalCliente}
-                  className="w-20 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 flex items-center justify-center focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  title={tipoComprobante === 2 ? "Agregar cliente (opcional)" : "Agregar cliente (obligatorio - RUC y dirección)"}
+                  className="w-20 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 flex items-center justify-center"
+                  title={tipoComprobante === 1 ? "Agregar cliente (opcional)" : "Agregar cliente (obligatorio)"}
                 >
                   <FaPlus />
                 </button>
               </div>
             )}
           </div>
+          
           <div className="py-2">
             <div className="flex flex-col lg:flex-row gap-3 w-full">
-              <div className="w-full lg:w-1/3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Tipo de Pago
-                </label>
-                <select
-                  value={tipoPago}
-                  onChange={(e) => setTipoPago(e.target.value)}
-                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full transition-colors duration-200"
-                >
-                  <option value="contado">Contado</option>
-                  <option value="credito">Crédito</option>
-                </select>
-              </div>
-              <div className="w-full lg:w-1/3">
+              <div className="w-full lg:w-1/2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Método de Pago
                 </label>
@@ -403,18 +423,18 @@ const GenerarVentaPagina = () => {
                   <select
                     value={metodoPagoSeleccionado}
                     onChange={(e) => setMetodoPagoSeleccionado(e.target.value)}
-                    className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full transition-colors duration-200"
+                    className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
                   >
                     <option value="" disabled>Seleccione método</option>
                     {metodosPago.map((metodo) => (
-                      <option key={metodo.idMedioPago} value={metodo.idMedioPago}>
-                        {metodo.nombreMedioPago}
+                      <option key={metodo.id_medio_pago} value={metodo.id_medio_pago}>
+                        {metodo.nombre_medio_pago}
                       </option>
                     ))}
                   </select>
                 )}
               </div>
-              <div className="w-full lg:w-1/3">
+              <div className="w-full lg:w-1/2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Observaciones
                 </label>
@@ -422,7 +442,7 @@ const GenerarVentaPagina = () => {
                   rows={2}
                   value={observaciones}
                   onChange={(e) => setObservaciones(e.target.value)}
-                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full duration-200"
+                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
                   placeholder="Observaciones..."
                 />
               </div>
@@ -431,38 +451,26 @@ const GenerarVentaPagina = () => {
 
           <DetalleVenta />
 
-          <ResumenVenta subtotal={subtotal()} impuesto={impuesto()} total={total()} />
+          <ResumenVenta subtotal={subtotal} impuesto={impuesto} total={total} />
 
           <div className="mt-4 flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleLimpiarVenta}
               disabled={detalle.length === 0 && !datosCliente}
-              className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors duration-200"
+              className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
             >
               Limpiar Todo
             </button>
             <button
               onClick={handleGenerarComprobante}
-              disabled={detalle.length === 0 || cargando || (tipoComprobante === 1 && !datosCliente) || !metodoPagoSeleccionado}
-              className="flex-1 sm:flex-[2] px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+              disabled={detalle.length === 0 || cargando || (tipoComprobante === 2 && !datosCliente) || !metodoPagoSeleccionado}
+              className="flex-1 sm:flex-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               {cargando ? (
                 <>
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                   Procesando...
                 </>
@@ -491,48 +499,14 @@ const GenerarVentaPagina = () => {
         </Modal>
       )}
 
-      {mostrarPDF && urlPDF && (
-        <Modal
-          estaAbierto={mostrarPDF}
-          onCerrar={handleCerrarModalPDF}
-          titulo={`Comprobante Generado - ${tipoComprobante === 1 ? 'Factura' : 'Boleta'}`}
-          tamaño="lg"
-          mostrarHeader={true}
-          mostrarFooter={false}
-        >
-          <div className="space-y-4">
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <FiCheck className="text-green-600 dark:text-green-400" size={24} />
-                <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
-                  ¡Comprobante generado exitosamente!
-                </h3>
-              </div>
-              <p className="text-sm text-green-700 dark:text-green-300">
-                El comprobante ha sido registrado en SUNAT y está listo para descargar o imprimir.
-              </p>
-            </div>
+      <ModalComprobanteGenerado
+        estaAbierto={mostrarModalComprobante}
+        onCerrar={handleCerrarModalComprobante}
+        datosComprobante={datosComprobante}
+        onDescargarPDF={handleDescargarPDF}
+        onDescargarXML={handleDescargarXML}
+      />
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleDescargarPDF}
-                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Descargar / Imprimir PDF
-              </button>
-              <button
-                onClick={handleCerrarModalPDF}
-                className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors duration-200"
-              >
-                Cerrar y Continuar
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
       <ModalConfirmacion
         visible={confirmacionVisible}
         onCerrar={ocultarConfirmacion}

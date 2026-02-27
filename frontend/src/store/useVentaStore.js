@@ -3,12 +3,11 @@ import { create } from "zustand";
 export const useVentaStore = create((set, get) => ({ 
     detalle: [],
     cantidades: {},
-
     porcentajeIGV: 18, 
     TASA_IGV: 1.18,
 
     obtenerId: (producto) => {
-        return producto.idProducto || producto.id;
+        return producto.id_producto || producto.id;
     },
 
     setCantidad: (id, cantidad) => set((state) => ({
@@ -20,7 +19,7 @@ export const useVentaStore = create((set, get) => ({
 
     actualizarCantidad: (id, nuevaCantidad) => set((state) => ({
         detalle: state.detalle.map((item) => {
-            const itemId = item.idProducto || item.id;
+            const itemId = item.id_producto || item.id;
             return itemId === id ? { ...item, cantidad: nuevaCantidad } : item;
         })
     })),
@@ -30,34 +29,39 @@ export const useVentaStore = create((set, get) => ({
         const productoId = obtenerId(producto);
         const cantidad = cantidades[productoId] || 1;
         const productoExistente = detalle.find(item => {
-            const itemId = item.idProducto || item.id;
+            const itemId = item.id_producto || item.id;
             return itemId === productoId;
         });
         
         if (productoExistente) {
             set({
                 detalle: detalle.map((item) => {
-                    const itemId = item.idProducto || item.id;
+                    const itemId = item.id_producto || item.id;
                     return itemId === productoId 
                         ? { ...item, cantidad: item.cantidad + cantidad }
                         : item
                 }),
-            })
+            });
         } else { 
             const nuevoProducto = {
                 ...producto,
                 idProducto: productoId, 
                 id: productoId,
-                cantidad: cantidad
+                cantidad: cantidad,
+                nombre: producto.nombre_producto,
+                precio: Number(producto.precio_producto),
+                categoria: producto.nombre_categoria,
+                descripcion: producto.descripcion_producto,
+                usaInsumos: producto.usa_insumos
             };
             set({ detalle: [...detalle, nuevoProducto] }); 
         }
-        set ({ cantidades: { ...cantidades, [productoId]: 0 } }); 
+        set({ cantidades: { ...cantidades, [productoId]: 0 } }); 
     },                                     
     
-    removerProducto : (id) => set((state) =>({ 
+    removerProducto: (id) => set((state) => ({ 
         detalle: state.detalle.filter((item) => {
-            const itemId = item.idProducto || item.id;
+            const itemId = item.id_producto || item.id;
             return itemId !== id;
         }) 
     })), 
@@ -68,7 +72,7 @@ export const useVentaStore = create((set, get) => ({
     }),
 
     calcularMontosProducto: (producto, cantidad) => {
-        const precioConIGV = Number(producto.precio);
+        const precioConIGV = Number(producto.precio_producto);
         const valorUnitario = precioConIGV / get().TASA_IGV;
 
         const subtotal = valorUnitario * cantidad;
@@ -86,7 +90,7 @@ export const useVentaStore = create((set, get) => ({
     subtotal: () => {
         const { detalle, TASA_IGV } = get();
         const totalConIGV = detalle.reduce((acumulador, item) => 
-            acumulador + (item.precio * item.cantidad), 0);
+            acumulador + (Number(item.precio_producto || item.precio) * item.cantidad), 0);
         
         const baseImponible = totalConIGV / TASA_IGV;
         return Number(baseImponible.toFixed(2));
@@ -95,7 +99,7 @@ export const useVentaStore = create((set, get) => ({
     impuesto: () => {
         const { detalle, TASA_IGV } = get();
         const totalConIGV = detalle.reduce((acumulador, item) => 
-            acumulador + (item.precio * item.cantidad), 0);
+            acumulador + (Number(item.precio_producto || item.precio) * item.cantidad), 0);
         
         const baseImponible = totalConIGV / TASA_IGV;
         const igv = totalConIGV - baseImponible;
@@ -105,14 +109,14 @@ export const useVentaStore = create((set, get) => ({
     total: () => {
         const { detalle } = get();
         return Number(detalle.reduce((acumulador, item) => 
-            acumulador + (item.precio * item.cantidad), 0).toFixed(2));
+            acumulador + (Number(item.precio_producto || item.precio) * item.cantidad), 0).toFixed(2));
     },
 
     calcularMontosTotales: () => {
         const { detalle, porcentajeIGV } = get();
         
         const montoTotal = detalle.reduce((suma, producto) => 
-            suma + Number(producto.precio * producto.cantidad || 0), 0);
+            suma + (Number(producto.precio_producto || producto.precio) * (producto.cantidad || 0)), 0);
 
         const totalGravada = Number((montoTotal / (1 + porcentajeIGV / 100)).toFixed(2));
         const totalIGV = Number((montoTotal - totalGravada).toFixed(2));
@@ -123,5 +127,5 @@ export const useVentaStore = create((set, get) => ({
             porcentajeIGV,
             total: Number(montoTotal.toFixed(2))
         };
-    }
+    },
 }));

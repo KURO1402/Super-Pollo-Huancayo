@@ -1,5 +1,5 @@
 import { FiMinus, FiPlus, FiTrash2, FiShoppingCart } from "react-icons/fi";
-import { useAutenticacionStore } from "../../../store/useAutenticacionStore";
+import { useVentaStore } from "../../../store/useVentaStore";
 import { useState, useEffect } from "react";
 
 export const DetalleVenta = () => {
@@ -9,7 +9,8 @@ export const DetalleVenta = () => {
     actualizarCantidad, 
     obtenerId,
     calcularMontosProducto 
-  } = useAutenticacionStore();
+  } = useVentaStore();
+  
   const [productoAEliminar, setProductoAEliminar] = useState(null);
   const [inputValues, setInputValues] = useState({});
 
@@ -123,8 +124,9 @@ export const DetalleVenta = () => {
               <tbody>
                 {detalle?.map((item, index) => {
                   const itemId = obtenerId(item);
-                  const nombre = item.nombreProducto || item.nombre;
-                  const precio = item.precioProducto || item.precio;
+                  
+                  const nombre = item.nombre_producto || item.nombre || item.nombreProducto;
+                  const precio = item.precio_producto || item.precio;
                   
                   const montosProducto = calcularMontosProducto(item, item.cantidad);
                   
@@ -173,15 +175,15 @@ export const DetalleVenta = () => {
                       </td>
 
                       <td className="px-4 py-3 text-gray-900 dark:text-gray-200 font-medium">
-                        {nombre}
+                        {nombre || 'Producto sin nombre'}
                       </td>
 
                       <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
-                        S/ {montosProducto.valor_unitario.toFixed(2)}
+                        S/ {montosProducto?.valor_unitario?.toFixed(2) || '0.00'}
                       </td>
 
                       <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">
-                        S/ {montosProducto.total.toFixed(2)}
+                        S/ {montosProducto?.total?.toFixed(2) || '0.00'}
                       </td>
 
                       <td className="px-4 py-3 text-center">
@@ -220,44 +222,16 @@ export const DetalleVenta = () => {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex justify-end">
-              <div className="w-full max-w-xs space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Items:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {detalle?.reduce((acc, item) => acc + item.cantidad, 0)}
-                  </span>
-                </div>
+              <div className="flex justify-between items-center gap-8 text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Items:</span>
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {detalle?.reduce((acc, item) => acc + item.cantidad, 0)}
+                </span>
               </div>
             </div>
           </div>
         </>
       )}
-    </div>
-  );
-};
-
-export const ResumenVenta = () => {
-  const { subtotal, impuesto, total } = useVentaEstadoGlobal();
-  
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-        Resumen de Venta
-      </h2>
-      <div className="pt-4 mb-4">
-        <div className="flex justify-between mb-2 text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Base Imponible</span>
-          <span className="font-semibold dark:text-gray-200">S/ {subtotal().toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between mb-2 text-sm">
-          <span className="text-gray-600 dark:text-gray-400">IGV (18%)</span>
-          <span className="font-semibold dark:text-gray-200">S/ {impuesto().toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-lg font-bold mt-3 pt-3 border-t border-gray-400">
-          <span className="text-gray-800 dark:text-gray-300">Total</span>
-          <span className="text-gray-800 dark:text-gray-300">S/ {total().toFixed(2)}</span>
-        </div>
-      </div>
     </div>
   );
 };
