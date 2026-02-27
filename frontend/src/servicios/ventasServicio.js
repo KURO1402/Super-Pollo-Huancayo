@@ -21,13 +21,28 @@ export const obtenerMetodosPagoServicio = async () => {
     }
 }
 
-export const obtenerVentasServicio = async () => {
-    const respuesta = await API.get("/ventas/resumen");
-    if(!respuesta.data.ok){
-        throw new Error(respuesta.data.mensaje || "Error al obtener las ventas");
+
+export const obtenerVentasServicio = async ({ limit, offset } = {}) => {
+    try {
+        const params = new URLSearchParams();
+        if (limit) params.append('limit', limit);
+        if (offset) params.append('offset', offset);
+        
+        const respuesta = await API.get(`/ventas?${params}`);
+        
+        if (!respuesta.data.ok) {
+            throw new Error(respuesta.data.mensaje || "Error al listar las ventas");
+        }
+        
+        return {
+            ventas: respuesta.data.ventas || [],
+            cantidad_filas: respuesta.data.cantidad_filas || 0
+        };
+    } catch (error) {
+        console.error('Error en listarVentasServicio:', error);
+        throw error;
     }
-    return respuesta.data.ventas;
-}
+};
 
 export const obtenerDetalleVentaServicio = async (idVenta) => {
     const respuesta = await API.get(`/ventas/detalle-venta/${idVenta}`);

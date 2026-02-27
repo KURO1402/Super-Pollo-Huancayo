@@ -1,10 +1,58 @@
 import { create } from "zustand";
+import { obtenerVentasServicio } from '../servicios/ventasServicio'
 
 export const useVentaStore = create((set, get) => ({ 
     detalle: [],
     cantidades: {},
     porcentajeIGV: 18, 
     TASA_IGV: 1.18,
+
+    ventas: [],
+    total: 0,
+    cargando: false,
+    error: null,
+    paginaActual: 1,
+    limit: 10,
+
+    cargarVentas: async () => {
+        const { paginaActual, limit } = get();
+        const offset = (paginaActual - 1) * limit;
+
+        set({ cargando: true, error: null });
+        try {
+            const respuesta = await obtenerVentasServicio({ limit, offset });
+            
+            set({ 
+                ventas: respuesta.ventas || [], 
+                total: respuesta.cantidad_filas || 0,
+                cargando: false 
+            });
+        } catch (error) {
+            set({ error: error.message, cargando: false });
+        }
+    },
+
+    setPagina: (pagina) => {
+        set({ paginaActual: pagina });
+        get().cargarVentas();
+    },
+
+    setLimite: (nuevoLimite) => {
+        set({ limit: nuevoLimite, paginaActual: 1 });
+        get().cargarVentas();
+    },
+
+    limpiarError: () => set({ error: null }),
+
+    reset: () =>
+        set({
+            ventas: [],
+            total: 0,
+            cargando: false,
+            error: null,
+            paginaActual: 1,
+            limit: 10,
+        }),
 
     obtenerId: (producto) => {
         return producto.id_producto || producto.id;
