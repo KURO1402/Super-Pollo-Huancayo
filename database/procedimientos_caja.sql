@@ -148,8 +148,7 @@ BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Error al registrar el ingreso en caja';
+        RESIGNAL;
     END;
 
     SET v_fecha_actual = NOW();

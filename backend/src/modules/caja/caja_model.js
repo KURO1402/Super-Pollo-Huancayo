@@ -48,6 +48,7 @@ const registrarIngresoCajaModel = async (monto, descripcion, usuarioId) => {
         const [rows] = await conexion.execute('CALL sp_registrar_ingreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
         return rows[0][0];
     } catch (err) {
+        console.log(err.message)
         throw new Error('Error al registrar el ingreso en caja en la base de datos');
     } finally {
         if (conexion) conexion.release();
