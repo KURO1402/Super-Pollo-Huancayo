@@ -154,7 +154,7 @@ export const useVentaStore = create((set, get) => ({
         return Number(igv.toFixed(2));
     },
 
-    total: () => {
+    totalVenta: () => {
         const { detalle } = get();
         return Number(detalle.reduce((acumulador, item) => 
             acumulador + (Number(item.precio_producto || item.precio) * item.cantidad), 0).toFixed(2));

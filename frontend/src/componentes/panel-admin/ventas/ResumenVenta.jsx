@@ -1,7 +1,7 @@
 import { useVentaStore } from "../../../store/useVentaStore";
 
 export const ResumenVenta = () => {
-  const { subtotal, impuesto, total } = useVentaStore();
+  const { subtotal, impuesto, totalVenta } = useVentaStore();
   
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
@@ -19,7 +19,7 @@ export const ResumenVenta = () => {
         </div>
         <div className="flex justify-between text-lg font-bold mt-3 pt-3 border-t border-gray-400">
           <span className="text-gray-800 dark:text-gray-300">Total</span>
-          <span className="text-gray-800 dark:text-gray-300">S/ {total().toFixed(2)}</span>
+          <span className="text-gray-800 dark:text-gray-300">S/ {totalVenta().toFixed(2)}</span>
         </div>
       </div>
     </div>
