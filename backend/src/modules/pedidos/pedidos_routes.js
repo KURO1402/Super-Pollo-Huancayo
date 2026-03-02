@@ -1,0 +1,16 @@
+const express = require('express');
+const router = express.Router();
+
+const { autenticacionToken, verificarRoles } = require('../../middlewares/autenticacion_middleware');
+
+const {
+  obtenerMesasPedidoController,
+  insertarPedidoController,
+  listarPedidosController
+} = require('./pedido_controller');
+
+router.get('/mesas', autenticacionToken, verificarRoles(2, 3), obtenerMesasPedidoController);
+router.get('/', autenticacionToken, verificarRoles(2, 3), listarPedidosController);
+router.post('/crear-pedido', autenticacionToken, verificarRoles(2,3), insertarPedidoController);
+
+module.exports = router;
