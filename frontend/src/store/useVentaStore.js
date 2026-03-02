@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { obtenerVentasServicio } from '../servicios/ventasServicio'
+import { obtenerVentasServicio, obtenerDetalleVentaServicio, obtenerComprobanteServicio } from '../servicios/ventasServicio'
 
 export const useVentaStore = create((set, get) => ({ 
     detalle: [],
@@ -13,6 +13,11 @@ export const useVentaStore = create((set, get) => ({
     error: null,
     paginaActual: 1,
     limit: 10,
+
+    detalleVenta: [],
+    comprobante: null,
+    cargandoDetalle: false,
+    cargandoComprobante: false,
 
     cargarVentas: async () => {
         const { paginaActual, limit } = get();
@@ -29,6 +34,41 @@ export const useVentaStore = create((set, get) => ({
             });
         } catch (error) {
             set({ error: error.message, cargando: false });
+        }
+    },
+
+    obtenerDetalleVenta: async (idVenta) => {
+        set({ cargandoDetalle: true, error: null });
+        try {
+            const detalleVenta = await obtenerDetalleVentaServicio(idVenta);
+            set({ detalleVenta: detalleVenta, cargandoDetalle: false });
+        } catch (error) {
+            set({ error: error.message, cargandoDetalle: false });
+        }
+    },
+
+    obtenerComprobante: async (idVenta) => {
+        set({ cargandoComprobante: true, error: null });
+        try {
+            const comprobante = await obtenerComprobanteServicio(idVenta);
+            set({ comprobante, cargandoComprobante: false });
+            return comprobante;
+        } catch (error) {
+            set({ error: error.message, cargandoComprobante: false });
+            throw error;
+        }
+    },
+
+    descargarComprobantePDF: async (idVenta) => {
+        try {
+            const comprobante = await get().obtenerComprobante(idVenta);
+
+            if (!comprobante?.url_comprobante_pdf) {
+                throw new Error("No existe URL del comprobante PDF");
+            }
+            window.open(comprobante.url_comprobante_pdf, "_blank");
+        } catch (error) {
+            set({ error: error.message });
         }
     },
 
@@ -57,6 +97,10 @@ export const useVentaStore = create((set, get) => ({
     obtenerId: (producto) => {
         return producto.id_producto || producto.id;
     },
+
+    limpiarComprobante: () => set({ comprobante: null }),
+    
+    limpiarDetalleVenta: () => set({ detalleVenta: [] }),
 
     setCantidad: (id, cantidad) => set((state) => ({
         cantidades: {

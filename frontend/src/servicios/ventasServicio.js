@@ -49,13 +49,13 @@ export const obtenerDetalleVentaServicio = async (idVenta) => {
     if(!respuesta.data.ok){
         throw new Error(respuesta.data.mensaje || "Error al obtener el detalle de la venta");
     }
-    return respuesta.data.detalles;
+    return respuesta.data.detalles_venta;
 }
 
 export const obtenerComprobanteServicio = async (idVenta) => {
-    const respuesta = await API.get(`/ventas/comprobante/${idVenta}`);
+    const respuesta = await API.get(`/ventas/comprobante-venta/${idVenta}`);
     if(!respuesta.data.ok){
         throw new Error(respuesta.data.mensaje || "Error al obtener el comprobante");
     }
-    return respuesta.data.comprobante[0];
+    return respuesta.data.comprobante;
 }

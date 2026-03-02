@@ -1,6 +1,6 @@
-import { FiFileText, FiCheckCircle, FiXCircle, FiEye, FiDownload, FiUser } from "react-icons/fi";
+import { FiFileText, FiEye, FiDownload, FiUser } from "react-icons/fi";
 
-export const FilaComprobante = ({ venta, onVerDetalle, onDescargarComprobante }) => {
+export const FilaComprobante = ({ venta, onVerDetalle, onDescargarPDF }) => {
   const getColorComprobante = () => {
     if (venta.nombreTipoComprobante === "Factura" || venta.comprobante?.includes('F')) {
       return {
@@ -100,7 +100,7 @@ export const FilaComprobante = ({ venta, onVerDetalle, onDescargarComprobante })
             <FiEye size={16} />
           </button>
           <button 
-            onClick={() => onDescargarComprobante(venta)}
+            onClick={() => onDescargarPDF(venta)}
             className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors cursor-pointer"
             title="Descargar comprobante"
           >
