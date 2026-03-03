@@ -123,6 +123,7 @@ CREATE TABLE arqueos_caja (
     otros DECIMAL(6,2) DEFAULT 0.00,
     diferencia DECIMAL(6,2) NOT NULL,
     estado_caja ENUM('cuadra', 'sobra', 'falta') NOT NULL,
+    descripcion_arqueo DEFAULT NULL,
     id_caja INT NOT NULL,
     id_usuario INT NOT NULL,
     FOREIGN KEY (id_caja) REFERENCES caja(id_caja) ON DELETE CASCADE ON UPDATE CASCADE,

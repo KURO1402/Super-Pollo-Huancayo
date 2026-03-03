@@ -293,7 +293,8 @@ CREATE PROCEDURE sp_registrar_arqueo_caja(
     IN p_monto_billetera DECIMAL(10,2),
     IN p_monto_otros DECIMAL(10,2),
     IN p_diferencia DECIMAL(10,2),
-    IN p_estado_arqueo ENUM('cuadra', 'sobra', 'falta')
+    IN p_estado_arqueo ENUM('cuadra', 'sobra', 'falta'),
+    IN p_descripcion_arqueo TEXT
 )
 BEGIN
 
@@ -313,6 +314,7 @@ BEGIN
         otros,
         diferencia,
         estado_caja,
+        descripcion_arqueo,
         id_caja,
         id_usuario
     )
@@ -324,6 +326,7 @@ BEGIN
         p_monto_otros,
         p_diferencia,
         p_estado_arqueo,
+        p_descripcion_arqueo,
         p_id_caja,
         p_id_usuario
     );

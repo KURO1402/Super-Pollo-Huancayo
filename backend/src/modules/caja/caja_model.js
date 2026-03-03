@@ -68,7 +68,7 @@ const registrarEgresoCajaModel = async (monto, descripcion, usuarioId) => {
     }
 };
 
-const registrarArqueoCajaModel = async (montos, diferencia, estadoArqueo, idUsuario, idCaja) => {
+const registrarArqueoCajaModel = async (montos, diferencia, estadoArqueo, idUsuario, idCaja, descripcionArqueo = null) => {
     let conexion;
     try {
 
@@ -76,7 +76,7 @@ const registrarArqueoCajaModel = async (montos, diferencia, estadoArqueo, idUsua
 
         conexion = await pool.getConnection();
 
-        const [result] = await conexion.execute('CALL sp_registrar_arqueo_caja(?, ?, ?, ?, ?, ?, ?, ?)', [idUsuario, idCaja, montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros, diferencia, estadoArqueo]);
+        const [result] = await conexion.execute('CALL sp_registrar_arqueo_caja(?, ?, ?, ?, ?, ?, ?, ?, ?)', [idUsuario, idCaja, montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros, diferencia, estadoArqueo, descripcionArqueo]);
 
         return result[0][0]?.mensaje;
 

@@ -136,7 +136,7 @@ const CajaActualPagina = () => {
       modalArqueo.cerrar();
       mostrarAlerta.exito("Arqueo registrado con éxito");
     } catch (error) {
-      mostrarAlerta.error("Error al registrar arqueo");
+      mostrarAlerta.error(error.message || "Error al registrar arqueo");
     }
   };
 

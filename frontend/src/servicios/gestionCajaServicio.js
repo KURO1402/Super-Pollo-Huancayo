@@ -78,7 +78,8 @@ export const registrarArqueoServicio = async (data) => {
       montoFisico: Number(data.montoFisico) || 0,       
       montoTarjeta: Number(data.montoTarjeta) || 0,        
       montoBilleteraDigital: Number(data.montoBilleteraDigital) || 0,
-      montoOtros:Number(data.otros) || 0
+      montoOtros:Number(data.otros) || 0,
+      descripcionArqueo: data.descripcionArqueo?.trim() || undefined
     }
     const respuesta = await API.post('/caja/arqueo-caja', datosParaBackend);
     
