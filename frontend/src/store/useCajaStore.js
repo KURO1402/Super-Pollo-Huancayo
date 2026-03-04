@@ -9,7 +9,7 @@ import {
   registrarArqueoServicio,
   obtenerMovimientosPorCajaServicio,
   obtenerCajasCerradasServicio,
-  obtenerCajaActualServicio 
+  obtenerCajaActualServicio
 } from '../servicios/gestionCajaServicio';
 
 export const useCajaStore = create(
@@ -40,6 +40,7 @@ export const useCajaStore = create(
       filtros: {},
 
       cargando: false,
+      rehidratando: false, // ✅ NUEVO FLAG
       error: null,
 
       // ABRIR CAJA
@@ -241,12 +242,18 @@ export const useCajaStore = create(
         }
       },
 
-      // REHIDRATAR CAJA — consulta el backend para
       // reconstruir saldos reales al refrescar la página
       rehidratarCaja: async () => {
         const { cajaActual } = get();
 
-        if (!cajaActual.id_caja || cajaActual.estado !== 'abierta') return;
+        // ✅ Siempre activar rehidratando para bloquear la UI
+        set({ rehidratando: true });
+
+        // Si no hay caja que verificar, liberar inmediatamente
+        if (!cajaActual.id_caja || cajaActual.estado !== 'abierta') {
+          set({ rehidratando: false });
+          return;
+        }
 
         set({ cargando: true, error: null });
 
@@ -264,15 +271,30 @@ export const useCajaStore = create(
               fechaApertura: caja.fecha_caja,
               usuarioApertura: caja.usuario || null
             },
-            cargando: false
+            cargando: false,
+            rehidratando: false //
           });
 
           get().cargarMovimientos();
 
         } catch (err) {
-          // Si falla (caja cerrada externamente, token expirado, etc.)
-          // dejamos lo que ya tenía persistido en localStorage sin borrar
-          set({ cargando: false, error: null });
+          set({
+            cajaActual: {
+              id_caja: null,
+              estado: 'cerrada',
+              saldoInicial: 0,
+              saldoActual: 0,
+              ingresos: 0,
+              egresos: 0,
+              fechaApertura: null,
+              usuarioApertura: null
+            },
+            movimientos: [],
+            totalMovimientos: 0,
+            cargando: false,
+            rehidratando: false, //
+            error: null
+          });
         }
       },
 
@@ -322,6 +344,7 @@ export const useCajaStore = create(
           limite: 10,
           filtros: {},
           cargando: false,
+          rehidratando: false,
           error: null
         })
     }),

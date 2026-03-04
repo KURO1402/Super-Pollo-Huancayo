@@ -1,167 +1,156 @@
-import { MdHistory } from "react-icons/md";
-import { useEffect, useState } from "react";
-import { BsPlusLg } from "react-icons/bs";
-import { Tabla } from "../../componentes/ui/tabla/Tabla";
-import { BarraBusqueda } from "../../componentes/busqueda-filtros/BarraBusqueda"; 
-import { Paginacion } from "../../componentes/ui/tabla/Paginacion";
-import Modal from "../../componentes/ui/modal/Modal";
-import { useBusqueda } from "../../hooks/useBusqueda"; 
-import { usePaginacion } from "../../hooks/usePaginacion";
+import { FiRefreshCw } from "react-icons/fi";
 import { useModal } from "../../hooks/useModal";
-import { FilaEntrada } from "../../componentes/panel-admin/stock/FilaEntrada";
-import { listarMovimientosServicio } from "../../servicios/movientosStockServicio";
-import { ModalMovimientoStock } from "../../componentes/panel-admin/stock/ModalMovimientoStock";
+import { useHistorialCajas } from "../../hooks/useHistorialCaja";
+import { useState, useEffect, useRef } from "react";
+import TablasCajasCerradas from "../../componentes/panel-admin/caja/TablaCajasCerradas";
+import ModalDetalleArqueos from "../../componentes/panel-admin/caja/ModalDetalleArqueos";
 
-const HistorialEntradasPagina = () => {
-  const { 
-    paginaActual, 
-    setPaginaActual, 
-    itemsPorPagina, 
-    setItemsPorPagina, 
-    paginar 
-  } = usePaginacion(5);
+const HistorialCajasPagina = () => {
+  const {
+    cajasCerradas,
+    totalRegistros,
+    paginaActual,
+    itemsPorPagina,
+    loadingCajas,
+    arqueosCaja,
+    movimientosCaja,
+    loadingArqueos,
+    loadingMovimientos,
+    cambiarPagina,
+    cambiarItemsPorPagina,
+    aplicarFiltros,
+    cargarDetallesCompletosCaja,
+    formatDate,
+    formatCurrency,
+    formatHora,
+  } = useHistorialCajas();
 
-  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda(); 
-  const [movimientos, setMovimientos] = useState([]);
-  const [cargando, setCargando] = useState(false);
+  const { estaAbierto, abrir, cerrar } = useModal();
 
-  const modalMovimientoStock = useModal(false);
-
-  const obtenerMovimientos = async () => {
-    try {
-      setCargando(true);
-      const data = await listarMovimientosServicio();
-      const movimientosConId = data.map((mov, index) => ({
-        ...mov,
-        idMovimientoStock: `mov-${index}-${Date.now()}`,
-        idMovimiento: `mov-${index}-${Date.now()}`
-      }));
-
-      setMovimientos(movimientosConId);
-    } catch (error) {
-
-    } finally {
-      setCargando(false);
-    }
-  };
-
+  const cargaInicialCompletada = useRef(false);
   useEffect(() => {
-    obtenerMovimientos();
-  }, []);
-
-  const entradas = movimientos.filter(mov => mov.nombreMovimiento === 'entrada');
-
-  const handleMovimientoStock = () => {
-    modalMovimientoStock.abrir();
-  };
-
-  const handleMovimientoCreado = async () => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      await obtenerMovimientos();
-      
-      modalMovimientoStock.cerrar();
-    } catch (error) {
-      
+    if (!loadingCajas) {
+      cargaInicialCompletada.current = true;
     }
+  }, [loadingCajas]);
+
+  const [filtrosLocales, setFiltrosLocales] = useState({
+    fechaInicio: "",
+    fechaFin: "",
+  });
+
+  const handleFiltroChange = (campo, valor) => {
+    setFiltrosLocales((prev) => ({ ...prev, [campo]: valor }));
   };
 
-  let filtrados = filtrarPorBusqueda(entradas, [
-    "nombreInsumo",
-    "cantidadMovimiento",
-    "detalleMovimiento",
-    "nombreUsuario"
-  ]);
-
-  const { datosPaginados, totalPaginas } = paginar(filtrados);
-
-  const handleCambiarPagina = (nuevaPagina) => {
-    setPaginaActual(nuevaPagina);
+  const handleAplicarFiltros = () => {
+    aplicarFiltros({
+      fechaInicio: filtrosLocales.fechaInicio || undefined,
+      fechaFin: filtrosLocales.fechaFin || undefined,
+    });
   };
 
-  const handleCambiarItemsPorPagina = (nuevoItemsPorPagina) => {
-    setItemsPorPagina(nuevoItemsPorPagina);
+  const handleLimpiarFiltros = () => {
+    setFiltrosLocales({ fechaInicio: "", fechaFin: "" });
+    aplicarFiltros({});
   };
 
-  const filasEntradas = datosPaginados.map((entrada) => (
-    <FilaEntrada 
-      key={entrada.idMovimientoStock} 
-      entrada={entrada}
-    />
-  ));
+  const handleVerDetalle = async (idCaja) => {
+    await cargarDetallesCompletosCaja(idCaja);
+    abrir();
+  };
+
+  const totalPaginas = Math.ceil(totalRegistros / itemsPorPagina);
+
+  // ✅ Mostrar spinner solo mientras dura la carga inicial
+  if (loadingCajas && !cargaInicialCompletada.current) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
 
   return (
-    <div className="p-2">
-      <div className="mb-4">
-        <div className="mb-4 flex items-center">
-          <MdHistory className="text-3xl text-green-500 dark:text-green-400 mr-2"/>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Historial de Entradas</h1>
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+
+      {/* ── Filtros ── */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border p-6">
+        <h1 className="text-2xl font-bold dark:text-white mb-6">Historial de Cajas</h1>
+
+        <div className="flex items-end gap-4 flex-wrap">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-w-0">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Fecha inicio
+              </label>
+              <input
+                type="date"
+                value={filtrosLocales.fechaInicio}
+                onChange={(e) => handleFiltroChange("fechaInicio", e.target.value)}
+                className="h-11 w-full rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Fecha fin
+              </label>
+              <input
+                type="date"
+                value={filtrosLocales.fechaFin}
+                onChange={(e) => handleFiltroChange("fechaFin", e.target.value)}
+                className="h-11 w-full rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pb-0.5">
+            <button
+              onClick={handleAplicarFiltros}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Aplicar filtros
+            </button>
+            <button
+              onClick={handleLimpiarFiltros}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
+            >
+              <FiRefreshCw className="w-4 h-4" />
+              Limpiar
+            </button>
+          </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-400">Registro de compras e ingresos de insumos</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-        <div className="md:col-span-2">
-          <BarraBusqueda
-            valor={terminoBusqueda} 
-            onChange={setTerminoBusqueda}
-            placeholder="Buscar por insumo, ID movimiento o cantidad..."
-          />
-        </div>
-        <button 
-          onClick={handleMovimientoStock}
-          className="bg-transparent hover:bg-green-500 text-green-600 hover:text-white px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer text-sm border-2 border-green-500 hover:border-green-600"
-        >
-          <BsPlusLg className="text-lg flex-shrink-0" />
-          <span className="truncate">Nueva entrada</span>
-        </button>
       </div>
 
-      {cargando ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Cargando entradas...</p>
-        </div>
-      ) : (
-        <>
-          <Tabla
-            encabezados={["Insumo", "Cantidad", "Fecha", "Hora", "Usuario", "Detalle"]}
-            registros={filasEntradas}
-          /> 
-          
-          {datosPaginados.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              {entradas.length === 0 ? "No hay entradas registradas" : "No se encontraron entradas que coincidan con la búsqueda"}
-            </div>
-          )}
-          
-          <Paginacion
-            paginaActual={paginaActual}
-            totalPaginas={totalPaginas}
-            alCambiarPagina={handleCambiarPagina}
-            itemsPorPagina={itemsPorPagina}
-            alCambiarItemsPorPagina={handleCambiarItemsPorPagina}
-            mostrarSiempre={true}
-          />
-        </>
-      )}
-      
-      <Modal
-        estaAbierto={modalMovimientoStock.estaAbierto}
-        onCerrar={modalMovimientoStock.cerrar}
-        titulo="Registrar Movimiento de Stock"
-        tamaño="md"
-        mostrarHeader={true}
-        mostrarFooter={false}
-      >
-        <ModalMovimientoStock 
-          onClose={modalMovimientoStock.cerrar}
-          onGuardar={handleMovimientoCreado}
-        />
-      </Modal>
+      {/* ── Tabla ── */}
+      <TablasCajasCerradas
+        cajasCerradas={cajasCerradas}
+        formatCurrency={formatCurrency}
+        formatDate={formatDate}
+        formatHora={formatHora}
+        paginaActual={paginaActual}
+        totalPaginas={totalPaginas}
+        onCambiarPagina={cambiarPagina}
+        itemsPorPagina={itemsPorPagina}
+        onCambiarItemsPorPagina={cambiarItemsPorPagina}
+        onVerDetalle={handleVerDetalle}
+        loading={loadingCajas}
+        totalRegistros={totalRegistros}
+      />
+
+      {/* ── Modal detalle ── */}
+      <ModalDetalleArqueos
+        estaAbierto={estaAbierto}
+        onCerrar={cerrar}
+        arqueosCaja={arqueosCaja}
+        movimientosCaja={movimientosCaja}
+        loadingArqueos={loadingArqueos}
+        loadingMovimientos={loadingMovimientos}
+        formatCurrency={formatCurrency}
+        formatHora={formatHora}
+      />
     </div>
   );
 };
 
-export default HistorialEntradasPagina;
+export default HistorialCajasPagina;

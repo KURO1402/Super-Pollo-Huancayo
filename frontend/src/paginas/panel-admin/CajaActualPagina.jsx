@@ -18,6 +18,7 @@ const CajaActualPagina = () => {
     movimientos,
     totalMovimientos,
     cargando,
+    rehidratando, // ✅ NUEVO
     error,
     cargarMovimientos,
     abrirCaja,
@@ -54,15 +55,16 @@ const CajaActualPagina = () => {
   } = useConfirmacion();
 
   const cajaAbierta = cajaActual.estado === 'abierta';
+
+  useEffect(() => {
+    rehidratarCaja();
+  }, []);
+
   useEffect(() => {
     if (cajaAbierta) {
       cargarMovimientos();
     }
   }, [cajaAbierta, cajaActual.id_caja, paginaActual, limite, filtros]);
-
-  useEffect(() => {
-    rehidratarCaja();
-  }, []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-PE', {
@@ -156,7 +158,8 @@ const CajaActualPagina = () => {
     limpiarFiltros();
   };
 
-  if (cargando && !movimientos.length) {
+  // ✅ Bloquea la UI mientras se verifica el estado real con el backend
+  if (rehidratando) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
