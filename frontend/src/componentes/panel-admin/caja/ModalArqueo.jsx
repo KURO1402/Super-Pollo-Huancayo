@@ -223,7 +223,7 @@ const ModalArqueo = ({ estaAbierto, onCerrar, onRegistrarArqueo, saldoActual }) 
           {/* ── DESCRIPCIÓN (siempre opcional) ── */}
           <div className="space-y-2 mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Descripción <span className="text-gray-400 font-normal">(opcional)</span>
+              Descripción
             </label>
             <textarea
               rows={3}

@@ -85,7 +85,8 @@ CREATE TABLE caja (
     saldo_inicial DECIMAL(10,2) NOT NULL,
     monto_actual DECIMAL(10,2) NOT NULL,
     saldo_final DECIMAL(10,2) DEFAULT NULL,
-    fecha_caja DATETIME NOT NULL,
+    fecha_caja DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    hora_cierre TIME DEFAULT NULL,
     estado_caja ENUM('abierta', 'cerrada') NOT NULL
 );
 
@@ -123,7 +124,7 @@ CREATE TABLE arqueos_caja (
     otros DECIMAL(6,2) DEFAULT 0.00,
     diferencia DECIMAL(6,2) NOT NULL,
     estado_caja ENUM('cuadra', 'sobra', 'falta') NOT NULL,
-    descripcion_arqueo DEFAULT NULL,
+    descripcion_arqueo TEXT DEFAULT NULL,
     id_caja INT NOT NULL,
     id_usuario INT NOT NULL,
     FOREIGN KEY (id_caja) REFERENCES caja(id_caja) ON DELETE CASCADE ON UPDATE CASCADE,

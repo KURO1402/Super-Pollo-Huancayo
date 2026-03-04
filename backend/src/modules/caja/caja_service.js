@@ -11,7 +11,8 @@ const {
     obtenerCajasModel,
     obtenerMovimientosPorCajaModel,
     contarMovimientosPorCajaModel,
-    obtenerArqueosPorCajaModel
+    obtenerArqueosPorCajaModel,
+    obtenerCajaActualModel
 } = require('./caja_model')
 const {
     validarDatosAbrirCaja,
@@ -284,6 +285,16 @@ const obtenerArqueosPorCajaService = async (cajaId) => {
     return arqueos;
 };
 
+const obtenerCajaActualService = async () => {
+    const caja = await obtenerCajaActualModel();
+
+    if (!caja) {
+        throw crearError('No hay ninguna caja abierta actualmente', 404);
+    }
+
+    return caja;
+};
+
 module.exports = {
     crearCajaService,
     registrarIngresoCajaService,
@@ -292,5 +303,6 @@ module.exports = {
     cerrarCajaService,
     obtenerCajasService,
     obtenerMovimientosPorCajaService,
-    obtenerArqueosPorCajaService
+    obtenerArqueosPorCajaService,
+    obtenerCajaActualService
 }

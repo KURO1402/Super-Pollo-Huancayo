@@ -31,10 +31,10 @@ INSERT INTO usuario_rol (id_rol, id_usuario, fecha_inicio, rol_activo) VALUES
 
 
 -- CAJA
-INSERT INTO caja (saldo_inicial, monto_actual, saldo_final, fecha_caja, estado_caja) VALUES
-(500.00,  1200.00, 1200.00, '2025-12-01 08:00:00', 'cerrada'),
-(800.00,  1500.00, 1500.00, '2025-12-10 08:15:00', 'cerrada'),
-(1000.00, 1800.00, 1800.00, '2025-12-20 09:00:00', 'cerrada');
+INSERT INTO caja (saldo_inicial, monto_actual, saldo_final, fecha_caja, hora_cierre, estado_caja) VALUES
+(500.00,  1200.00, 1200.00, '2025-12-01', '22:00:00', 'cerrada'),
+(800.00,  1500.00, 1500.00, '2025-12-10', '22:00:00', 'cerrada'),
+(1000.00, 1800.00, 1800.00, '2025-12-20', '22:00:00', 'cerrada');
 
 -- EVENTOS_CAJA
 INSERT INTO eventos_caja (tipo_evento, fecha_evento, id_caja, id_usuario) VALUES

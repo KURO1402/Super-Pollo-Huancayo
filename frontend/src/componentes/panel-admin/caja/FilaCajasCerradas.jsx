@@ -2,6 +2,8 @@ import { FiEye } from "react-icons/fi";
 
 const FilaCajasCerradas = ({ 
   cajaCerrada, 
+  formatCurrency,  
+  formatHora,     
   onVerDetalle 
 }) => {
   
@@ -33,10 +35,10 @@ const FilaCajasCerradas = ({
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
       <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-        {cajaCerrada.fecha_apertura}
+        {cajaCerrada.fecha_caja}
       </td>
       <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-        {cajaCerrada.hora_apertura}
+        {formatHora(cajaCerrada.hora_cierre)}
       </td>
       <td className="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">
         {cajaCerrada.saldo_inicial}

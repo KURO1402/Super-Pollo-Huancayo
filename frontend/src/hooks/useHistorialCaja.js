@@ -155,9 +155,17 @@ export const useHistorialCajas = () => {
   };
 
   const formatHora = (hora) => {
-    if (!hora) return 'Hora no disponible';
+  if (!hora) return "—";
+  try {
+    const [hh, mm] = hora.split(":");
+    const horas = parseInt(hh);
+    const ampm = horas >= 12 ? "PM" : "AM";
+    const hora12 = horas % 12 || 12;
+    return `${hora12}:${mm} ${ampm}`;
+  } catch {
     return hora;
-  };
+  }
+};
 
   return {
     cajasCerradas,

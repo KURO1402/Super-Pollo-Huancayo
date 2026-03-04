@@ -8,6 +8,7 @@ const TablasCajasCerradas = ({
   cajasCerradas, 
   formatCurrency, 
   formatDate,
+  formatHora,
   paginaActual, 
   totalPaginas, 
   onCambiarPagina,
@@ -17,13 +18,13 @@ const TablasCajasCerradas = ({
   loading,
   totalRegistros // Asegúrate de recibir esto desde el hook useHistorialCajas
 }) => {
-  const encabezados = ["Fecha", "Hora", "Saldo Inicial", "Saldo Actual", "Saldo Final", "Estado", "Acciones"];
+  const encabezados = ["Fecha", "Hora cierre", "Saldo Inicial", "Saldo Actual", "Saldo Final", "Estado", "Acciones"];
 
   // CORRECCIÓN: Usar totalRegistros en lugar de totalPaginas * itemsPorPagina
   const paginacion = usePaginacion({
     paginaActual,
     limite: itemsPorPagina,
-    total: totalRegistros, // Aquí debe ir el total de registros, no el total de páginas
+    total: totalRegistros, 
     onPagina: onCambiarPagina,
     onLimite: onCambiarItemsPorPagina,
   });
@@ -31,9 +32,10 @@ const TablasCajasCerradas = ({
   const registros = cajasCerradas.map((cajaCerrada) => (
     <FilaCajasCerradas
       key={cajaCerrada.id_caja}
-      cajaCerrada={cajaCerrada} 
+      cajaCerrada={cajaCerrada}
       formatCurrency={formatCurrency}
       formatDate={formatDate}
+      formatHora={formatHora} 
       onVerDetalle={onVerDetalle}
     />
   )); 
