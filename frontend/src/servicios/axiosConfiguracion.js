@@ -4,7 +4,7 @@ import { useAutenticacionStore } from '../store/useAutenticacionStore';
 const API = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL,
     withCredentials: true,
-});
+}); 
 
 API.interceptors.request.use(
     (config) => {
@@ -32,11 +32,10 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
+
     const originalRequest = error.config;
 
-    const isAuthError =
-      error.response?.status === 401 &&
-      originalRequest.url.includes('/autenticacion');
+    const isAuthError = error.response?.status === 401;
 
     if (
       isAuthError &&
@@ -46,30 +45,31 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshResponse = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/autenticacion/renovar-token`,
-          {},
-          { withCredentials: true }
-        );
+
+        const refreshResponse = await API.post('/auth/renovar-token');
 
         const nuevoAccessToken = refreshResponse.data.accessToken;
 
         useAutenticacionStore.getState().setAccessToken(nuevoAccessToken);
 
-        originalRequest.headers['Authorization'] =
-          `Bearer ${nuevoAccessToken}`;
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${nuevoAccessToken}`;
 
         return API(originalRequest);
 
       } catch (refreshError) {
+
         useAutenticacionStore.getState().logout();
         window.location.href = '/inicio-sesion';
+
         return Promise.reject(refreshError);
       }
     }
 
-      const mensaje = error.response?.data?.mensaje || "Error interno del servidor";
-      return Promise.reject(new Error(mensaje));
+    const mensaje =
+      error.response?.data?.mensaje || "Error interno del servidor";
+
+    return Promise.reject(new Error(mensaje));
   }
 );
 

@@ -42,7 +42,7 @@ const registroUsuarioService = async (datos) => {
   const accessToken = jwt.sign(
     nuevoUsuario,
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_ACCESS_EXPIRATION || '15m' }
+    { expiresIn: process.env.JWT_ACCESS_EXPIRATION || '2m' }
   );
 
   const refreshToken = jwt.sign(
@@ -172,7 +172,7 @@ const iniciarSesionUsuarioService = async (datos) => {
   const accessToken = jwt.sign(
     payload,
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_ACCESS_EXPIRATION || '15m' }
+    { expiresIn: process.env.JWT_ACCESS_EXPIRATION || '2m' }
   );
 
   const refreshToken = jwt.sign(
@@ -207,7 +207,7 @@ const renovarAccessTokenService = async (refreshToken) => {
       rol: usuario.nombre_rol
     },
     process.env.JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '2m' }
   );
 
   return nuevoAccessToken;
