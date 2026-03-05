@@ -11,6 +11,7 @@ import { Paginacion } from "../../componentes/ui/tabla/Paginacion";
 import Modal from "../../componentes/ui/modal/Modal";
 import { FilaEntrada } from "../../componentes/panel-admin/stock/FilaEntrada";
 import { ModalMovimientoStock } from "../../componentes/panel-admin/stock/ModalMovimientoStock";
+import { useRef } from 'react';
 
 const HistorialEntradasPagina = () => {
   const {
@@ -37,6 +38,7 @@ const HistorialEntradasPagina = () => {
     onLimite: setLimitEntrada,
   });
 
+  const cargaInicialCompletada = useRef(false);
   useEffect(() => {
     cargarEntradas();
   }, [paginaEntrada, limitEntrada]);
@@ -45,10 +47,9 @@ const HistorialEntradasPagina = () => {
     if (error) limpiarError();
   }, [error]);
 
-  const [filtrosLocales, setFiltrosLocales] = useState({
-    fechaInicio: "",
-    fechaFin: "",
-  });
+  const handleMovimientoStock = () => {
+    modalMovimientoStock.abrir();
+  };
 
   const handleMovimientoCreado = async () => {
     await cargarEntradas();
@@ -161,4 +162,4 @@ const HistorialEntradasPagina = () => {
   );
 };
 
-export default HistorialCajasPagina;
+export default HistorialEntradasPagina;
