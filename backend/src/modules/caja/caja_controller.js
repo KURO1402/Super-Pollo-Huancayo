@@ -1,3 +1,4 @@
+const { obtenerCajaActualModel } = require('./caja_model');
 const {
   crearCajaService,
   registrarIngresoCajaService,
@@ -6,7 +7,8 @@ const {
   cerrarCajaService,
   obtenerCajasService,
   obtenerMovimientosPorCajaService,
-  obtenerArqueosPorCajaService
+  obtenerArqueosPorCajaService,
+  obtenerCajaActualService
 } = require('./caja_service');
 
 const crearCajaController = async (req, res) => {
@@ -137,6 +139,22 @@ const obtenerArqueosPorCajaController = async (req, res) => {
   }
 };
 
+const obtenerCajaActualController = async (req, res) => {
+    try {
+        const caja = await obtenerCajaActualService();
+        return res.status(200).json({
+            ok: true,
+            caja
+        });
+    } catch (err) {
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
 module.exports = {
   crearCajaController,
   registrarIngresoCajaController,
@@ -145,5 +163,6 @@ module.exports = {
   cerrarCajaController,
   obtenerCajasController,
   obtenerMovimientosPorCajaController,
-  obtenerArqueosPorCajaController
+  obtenerArqueosPorCajaController,
+  obtenerCajaActualController
 }

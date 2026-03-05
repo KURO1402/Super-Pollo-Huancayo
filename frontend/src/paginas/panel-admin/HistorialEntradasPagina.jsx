@@ -45,9 +45,10 @@ const HistorialEntradasPagina = () => {
     if (error) limpiarError();
   }, [error]);
 
-  const handleMovimientoStock = () => {
-    modalMovimientoStock.abrir();
-  };
+  const [filtrosLocales, setFiltrosLocales] = useState({
+    fechaInicio: "",
+    fechaFin: "",
+  });
 
   const handleMovimientoCreado = async () => {
     await cargarEntradas();
@@ -160,4 +161,4 @@ const HistorialEntradasPagina = () => {
   );
 };
 
-export default HistorialEntradasPagina;
+export default HistorialCajasPagina;

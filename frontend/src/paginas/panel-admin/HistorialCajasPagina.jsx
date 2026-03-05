@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
 import { FiRefreshCw } from "react-icons/fi";
 import { useModal } from "../../hooks/useModal";
 import { useHistorialCajas } from "../../hooks/useHistorialCaja";
+import { useState } from "react";
 import TablasCajasCerradas from "../../componentes/panel-admin/caja/TablaCajasCerradas";
 import ModalDetalleArqueos from "../../componentes/panel-admin/caja/ModalDetalleArqueos";
-import { FiltroBusqueda } from "../../componentes/busqueda-filtros/FiltroBusqueda";
 
 const HistorialCajasPagina = () => {
   const {
@@ -17,7 +16,6 @@ const HistorialCajasPagina = () => {
     movimientosCaja,
     loadingArqueos,
     loadingMovimientos,
-    obtenerCajasCerradas,
     cambiarPagina,
     cambiarItemsPorPagina,
     aplicarFiltros,
@@ -29,40 +27,25 @@ const HistorialCajasPagina = () => {
 
   const { estaAbierto, abrir, cerrar } = useModal();
 
+  // Filtros locales — solo se envían al hook al hacer click en "Aplicar"
   const [filtrosLocales, setFiltrosLocales] = useState({
     fechaInicio: "",
     fechaFin: "",
-    estado: "todos",
   });
-  useEffect(() => {
-    obtenerCajasCerradas({
-      fechaInicio: filtrosLocales.fechaInicio || undefined,
-      fechaFin: filtrosLocales.fechaFin || undefined,
-      estado: filtrosLocales.estado !== "todos" ? filtrosLocales.estado : undefined,
-    });
-  }, [paginaActual, itemsPorPagina, filtrosLocales]);
 
-  /* ===============================
-     FILTROS
-  =============================== */
   const handleFiltroChange = (campo, valor) => {
-    setFiltrosLocales(prev => ({ ...prev, [campo]: valor }));
+    setFiltrosLocales((prev) => ({ ...prev, [campo]: valor }));
   };
 
   const handleAplicarFiltros = () => {
     aplicarFiltros({
       fechaInicio: filtrosLocales.fechaInicio || undefined,
       fechaFin: filtrosLocales.fechaFin || undefined,
-      estado: filtrosLocales.estado !== "todos" ? filtrosLocales.estado : undefined,
     });
   };
 
   const handleLimpiarFiltros = () => {
-    setFiltrosLocales({
-      fechaInicio: "",
-      fechaFin: "",
-      estado: "todos",
-    });
+    setFiltrosLocales({ fechaInicio: "", fechaFin: "" });
     aplicarFiltros({});
   };
 
@@ -76,53 +59,68 @@ const HistorialCajasPagina = () => {
   if (loadingCajas && cajasCerradas.length === 0) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border p-6">
-        <h1 className="text-2xl font-bold dark:text-white">Historial de Cajas</h1>
-        <div className="flex items-end gap-4 my-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-            <input 
-              type="date" 
-              value={filtrosLocales.fechaInicio}
-              onChange={(e) => handleFiltroChange("fechaInicio", e.target.value)} 
-              className="h-11 rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 w-full"
-            />
 
-            <input 
-              type="date" 
-              value={filtrosLocales.fechaFin}
-              onChange={(e) => handleFiltroChange("fechaFin", e.target.value)} 
-              className="h-11 rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 w-full"
-            />
+      {/* ── Filtros ── */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border p-6">
+        <h1 className="text-2xl font-bold dark:text-white mb-6">Historial de Cajas</h1>
+
+        <div className="flex items-end gap-4 flex-wrap">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-w-0">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Fecha inicio
+              </label>
+              <input
+                type="date"
+                value={filtrosLocales.fechaInicio}
+                onChange={(e) => handleFiltroChange("fechaInicio", e.target.value)}
+                className="h-11 w-full rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Fecha fin
+              </label>
+              <input
+                type="date"
+                value={filtrosLocales.fechaFin}
+                onChange={(e) => handleFiltroChange("fechaFin", e.target.value)}
+                className="h-11 w-full rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+              />
+            </div>
           </div>
-          <div className="flex gap-3">
-            <button 
+
+          <div className="flex gap-3 pb-0.5">
+            <button
               onClick={handleAplicarFiltros}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
             >
               Aplicar filtros
             </button>
-            
-            <button 
-              onClick={handleLimpiarFiltros} 
+            <button
+              onClick={handleLimpiarFiltros}
               className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
             >
-              <FiRefreshCw className="inline" />
-              Limpiar filtros
+              <FiRefreshCw className="w-4 h-4" />
+              Limpiar
             </button>
           </div>
         </div>
       </div>
+
+      {/* ── Tabla ── */}
       <TablasCajasCerradas
         cajasCerradas={cajasCerradas}
         formatCurrency={formatCurrency}
         formatDate={formatDate}
+        formatHora={formatHora}
         paginaActual={paginaActual}
         totalPaginas={totalPaginas}
         onCambiarPagina={cambiarPagina}
@@ -132,6 +130,8 @@ const HistorialCajasPagina = () => {
         loading={loadingCajas}
         totalRegistros={totalRegistros}
       />
+
+      {/* ── Modal detalle ── */}
       <ModalDetalleArqueos
         estaAbierto={estaAbierto}
         onCerrar={cerrar}

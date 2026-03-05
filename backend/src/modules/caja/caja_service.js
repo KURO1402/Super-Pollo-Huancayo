@@ -11,7 +11,8 @@ const {
     obtenerCajasModel,
     obtenerMovimientosPorCajaModel,
     contarMovimientosPorCajaModel,
-    obtenerArqueosPorCajaModel
+    obtenerArqueosPorCajaModel,
+    obtenerCajaActualModel
 } = require('./caja_model')
 const {
     validarDatosAbrirCaja,
@@ -113,13 +114,19 @@ const registrarArqueoCajaService = async (datos, idUsuario) => {
         throw crearError('No hay ninguna caja abierta para registrar el arqueo', 400);
     }
 
-    const { montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros } = datos;
+    const { montoFisico, montoTarjeta, montoBilleteraDigital, montoOtros, descripcionArqueo } = datos;
 
     const montoTotal = montoFisico + montoTarjeta + montoBilleteraDigital + montoOtros;
     const diferencia = montoTotal - caja.monto_actual;
     const estadoArqueo = diferencia === 0 ? 'cuadra' : diferencia > 0 ? 'sobra' : 'falta';
 
-    const resultado = await registrarArqueoCajaModel(datos, diferencia, estadoArqueo, idUsuario, caja.id_caja);
+    const descripcionFinal = descripcionArqueo?.trim() || null;
+
+    if (estadoArqueo !== 'cuadra' && !descripcionFinal) {
+        throw crearError('La descripción es obligatoria cuando hay sobrante o faltante', 400);
+    }
+
+    const resultado = await registrarArqueoCajaModel(datos, diferencia, estadoArqueo, idUsuario, caja.id_caja, descripcionFinal);
 
     limpiarCachePorPrefijo('cajas:');
 
@@ -278,6 +285,16 @@ const obtenerArqueosPorCajaService = async (cajaId) => {
     return arqueos;
 };
 
+const obtenerCajaActualService = async () => {
+    const caja = await obtenerCajaActualModel();
+
+    if (!caja) {
+        throw crearError('No hay ninguna caja abierta actualmente', 404);
+    }
+
+    return caja;
+};
+
 module.exports = {
     crearCajaService,
     registrarIngresoCajaService,
@@ -286,5 +303,6 @@ module.exports = {
     cerrarCajaService,
     obtenerCajasService,
     obtenerMovimientosPorCajaService,
-    obtenerArqueosPorCajaService
+    obtenerArqueosPorCajaService,
+    obtenerCajaActualService
 }

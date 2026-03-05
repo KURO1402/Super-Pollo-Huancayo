@@ -11,7 +11,8 @@ const {
     cerrarCajaController,
     obtenerCajasController,
     obtenerMovimientosPorCajaController ,
-    obtenerArqueosPorCajaController
+    obtenerArqueosPorCajaController,
+    obtenerCajaActualController
 } = require('./caja_controller')
 
 router.post('/abrir-caja', autenticacionToken, verificarRoles(2, 3), crearCajaController);
@@ -22,5 +23,6 @@ router.post('/arqueo-caja', autenticacionToken, verificarRoles(2, 3), registrarA
 router.get('/cajas', autenticacionToken, verificarRoles(2, 3), obtenerCajasController);
 router.get('/movimientos-caja/:idCaja', autenticacionToken, verificarRoles(2, 3), obtenerMovimientosPorCajaController);
 router.get('/arqueos-caja/:idCaja', autenticacionToken, verificarRoles(2, 3), obtenerArqueosPorCajaController);
+router.get('/caja-actual', autenticacionToken, verificarRoles(2, 3), obtenerCajaActualController);
 
 module.exports = router;

@@ -78,10 +78,10 @@ export const registrarArqueoServicio = async (data) => {
       montoFisico: Number(data.montoFisico) || 0,       
       montoTarjeta: Number(data.montoTarjeta) || 0,        
       montoBilleteraDigital: Number(data.montoBilleteraDigital) || 0,
-      montoOtros:Number(data.otros) || 0
+      montoOtros:Number(data.otros) || 0,
+      descripcionArqueo: data.descripcionArqueo?.trim() || undefined
     }
     const respuesta = await API.post('/caja/arqueo-caja', datosParaBackend);
-    
     if (!respuesta.data.ok) {
       throw new Error(respuesta.data.mensaje || "Error al registrar arqueo");
     }
@@ -120,6 +120,7 @@ export const obtenerArqueosPorCajaServicio = async (idCaja) => {
     if (!Array.isArray(data)) {
       throw new Error("Formato de respuesta inválido: se esperaba un array");
     }
+    console.log(data);
 
     return data;
   } catch (error) {
@@ -178,4 +179,12 @@ export const obtenerCajasCerradasServicio = async ({ limit = 5, offset = 0, fech
       total: 0
     };
   }
+};
+
+export const obtenerCajaActualServicio = async () => {
+  const respuesta = await API.get('/caja/caja-actual');
+  if (!respuesta.data.ok) {
+    throw new Error(respuesta.data.mensaje || "Error al obtener caja actual");
+  }
+  return respuesta.data.caja;
 };

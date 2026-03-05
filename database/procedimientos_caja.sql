@@ -12,6 +12,7 @@ DROP PROCEDURE IF EXISTS sp_contar_movimientos_por_caja;
 DROP PROCEDURE IF EXISTS sp_contar_cajas;
 DROP PROCEDURE IF EXISTS sp_listar_cajas;
 DROP PROCEDURE IF EXISTS sp_obtener_arqueos_por_caja;
+DROP PROCEDURE IF EXISTS sp_obtener_caja_actual;
 
 /* CREAR PROCEDIMIENTOS ALMACENADOS DEL MODULO DE CAJA */
 DELIMITER //
@@ -23,7 +24,8 @@ CREATE PROCEDURE sp_crear_caja_con_evento(
 )
 BEGIN
     DECLARE v_id_caja INT;
-    DECLARE v_fecha_actual DATETIME;
+    -- v_fecha_actual ahora solo se usa para eventos y movimientos (que suelen ser DATETIME)
+    DECLARE v_fecha_actual DATETIME DEFAULT NOW();
 
     -- Manejo de errores
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -38,21 +40,16 @@ BEGIN
         SET MESSAGE_TEXT = 'Ya existe una caja abierta. No se puede crear otra.';
     END IF;
 
-    SET v_fecha_actual = NOW();
-
     START TRANSACTION;
 
-    -- Crear caja
-    INSERT INTO caja (saldo_inicial, monto_actual, saldo_final, fecha_caja, estado_caja)
-    VALUES (p_saldo_inicial, p_saldo_inicial, NULL, v_fecha_actual, 'abierta');
+    INSERT INTO caja (saldo_inicial, monto_actual, saldo_final, estado_caja)
+    VALUES (p_saldo_inicial, p_saldo_inicial, NULL, 'abierta');
 
     SET v_id_caja = LAST_INSERT_ID();
 
-    -- Evento apertura
     INSERT INTO eventos_caja (tipo_evento, fecha_evento, id_caja, id_usuario)
     VALUES ('apertura', v_fecha_actual, v_id_caja, p_id_usuario);
 
-    -- Movimiento inicial
     INSERT INTO movimientos_caja (
         tipo_movimiento,
         fecha_movimiento,
@@ -76,9 +73,9 @@ BEGIN
         c.id_caja,
         c.saldo_inicial,
         c.monto_actual,
-        IFNULL(c.saldo_final, '--') AS saldo_final,
+        IFNULL(c.saldo_final, '---') AS saldo_final,
         DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_caja,
-        DATE_FORMAT(c.fecha_caja, '%H:%i:%s') AS hora_caja,
+        IFNULL(TIME_FORMAT(c.hora_cierre, '%H:%i:%s'), '--') AS hora_cierre,
         c.estado_caja
     FROM caja c
     WHERE c.id_caja = v_id_caja;
@@ -92,6 +89,7 @@ CREATE PROCEDURE sp_cerrar_caja_registrar_evento(
 )
 BEGIN
     DECLARE v_fecha_actual DATETIME;
+
     -- Manejo de errores: rollback automático si algo falla
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -104,9 +102,10 @@ BEGIN
     -- Iniciar transacción
     START TRANSACTION;
     
-    -- Cerrar la caja (actualizar saldo_final y estado)
+    -- Cerrar la caja (actualizar saldo_final, hora_cierre y estado)
     UPDATE caja
     SET saldo_final = p_saldo_final, 
+        hora_cierre = CURTIME(),
         estado_caja = 'cerrada'
     WHERE id_caja = p_id_caja;
     
@@ -293,7 +292,8 @@ CREATE PROCEDURE sp_registrar_arqueo_caja(
     IN p_monto_billetera DECIMAL(10,2),
     IN p_monto_otros DECIMAL(10,2),
     IN p_diferencia DECIMAL(10,2),
-    IN p_estado_arqueo ENUM('cuadra', 'sobra', 'falta')
+    IN p_estado_arqueo ENUM('cuadra', 'sobra', 'falta'),
+    IN p_descripcion_arqueo TEXT
 )
 BEGIN
 
@@ -313,6 +313,7 @@ BEGIN
         otros,
         diferencia,
         estado_caja,
+        descripcion_arqueo,
         id_caja,
         id_usuario
     )
@@ -324,6 +325,7 @@ BEGIN
         p_monto_otros,
         p_diferencia,
         p_estado_arqueo,
+        p_descripcion_arqueo,
         p_id_caja,
         p_id_usuario
     );
@@ -381,7 +383,8 @@ BEGIN
     FROM caja c
     WHERE
         (p_fechaInicio IS NULL OR DATE(c.fecha_caja) >= p_fechaInicio)
-        AND (p_fechaFin IS NULL OR DATE(c.fecha_caja) <= p_fechaFin);
+        AND (p_fechaFin IS NULL OR DATE(c.fecha_caja) <= p_fechaFin)
+        AND c.estado_caja <> 'abierta';
 END //
 
 CREATE PROCEDURE sp_listar_cajas (
@@ -395,24 +398,24 @@ BEGIN
         c.id_caja,
         c.saldo_inicial,
         c.monto_actual,
-        IFNULL(c.saldo_final, '--') AS saldo_final,
-        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_apertura,
-        DATE_FORMAT(c.fecha_caja, '%H:%i:%s') AS hora_apertura,
+        IFNULL(c.saldo_final, '---') AS saldo_final,
+        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_caja,
+        IFNULL(TIME_FORMAT(c.hora_cierre, '%H:%i:%s'), '--') AS hora_cierre,
         c.estado_caja
     FROM caja c
     WHERE
-        (p_fechaInicio IS NULL OR DATE(c.fecha_caja) >= p_fechaInicio)
-        AND (p_fechaFin IS NULL OR DATE(c.fecha_caja) <= p_fechaFin)
-    ORDER BY c.fecha_caja DESC
+        (p_fechaInicio IS NULL OR c.fecha_caja >= p_fechaInicio)
+        AND (p_fechaFin IS NULL OR c.fecha_caja <= p_fechaFin)
+        AND c.estado_caja <> 'abierta'
+    ORDER BY c.fecha_caja DESC, c.id_caja DESC
     LIMIT p_limit OFFSET p_offset;
-END // 
+END //
 
 -- Procedimiento para obtener los arqueos de la caja abierta
 CREATE PROCEDURE sp_obtener_arqueos_por_caja(
     IN p_id_caja INT
 )
 BEGIN
-    -- Retornar los arqueos asociados a esa caja
     SELECT 
         ac.id_arqueo,
         DATE_FORMAT(ac.fecha_arqueo, '%H:%i:%s') AS hora_arqueo,
@@ -423,6 +426,7 @@ BEGIN
         ac.otros,
         ac.diferencia,
         ac.estado_caja,
+        IFNULL(ac.descripcion_arqueo, '---') AS descripcion_arqueo,
         DATE_FORMAT(c.fecha_caja, '%d/%m/%Y') AS fecha_caja,
         CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS nombre_usuario
     FROM arqueos_caja ac
@@ -430,6 +434,23 @@ BEGIN
     INNER JOIN usuarios u ON ac.id_usuario = u.id_usuario
     WHERE ac.id_caja = p_id_caja
     ORDER BY ac.fecha_arqueo DESC;
+END //
+
+CREATE PROCEDURE sp_obtener_caja_actual()
+BEGIN
+    SELECT
+        c.id_caja,
+        c.saldo_inicial,
+        c.monto_actual                                    AS saldo_actual,
+        COALESCE(SUM(CASE WHEN m.tipo_movimiento = 'ingreso' 
+                     THEN m.monto_movimiento ELSE 0 END), 0) AS total_ingresos,
+        COALESCE(SUM(CASE WHEN m.tipo_movimiento = 'egreso'  
+                     THEN m.monto_movimiento ELSE 0 END), 0) AS total_egresos
+    FROM caja c
+    LEFT JOIN movimientos_caja m ON m.id_caja = c.id_caja
+    WHERE c.estado_caja = 'abierta'
+    GROUP BY c.id_caja, c.saldo_inicial, c.monto_actual
+    LIMIT 1;
 END //
 
 DELIMITER ;

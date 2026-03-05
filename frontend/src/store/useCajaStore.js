@@ -8,7 +8,8 @@ import {
   registrarEgresoServicio,
   registrarArqueoServicio,
   obtenerMovimientosPorCajaServicio,
-  obtenerCajasCerradasServicio
+  obtenerCajasCerradasServicio,
+  obtenerCajaActualServicio
 } from '../servicios/gestionCajaServicio';
 
 export const useCajaStore = create(
@@ -36,9 +37,13 @@ export const useCajaStore = create(
       paginaActual: 1,
       limite: 10,
 
+      filtros: {},
+
       cargando: false,
+      rehidratando: false, // ✅ NUEVO FLAG
       error: null,
 
+      // ABRIR CAJA
       abrirCaja: async (datos) => {
         set({ cargando: true, error: null });
 
@@ -72,6 +77,7 @@ export const useCajaStore = create(
         }
       },
 
+      // CERRAR CAJA
       cerrarCaja: async () => {
         set({ cargando: true, error: null });
 
@@ -94,18 +100,19 @@ export const useCajaStore = create(
             paginaActual: 1,
             cargando: false
           });
-          
+
         } catch (err) {
           set({ error: err.message, cargando: false });
           throw err;
         }
       },
 
+      // REGISTRAR INGRESO
       registrarIngreso: async (datos) => {
         set({ cargando: true, error: null });
 
         try {
-          await registrarIngresoServicio(datos);
+          const resp = await registrarIngresoServicio(datos);
 
           set((state) => {
             const monto = Number(datos.monto) || 0;
@@ -125,17 +132,19 @@ export const useCajaStore = create(
           });
 
           get().cargarMovimientos();
+          return resp;
         } catch (err) {
           set({ error: err.message, cargando: false });
           throw err;
         }
       },
 
+      // REGISTRAR EGRESO
       registrarEgreso: async (datos) => {
         set({ cargando: true, error: null });
 
         try {
-          await registrarEgresoServicio(datos);
+          const resp = await registrarEgresoServicio(datos);
 
           set((state) => {
             const monto = Number(datos.monto) || 0;
@@ -155,12 +164,14 @@ export const useCajaStore = create(
           });
 
           get().cargarMovimientos();
+          return resp;
         } catch (err) {
           set({ error: err.message, cargando: false });
           throw err;
         }
       },
 
+      // REGISTRAR ARQUEO
       registrarArqueo: async (datos) => {
         set({ cargando: true, error: null });
 
@@ -186,6 +197,7 @@ export const useCajaStore = create(
         }
       },
 
+      // CARGAR MOVIMIENTOS
       cargarMovimientos: async () => {
         const { paginaActual, limite, cajaActual } = get();
         if (!cajaActual.id_caja) return;
@@ -210,6 +222,7 @@ export const useCajaStore = create(
         }
       },
 
+      // CARGAR CAJAS CERRADAS
       cargarCajasCerradas: async () => {
         const { paginaActual, limite } = get();
         const offset = (paginaActual - 1) * limite;
@@ -229,6 +242,74 @@ export const useCajaStore = create(
         }
       },
 
+      // reconstruir saldos reales al refrescar la página
+      rehidratarCaja: async () => {
+        const { cajaActual } = get();
+
+        // ✅ Siempre activar rehidratando para bloquear la UI
+        set({ rehidratando: true });
+
+        // Si no hay caja que verificar, liberar inmediatamente
+        if (!cajaActual.id_caja || cajaActual.estado !== 'abierta') {
+          set({ rehidratando: false });
+          return;
+        }
+
+        set({ cargando: true, error: null });
+
+        try {
+          const caja = await obtenerCajaActualServicio();
+
+          set({
+            cajaActual: {
+              id_caja: caja.id_caja,
+              estado: 'abierta',
+              saldoInicial: Number(caja.saldo_inicial) || 0,
+              saldoActual: Number(caja.saldo_actual) || 0,
+              ingresos: Number(caja.total_ingresos) || 0,
+              egresos: Number(caja.total_egresos) || 0,
+              fechaApertura: caja.fecha_caja,
+              usuarioApertura: caja.usuario || null
+            },
+            cargando: false,
+            rehidratando: false //
+          });
+
+          get().cargarMovimientos();
+
+        } catch (err) {
+          set({
+            cajaActual: {
+              id_caja: null,
+              estado: 'cerrada',
+              saldoInicial: 0,
+              saldoActual: 0,
+              ingresos: 0,
+              egresos: 0,
+              fechaApertura: null,
+              usuarioApertura: null
+            },
+            movimientos: [],
+            totalMovimientos: 0,
+            cargando: false,
+            rehidratando: false, //
+            error: null
+          });
+        }
+      },
+
+      // FILTROS
+      setFiltros: (nuevosFiltros) => {
+        set({ filtros: nuevosFiltros, paginaActual: 1 });
+        get().cargarMovimientos();
+      },
+
+      limpiarFiltros: () => {
+        set({ filtros: {}, paginaActual: 1 });
+        get().cargarMovimientos();
+      },
+
+      // PAGINACIÓN
       setPagina: (pagina) => {
         set({ paginaActual: pagina });
         get().cargarMovimientos();
@@ -239,13 +320,7 @@ export const useCajaStore = create(
         get().cargarMovimientos();
       },
 
-      rehidratarCaja: () => {
-        const { cajaActual } = get();
-        if (cajaActual.id_caja && cajaActual.estado === 'abierta') {
-          get().cargarMovimientos();
-        }
-      },
-
+      // UTILIDADES
       limpiarError: () => set({ error: null }),
 
       reset: () =>
@@ -267,7 +342,9 @@ export const useCajaStore = create(
           totalCajasCerradas: 0,
           paginaActual: 1,
           limite: 10,
+          filtros: {},
           cargando: false,
+          rehidratando: false,
           error: null
         })
     }),
@@ -276,7 +353,13 @@ export const useCajaStore = create(
       partialize: (state) => ({
         cajaActual: {
           id_caja: state.cajaActual.id_caja,
-          estado: state.cajaActual.estado
+          estado: state.cajaActual.estado,
+          saldoInicial: state.cajaActual.saldoInicial,
+          saldoActual: state.cajaActual.saldoActual,
+          ingresos: state.cajaActual.ingresos,
+          egresos: state.cajaActual.egresos,
+          fechaApertura: state.cajaActual.fechaApertura,
+          usuarioApertura: state.cajaActual.usuarioApertura
         }
       })
     }

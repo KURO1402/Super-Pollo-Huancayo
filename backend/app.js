@@ -6,7 +6,7 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'http://localhost:5671'],
   credentials: true,
 };
 app.use(cors(corsOptions));
@@ -21,6 +21,7 @@ const productosRoutes = require('./src/modules/inventario/productos/producto_rou
 const configuracionesRoutes = require('./src/modules/configuracion/configuracion_routes');
 const reservacionRoutes = require('./src/modules/reservacion/reservacion_routes');
 const ventasRoutes = require('./src/modules/ventas/ventas_routes');
+const pedidosRoutes = require('./src/modules/pedidos/pedidos_routes');
 
 app.get('/', (req, res) => {
   res.send("Super-pollo");
@@ -34,6 +35,7 @@ app.use('/api/productos', productosRoutes);
 app.use('/api', configuracionesRoutes);
 app.use('/api/reservaciones', reservacionRoutes);
 app.use('/api/ventas', ventasRoutes);
+app.use('/api/pedidos', pedidosRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
