@@ -670,7 +670,7 @@ BEGIN
         p.descripcion_producto,
         p.precio_producto,
         CASE 
-            WHEN p.usa_insumos = 1 THEN 'Sí'
+            WHEN p.usa_insumos = 1 THEN 'Si'
             ELSE 'No'
         END AS usa_insumos,
         p.id_categoria,

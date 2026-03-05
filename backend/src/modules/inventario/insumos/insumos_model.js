@@ -155,6 +155,7 @@ const obtenerStockActualModel = async (idInsumo) => {
 
         return result[0][0]?.stock_insumo;
     } catch (err) {
+        console.log(err.message);
         throw new Error('Error al obtener stock del insumo de la base de datos.');
     } finally {
         if (conexion) conexion.release();

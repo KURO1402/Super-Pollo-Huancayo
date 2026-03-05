@@ -24,7 +24,7 @@ const TablaMovimientos = ({
       onLimite: onCambiarLimite,
     });
 
-  const encabezados = ["Tipo", "Descripción", "Monto", "Fecha", "Usuario"];
+  const encabezados = ["Tipo", "Descripción", "Monto", "Fecha", "Responsable"];
 
   const totalPaginas = Math.ceil(totalMovimientos / limite);
 

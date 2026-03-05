@@ -122,6 +122,7 @@ INSERT INTO medio_pago (nombre_medio_pago, estado_medio_pago) VALUES
 INSERT INTO tipo_comprobante (nombre_tipo_comprobante, serie, correlativo, estado_comprobante) VALUES
 ('boleta',  'B001', 0, 1),
 ('factura', 'F001', 0, 1);
+('nota de venta', 'NV', 0, 1);
 
 -- MESAS
 INSERT INTO mesas (numero_mesa, capacidad) VALUES

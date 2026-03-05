@@ -3,11 +3,12 @@ const crearError = require('../../utilidades/crear_error');
 const subirArchivoCloudinary = require('../../utilidades/helpers/subir_archivo_cludinary');
 
 const { validarDatosVenta } = require('./ventas_validacion');
-const { generarDatosComprobante } = require('./venta_helpers');
+const { generarDatosComprobante, generarPdfNotaVenta, validarYDescontarInsumos } = require('./venta_helpers');
 const { contarMedioPagoPorIdModel } = require('../configuracion/medios_pago/medios_pago_model');
 const { registrarIngresoCajaModel } = require('../caja/caja_model');
 const { actualizarCorrelativoComprobanteModel } = require('../configuracion/tipos_comprobante/tipos_comprobante_model');
 const { consultarCajaAbiertaModel } = require('../caja/caja_model');
+const { registrarSalidaStockService } = require('../inventario/insumos/insumo_service');
 
 const { insertarVentaModel,
     obtenerVentaPorIdModel,
@@ -16,7 +17,7 @@ const { insertarVentaModel,
     obtenerVentasModel,
     contarVentasModel,
     contarVentaPorIdModel 
- } = require('./ventas_model');
+} = require('./ventas_model');
 
 const generarVentaService = async (datos, idUsuario) => {
     validarDatosVenta(datos);
@@ -28,105 +29,115 @@ const generarVentaService = async (datos, idUsuario) => {
     }
 
     const datosParaComprobante = await generarDatosComprobante(tipoComprobante, cliente, productos);
-    const token = process.env.TOKEN_APIS_PERU;
+
     const caja = await consultarCajaAbiertaModel();
     if (!caja) {
         throw crearError('No se puede registrar una venta si no hay una caja abierta.', 400);
     }
 
-    // ─── 1. Obtener PDF ───────────────────────────────────────────────────────
-    let respuestaPdf;
+    // ─── Validar stock de insumos antes de registrar la venta ────────────────
+    await validarYDescontarInsumos(
+        datosParaComprobante.productosConData,
+        registrarSalidaStockService,
+        idUsuario
+    );
 
-    try {
-        respuestaPdf = await axios.post(
-            `${process.env.APISPERU_URL}/invoice/pdf`,
+    const esNotaVenta = datosParaComprobante.nombreComprobante === 'nota de venta';
+
+    const nombreArchivo = `${datosParaComprobante.serie}-${datosParaComprobante.correlativo}-${Date.now()}`;
+
+    let urlPdf, urlXml = null;
+    let aceptadoPorSunat = null;
+    let codigoSunat = null;
+    let mensajeSunat = null;
+
+    if (esNotaVenta) {
+        // ─── Flujo nota de venta: PDF interno, sin SUNAT ──────────────────────
+
+        // 1. Generar PDF con pdfkit
+        const pdfBuffer = await generarPdfNotaVenta(
             datosParaComprobante,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                responseType: 'arraybuffer',
-            }
+            cliente,
+            datosParaComprobante.nombreDoc
         );
-    } catch (error) {
 
-        if (error.response) {
-            const status = error.response.status;
-            const data = error.response.data;
+        // 2. Subir solo PDF a Cloudinary
+        urlPdf = await subirArchivoCloudinary(pdfBuffer, nombreArchivo, 'pdf');
 
-            console.error("❌ Error API PDF:", {
-                status,
-                data: data?.toString?.() || data
-            });
+    } else {
+        // ─── Flujo normal: boleta / factura → ApisPeru + SUNAT ────────────────
+        const token = process.env.TOKEN_APIS_PERU;
 
-            throw crearError(
-                `ApisPeru PDF respondió con estado ${status}. ${data?.message || 'Error en generación de PDF'}`,
-                502
+        // 1. Obtener PDF
+        let respuestaPdf;
+        try {
+            respuestaPdf = await axios.post(
+                `${process.env.APISPERU_URL}/invoice/pdf`,
+                datosParaComprobante,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    responseType: 'arraybuffer',
+                }
             );
+        } catch (error) {
+            if (error.response) {
+                const status = error.response.status;
+                const data = error.response.data;
+                console.error("❌ Error API PDF:", { status, data: data?.toString?.() || data });
+                throw crearError(`ApisPeru PDF respondió con estado ${status}. ${data?.message || 'Error en generación de PDF'}`, 502);
+            }
+            if (error.request) {
+                console.error("❌ No hubo respuesta del servidor ApisPeru (PDF)");
+                throw crearError("No hubo respuesta del servidor ApisPeru al generar el PDF", 504);
+            }
+            console.error("❌ Error interno PDF:", error.message);
+            throw crearError("Error interno al generar el PDF", 500);
         }
 
-        if (error.request) {
-            console.error("❌ No hubo respuesta del servidor ApisPeru (PDF)");
-            throw crearError("No hubo respuesta del servidor ApisPeru al generar el PDF", 504);
+        // 2. Obtener XML y respuesta SUNAT
+        let respuestaXml;
+        try {
+            respuestaXml = await axios.post(
+                `${process.env.APISPERU_URL}/invoice/send`,
+                datosParaComprobante,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+        } catch (error) {
+            if (error.response) {
+                const status = error.response.status;
+                const data = error.response.data;
+                console.error("❌ Error API SEND:", { status, data });
+                throw crearError(`Error al enviar comprobante a SUNAT (ApisPeru ${status}). ${data?.message || 'Error desconocido'}`, 502);
+            }
+            if (error.request) {
+                console.error("❌ No hubo respuesta del servidor ApisPeru (SEND)");
+                throw crearError("No hubo respuesta del servidor ApisPeru al enviar el comprobante", 504);
+            }
+            console.error("❌ Error interno SEND:", error.message);
+            throw crearError("Error interno al enviar el comprobante", 500);
         }
 
-        console.error("❌ Error interno PDF:", error.message);
-        throw crearError("Error interno al generar el PDF", 500);
+        const { xml, sunatResponse } = respuestaXml.data;
+        aceptadoPorSunat = sunatResponse?.cdrResponse?.code === '0' ? 1 : 0;
+        codigoSunat = sunatResponse?.cdrResponse?.code;
+        mensajeSunat = sunatResponse?.cdrResponse?.description;
+
+        // 3. Subir PDF y XML a Cloudinary
+        [urlPdf, urlXml] = await Promise.all([
+            subirArchivoCloudinary(Buffer.from(respuestaPdf.data), nombreArchivo, 'pdf'),
+            subirArchivoCloudinary(Buffer.from(xml), `${nombreArchivo}-xml`, 'xml'),
+        ]);
     }
 
-    // ─── 2. Obtener XML y respuesta SUNAT ─────────────────────────────────────
-    let respuestaXml;
-
-    try {
-        respuestaXml = await axios.post(
-            `${process.env.APISPERU_URL}/invoice/send`,
-            datosParaComprobante,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            }
-        );
-    } catch (error) {
-
-        if (error.response) {
-            const status = error.response.status;
-            const data = error.response.data;
-
-            console.error("❌ Error API SEND:", {
-                status,
-                data
-            });
-
-            throw crearError(
-                `Error al enviar comprobante a SUNAT (ApisPeru ${status}). ${data?.message || 'Error desconocido'}`,
-                502
-            );
-        }
-
-        if (error.request) {
-            console.error("❌ No hubo respuesta del servidor ApisPeru (SEND)");
-            throw crearError("No hubo respuesta del servidor ApisPeru al enviar el comprobante", 504);
-        }
-
-        console.error("❌ Error interno SEND:", error.message);
-        throw crearError("Error interno al enviar el comprobante", 500);
-    }
-
-    const { xml, sunatResponse } = respuestaXml.data;
-    const aceptadoPorSunat = sunatResponse?.cdrResponse?.code === '0' ? 1 : 0;
-
-    // ─── 3. Subir PDF y XML a Cloudinary ──────────────────────────────────────
-    const nombreArchivo = `${datosParaComprobante.tipoDoc}-${datosParaComprobante.serie}-${datosParaComprobante.correlativo}-${Date.now()}`;
-
-    const [urlPdf, urlXml] = await Promise.all([
-        subirArchivoCloudinary(Buffer.from(respuestaPdf.data), `${nombreArchivo}`, 'pdf'),
-        subirArchivoCloudinary(Buffer.from(xml), `${nombreArchivo}-xml`, 'xml'),
-    ]);
-
-    // ─── 4. Registrar en base de datos ────────────────────────────────────────
+    // ─── Registrar en base de datos (común para ambos flujos) ────────────────
     const { idVenta } = await insertarVentaModel({
         // datos venta
         numeroDocumentoCliente: cliente.numDoc,
@@ -142,11 +153,11 @@ const generarVentaService = async (datos, idUsuario) => {
         idTipoComprobante: tipoComprobante,
         serie: datosParaComprobante.serie,
         numeroCorrelativo: datosParaComprobante.correlativo,
-        sunatTransaccion: datosParaComprobante.tipoOperacion,
+        sunatTransaccion: esNotaVenta ? 0 : datosParaComprobante.tipoOperacion,
         aceptadoPorSunat,
         urlComprobantePdf: urlPdf,
         urlComprobanteXml: urlXml,
-        fechaEnvio: new Date(),
+        fechaEnvio: esNotaVenta ? null : new Date(),
         // detalles
         detalles: datosParaComprobante.details.map(d => ({
             cantidad: d.cantidad,
@@ -158,8 +169,10 @@ const generarVentaService = async (datos, idUsuario) => {
             idProducto: d.idProducto,
         })),
     });
+
     await actualizarCorrelativoComprobanteModel(tipoComprobante, datosParaComprobante.correlativo);
     await registrarIngresoCajaModel(datosParaComprobante.mtoImpVenta, 'Venta realizada', idUsuario);
+
     const venta = await obtenerVentaPorIdModel(idVenta);
     const detallesVenta = await obtenerDetalleVentaPorIdVentaModel(idVenta);
     venta.detalles = detallesVenta;
@@ -167,12 +180,14 @@ const generarVentaService = async (datos, idUsuario) => {
     return {
         ok: true,
         mensaje: 'Venta y comprobante realizados exitosamente',
-        aceptadoPorSunat: aceptadoPorSunat === 1,
-        codigoSunat: sunatResponse?.cdrResponse?.code,
-        mensajeSunat: sunatResponse?.cdrResponse?.description,
+        ...(esNotaVenta ? {} : {
+            aceptadoPorSunat: aceptadoPorSunat === 1,
+            codigoSunat,
+            mensajeSunat,
+        }),
         venta,
         urlPdf,
-        urlXml,
+        ...(urlXml && { urlXml }),
     };
 };
 
@@ -231,7 +246,7 @@ const obtenerVentasService = async (querys) => {
 };
 
 const obtenerDetalleVentaPorIdVentaService = async (idVenta) => {
-    if(!idVenta || isNaN(Number(idVenta))) {
+    if (!idVenta || isNaN(Number(idVenta))) {
         throw crearError('Se necesita especificar la venta', 400);
     }
 
@@ -239,7 +254,7 @@ const obtenerDetalleVentaPorIdVentaService = async (idVenta) => {
 
     const ventaExiste = await contarVentaPorIdModel(ventaID);
 
-    if(ventaExiste === 0){
+    if (ventaExiste === 0) {
         throw crearError('Venta especificada no existente', 404);
     }
 
@@ -248,11 +263,11 @@ const obtenerDetalleVentaPorIdVentaService = async (idVenta) => {
     return {
         ok: true,
         detalles_venta
-    }
+    };
 };
 
 const obtenerComprobantePorIdVentaService = async (idVenta) => {
-    if(!idVenta || isNaN(Number(idVenta))) {
+    if (!idVenta || isNaN(Number(idVenta))) {
         throw crearError('Se necesita especificar la venta', 400);
     }
 
@@ -260,16 +275,16 @@ const obtenerComprobantePorIdVentaService = async (idVenta) => {
 
     const ventaExiste = await contarVentaPorIdModel(ventaID);
 
-    if(ventaExiste === 0){
+    if (ventaExiste === 0) {
         throw crearError('Venta especificada no existente', 404);
     }
 
     const comprobante = await obtenerComprobantePorIdVentaModel(ventaID);
-    console.log(comprobante);
+
     return {
         ok: true,
         comprobante
-    }
+    };
 };
 
 module.exports = {
