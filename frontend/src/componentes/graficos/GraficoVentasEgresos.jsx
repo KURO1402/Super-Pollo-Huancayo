@@ -10,7 +10,9 @@ const GraficoVentasEgresos = ({ cantidadMeses = 6 }) => {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
+      
         const respuesta = await obtenerResumenVentasEgresosMensualServicio(cantidadMeses);
+        console.log(respuesta)
 
         const formateo = respuesta.map(item => ({
           mes: item.mes,
@@ -20,7 +22,7 @@ const GraficoVentasEgresos = ({ cantidadMeses = 6 }) => {
 
         setData(formateo);
       } catch (error) {
-
+        console.log(error.message)
       }
     };
 

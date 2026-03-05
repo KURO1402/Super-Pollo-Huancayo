@@ -31,15 +31,18 @@ export const obtenerResumenVentasEgresosMensualServicio = async (cantidadMeses) 
     if (cantidadMeses) {
       url += `?meses=${cantidadMeses}`;
     }
-
+    console.log(url)
     const respuesta = await API.get(url);
+    console.log(respuesta);
 
     if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data.resultado;
+      return respuesta.data.data;
     } else {
+      
       throw new Error(respuesta.data?.mensaje || "Error al obtener resumen de ventas y egresos");
     }
   } catch (error) {
+    console.log(error.message)
     throw error;
   }
 };

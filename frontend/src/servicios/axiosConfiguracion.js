@@ -67,7 +67,7 @@ API.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-
+      console.log(error.response)
       const mensaje = error.response?.data?.mensaje || "Error interno del servidor";
       return Promise.reject(new Error(mensaje));
   }
