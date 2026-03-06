@@ -4,7 +4,7 @@ import { useAutenticacionStore } from '../store/useAutenticacionStore';
 const API = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL,
     withCredentials: true,
-});
+}); 
 
 API.interceptors.request.use(
     (config) => {
@@ -15,10 +15,8 @@ API.interceptors.request.use(
             try {
                 const parsed = JSON.parse(authStorage);
                 accessToken = parsed.state.accessToken;
-            } catch (error) {
-            }
+            } catch (error) {}
         }
-        
         if (accessToken) {
             config.headers['Authorization'] = `Bearer ${accessToken}`;
         }
@@ -32,44 +30,40 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
 
-    const isAuthError =
-      error.response?.status === 401 &&
-      originalRequest.url.includes('/autenticacion');
+    const originalRequest = error.config;
+    const status = error.response?.status;
 
     if (
-      isAuthError &&
+      (status === 401 || status === 403) &&
       !originalRequest._retry &&
       !originalRequest.url.includes('/renovar-token')
     ) {
+
       originalRequest._retry = true;
 
       try {
-        const refreshResponse = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/autenticacion/renovar-token`,
-          {},
-          { withCredentials: true }
-        );
+
+        const refreshResponse = await API.post('/auth/renovar-token');
 
         const nuevoAccessToken = refreshResponse.data.accessToken;
 
         useAutenticacionStore.getState().setAccessToken(nuevoAccessToken);
 
-        originalRequest.headers['Authorization'] =
-          `Bearer ${nuevoAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${nuevoAccessToken}`;
 
         return API(originalRequest);
 
       } catch (refreshError) {
+
         useAutenticacionStore.getState().logout();
         window.location.href = '/inicio-sesion';
         return Promise.reject(refreshError);
       }
     }
 
-      const mensaje = error.response?.data?.mensaje || "Error interno del servidor";
-      return Promise.reject(new Error(mensaje));
+    const mensaje = error.response?.data?.mensaje || "Error interno del servidor";
+    return Promise.reject(new Error(mensaje));
   }
 );
 
