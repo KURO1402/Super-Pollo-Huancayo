@@ -106,7 +106,6 @@ const iniciarSesionUsuarioController = async (req, res) => {
 
 const renovarAccessTokenController = async (req, res) => {
   try {
-    console.log(req.headers.cookie.refreshToken);
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       return res.status(401).json({ ok: false, mensaje: 'No hay refresh token' });
