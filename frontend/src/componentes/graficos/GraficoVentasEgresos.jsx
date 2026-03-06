@@ -12,7 +12,6 @@ const GraficoVentasEgresos = ({ cantidadMeses = 6 }) => {
       try {
       
         const respuesta = await obtenerResumenVentasEgresosMensualServicio(cantidadMeses);
-        console.log(respuesta)
 
         const formateo = respuesta.map(item => ({
           mes: item.mes,

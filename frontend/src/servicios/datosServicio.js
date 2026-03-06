@@ -1,19 +1,9 @@
 import API from "./axiosConfiguracion";
 
 export const obtenerVentasHoyComparacionServicio = async () => {
-  try {
-    const url = `/fuente-datos/comparacion-ventas`;
-
-    const respuesta = await API.get(url);
-
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data.resultado; 
-    } else {
-      throw new Error(respuesta.data?.mensaje || "Error al obtener ventas de hoy y comparación");
-    }
-  } catch (error) {
-    throw error;
-  }
+    const respuesta = await API.get('/fuente-datos/ventas-hoy');
+    if (respuesta.data?.ok) return respuesta.data.resultado;
+    throw new Error(respuesta.data?.mensaje || 'Error al obtener ventas de hoy');
 };
 
 export const obtenerCantidadVentasHoyComparacionServicio = async () => {

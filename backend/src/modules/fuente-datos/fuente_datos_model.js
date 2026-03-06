@@ -17,4 +17,21 @@ const obtenerResumenVentasEgresosMensualModel = async (cantidadMeses) => {
   }
 };
 
-module.exports = { obtenerResumenVentasEgresosMensualModel };
+const obtenerVentasHoyComparacionModel = async () => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [result] = await conexion.execute('CALL sp_ventas_hoy_comparacion()');
+        return result[0][0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al obtener ventas de hoy');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+module.exports = { 
+    obtenerResumenVentasEgresosMensualModel,
+    obtenerVentasHoyComparacionModel 
+};

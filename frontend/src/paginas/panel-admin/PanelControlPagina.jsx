@@ -26,7 +26,11 @@ const PanelControlPagina = () => {
               Resumen general y métricas del restaurante
             </p>
           </div>
-          <TarjetaVentasHoy />
+          <TarjetaVentasHoy
+            ventasHoy={ventas.total_ventas_hoy}
+            porcentaje={ventas.porcentaje_comparacion}
+            cargando={cargando}
+          />
         </div>
       </div>
 
@@ -36,8 +40,8 @@ const PanelControlPagina = () => {
             <div className="transform hover:scale-105 transition-all duration-300">
               <MetricasCard
                 titulo="Ventas Realizadas"
-                valor={cargando ? "Cargando..." : ventas.totalVentasHoy}
-                cambio={cargando ? 0 : parseFloat(ventas.porcentajeComparacion)}
+                valor={cargando ? "Cargando..." : ventas.total_ventas_hoy}
+                cambio={cargando ? 0 : parseFloat(ventas.porcentaje_comparacion)}
                 icono={FaUtensils}
               />
             </div>
