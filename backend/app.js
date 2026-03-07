@@ -23,6 +23,7 @@ const configuracionesRoutes = require('./src/modules/configuracion/configuracion
 const reservacionRoutes = require('./src/modules/reservacion/reservacion_routes');
 const ventasRoutes = require('./src/modules/ventas/ventas_routes');
 const pedidosRoutes = require('./src/modules/pedidos/pedidos_routes');
+const fuenteDatosRoutes = require('./src/modules/fuente-datos/fuente_datos_routes');
 
 app.get('/', (req, res) => {
   res.send("Super-pollo");
@@ -37,6 +38,7 @@ app.use('/api', configuracionesRoutes);
 app.use('/api/reservaciones', reservacionRoutes);
 app.use('/api/ventas', ventasRoutes);
 app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/fuente-datos', fuenteDatosRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
