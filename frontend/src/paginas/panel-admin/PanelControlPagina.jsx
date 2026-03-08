@@ -1,6 +1,7 @@
-import { FaUtensils, FaCalendarAlt} from "react-icons/fa";
+import { useState } from "react";
+import { FaUtensils, FaCalendarAlt } from "react-icons/fa";
 import { useVentasHoyComparacion } from "../../hooks/useVentasHoyComparacion";
-import { useReservasHoyComparacion } from "../../hooks/useReservasHoyComparacion";
+import { useReservasMesComparacion } from "../../hooks/useReservasMesComparacion";
 import { MetricasCard } from "../../componentes/panel-admin/MetricasCard";
 import GraficoVentasEgresos from "../../componentes/graficos/GraficoVentasEgresos";
 import GraficoMediosPago from "../../componentes/graficos/GraficoMediosPago";
@@ -11,7 +12,8 @@ import { BalanceGeneralCard } from "../../componentes/panel-admin/BalanceGeneral
 
 const PanelControlPagina = () => {
   const { ventas, cargando } = useVentasHoyComparacion();
-  const { reservas, cargando: cargandoReservas } = useReservasHoyComparacion();
+  const { reservas, cargando: cargandoReservas } = useReservasMesComparacion();
+  const [anioMediosPago, setAnioMediosPago] = useState(null);  // 👈 agregar
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -48,9 +50,10 @@ const PanelControlPagina = () => {
             <div className="transform hover:scale-105 transition-all duration-300">
               <MetricasCard
                 titulo="Reservas Concretadas"
-                valor={cargandoReservas ? "Cargando..." : reservas.totalReservasHoy}
-                cambio={cargandoReservas ? 0 : parseFloat(reservas.porcentajeComparacion)}
+                valor={cargandoReservas ? "Cargando..." : reservas.total_reservas_mes}
+                cambio={cargandoReservas ? 0 : parseFloat(reservas.porcentaje_comparacion)}
                 icono={FaCalendarAlt}
+                comparacion="vs. mes anterior"
               />
             </div>
           </div>
@@ -80,10 +83,17 @@ const PanelControlPagina = () => {
             <BalanceGeneralCard />
           </div>
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              Distribución de medios de pago
-            </h3>
-            <GraficoMediosPago />
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                Preferencias de Pago de los clientes
+              </h3>
+              {anioMediosPago && (
+                <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-full transition-all duration-200 hover:bg-blue-200 dark:hover:bg-blue-800/50 hover:text-blue-700 dark:hover:text-blue-300 cursor-default">
+                  {anioMediosPago}
+                </span>
+              )}
+            </div>
+            <GraficoMediosPago onAnioCargado={setAnioMediosPago} />
           </div>
         </div>
       </div>
@@ -91,7 +101,7 @@ const PanelControlPagina = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Ventas por mes
+            Cantidad de ventas por mes
           </h3>
           <GraficoVentasMes />
         </div>

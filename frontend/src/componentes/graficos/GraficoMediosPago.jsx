@@ -3,8 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recha
 import { useTemaParaGraficos } from "../../hooks/useTemaParaGraficos";
 import { obtenerPorcentajeMediosPagoServicio } from "../../servicios/graficosServicio";
 
-
-const GraficoMediosPago = () => {
+const GraficoMediosPago = ({ onAnioCargado }) => {
   const { themeColors } = useTemaParaGraficos();
   const [data, setData] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -22,13 +21,15 @@ const GraficoMediosPago = () => {
       try {
         const resultado = await obtenerPorcentajeMediosPagoServicio();
 
+        if (resultado.length > 0) onAnioCargado?.(resultado[0].anio);
+
         const datosFormateados = resultado.map(item => ({
-          name: item.nombreMedioPago,
+          name: item.nombre_medio_pago,
           value: parseFloat(item.porcentaje)
         }));
         setData(datosFormateados);
       } catch (error) {
-        
+
       } finally {
         setCargando(false);
       }
@@ -46,15 +47,15 @@ const GraficoMediosPago = () => {
   }
 
   return (
-    <div className="w-full h-64">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full">
+      <ResponsiveContainer width="100%" height={256}>
         <PieChart>
           <Pie
             data={data}
             cx="50%"
-            cy="50%"
+            cy="45%"
             labelLine={false}
-            label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+            label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"
@@ -73,7 +74,7 @@ const GraficoMediosPago = () => {
             }}
             formatter={(value, name) => [`${value.toFixed(2)}%`, name]}
           />
-          <Legend 
+          <Legend
             iconSize={8}
             wrapperStyle={{
               fontSize: '12px',

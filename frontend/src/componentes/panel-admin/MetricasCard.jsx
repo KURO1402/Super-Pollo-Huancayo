@@ -1,6 +1,6 @@
 import { FiTrendingUp, FiTrendingDown } from "react-icons/fi";
 
-export const MetricasCard = ({ titulo, valor, cambio, icono: Icono }) => {
+export const MetricasCard = ({ titulo, valor, cambio, icono: Icono, comparacion = "vs.ayer" }) => {
   const esPositivo = cambio >= 0;
 
   return (
@@ -31,7 +31,7 @@ export const MetricasCard = ({ titulo, valor, cambio, icono: Icono }) => {
           <span>{esPositivo ? `+${cambio}%` : `${cambio}%`}</span>
         </div>
         <span className="text-slate-500 dark:text-slate-400 text-xs">
-          vs. ayer
+          {comparacion}
         </span>
       </div>
     </div>

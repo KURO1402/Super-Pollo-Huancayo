@@ -31,6 +31,12 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     validarDatosReservacion(datos);
 
     const { fecha, hora, cantidadPersonas, mesas } = datos;
+    const [horas, minutos] = hora.split(':').map(Number);
+    const totalMinutos = horas * 60 + minutos;
+    if (totalMinutos < 12 * 60 || totalMinutos > 20 * 60) {
+        throw crearError('El horario de reservas es de 12:00 PM a 08:00 PM.', 400);
+    }
+
     const fechaHoraReserva = `${fecha} ${hora}`;
 
     const maxMesasPermitidas = Math.ceil(cantidadPersonas / 2);
@@ -284,6 +290,15 @@ const listarMesasDisponibilidadService = async (fecha, hora) => {
     const formatoHora = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!hora || !formatoHora.test(hora)) {
         throw crearError('La hora es obligatoria y debe tener formato válido (HH:MM)', 400);
+    }
+
+    const [horas, minutos] = hora.split(':').map(Number);
+    const totalMinutos = horas * 60 + minutos;
+    const aperturaMinutos = 12 * 60;      // 12:00 = 720
+    const cierreMinutos = 20 * 60;        // 20:00 = 1200
+
+    if (totalMinutos < aperturaMinutos || totalMinutos > cierreMinutos) {
+        throw crearError('El horario de reservas es de 12:00 a 20:00.', 400);
     }
 
     const fechaHora = `${fecha} ${hora}`;

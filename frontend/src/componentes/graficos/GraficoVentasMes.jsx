@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useTemaParaGraficos } from "../../hooks/useTemaParaGraficos";
-import { obtenerVentasPorMesServicio } from "../../servicios//graficosServicio";
+import { obtenerVentasPorMesServicio } from "../../servicios/graficosServicio";
 
 const GraficoVentasMes = ({ cantidadMeses }) => {
   const { themeColors } = useTemaParaGraficos();
@@ -14,11 +14,11 @@ const GraficoVentasMes = ({ cantidadMeses }) => {
         const resultado = await obtenerVentasPorMesServicio(cantidadMeses);
         const datosFormateados = resultado.map(item => ({
           mes: item.mes,
-          totalVentas: parseFloat(item.totalVentas)
+          totalVentas: parseFloat(item.total_ventas)
         }));
         setData(datosFormateados);
       } catch (error) {
-        
+
       } finally {
         setCargando(false);
       }
@@ -36,31 +36,48 @@ const GraficoVentasMes = ({ cantidadMeses }) => {
   }
 
   return (
-    <div className="w-full h-80 p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Ventas por Mes
-      </h3>
-      <ResponsiveContainer width="100%" height="90%">
-        <LineChart data={data}>
-          <CartesianGrid stroke={themeColors.grid} strokeDasharray="3 3" />
-          <XAxis dataKey="mes" stroke={themeColors.text} />
-          <YAxis stroke={themeColors.text} />
+    <div className="w-full pt-15">
+      <ResponsiveContainer width="100%" height={280}>
+        <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={themeColors.primary} stopOpacity={0.1} />
+              <stop offset="95%" stopColor={themeColors.primary} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke={themeColors.grid} strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="mes"
+            stroke={themeColors.textSecondary}
+            tick={{ fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            stroke={themeColors.textSecondary}
+            tick={{ fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            allowDecimals={false}
+          />
           <Tooltip
             contentStyle={{
               backgroundColor: themeColors.background,
-              border: `1px solid ${themeColors.grid}`,
+              border: `1px solid ${themeColors.border}`,
               color: themeColors.text,
-              borderRadius: '8px'
+              borderRadius: '10px',
+              fontSize: '13px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}
-            formatter={(value) => [`S/ ${value.toFixed(2)}`, "Ventas"]}
+            formatter={(value) => [`${value} ventas`, "Cantidad"]}
           />
           <Line
             type="monotone"
             dataKey="totalVentas"
             stroke={themeColors.primary}
-            strokeWidth={3}
-            dot={{ r: 5, fill: themeColors.primary }}
-            activeDot={{ r: 8, fill: themeColors.accent }}
+            strokeWidth={4}
+            dot={{ r: 4, fill: themeColors.primary, strokeWidth: 2, stroke: themeColors.background }}
+            activeDot={{ r: 7, fill: themeColors.primary, stroke: themeColors.background, strokeWidth: 2 }}
           />
         </LineChart>
       </ResponsiveContainer>

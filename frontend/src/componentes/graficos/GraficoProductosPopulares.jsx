@@ -28,8 +28,8 @@ const GraficoProductosPopulares = () => {
     try {
       const respuesta = await obtenerTopProductosMasVendidosServicio(fechaInicio, fechaFin);
       const formateo = respuesta.map(item => ({
-        producto: item.nombreProducto,
-        ventas: Number(item.totalVendido)
+        producto: item.nombre_producto,
+        ventas: Number(item.total_vendido)
       }));
       setData(formateo);
     } catch (error) {
@@ -164,7 +164,7 @@ const GraficoProductosPopulares = () => {
                   borderRadius: '8px',
                   fontSize: '11px'
                 }}
-                formatter={(value) => [`${value} Ingresos`, '']}
+                formatter={(value) => [`${value} salidas`, '']}
               />
               <Bar
                 dataKey="ventas"
