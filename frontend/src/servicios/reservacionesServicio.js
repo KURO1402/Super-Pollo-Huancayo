@@ -59,24 +59,57 @@ export const obtenerReservacionesPorUsuario = async () => {
   }
 }
 
-// reservaciones para el panel del administrador
-
-export const listarReservacionesServicio = async () => {
+export const listarReservacionesPorRangoServicio = async (fechaInicio, fechaFin) => {
   try {
-    const respuesta = await API.get('/reservaciones');
-    
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data.reservaciones || [];
-    } 
-    else if (respuesta.data && Array.isArray(respuesta.data.reservaciones)) {
-      return respuesta.data.reservaciones;
-    }
-    else if (Array.isArray(respuesta.data)) {
+    const respuesta = await API.get('/reservaciones/calendario', {
+      params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin }
+    });
+
+    if (respuesta.data?.ok) return respuesta.data.reservaciones || [];
+    if (Array.isArray(respuesta.data?.reservaciones)) return respuesta.data.reservaciones;
+    if (Array.isArray(respuesta.data)) return respuesta.data;
+
+    return [];
+  } catch (error) {
+    if (error.response?.status === 404) return [];
+    throw error;
+  }
+};
+
+export const obtenerReservacionPorIdServicio = async (idReservacion) => {
+  try {
+    const respuesta = await API.get(`/reservaciones/${idReservacion}`);
+
+    if (respuesta.data?.ok) {
       return respuesta.data;
     }
-    else {
-      throw new Error(respuesta.data?.mensaje || "Estructura de respuesta inesperada");
+    throw new Error(respuesta.data?.mensaje || "Error al obtener la reservación");
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const crearReservacionManualServicio = async (datos) => {
+  try {
+    const respuesta = await API.post('/reservaciones/reserva-manual', datos);
+
+    if (respuesta.data?.ok) {
+      return respuesta.data;
     }
+    throw new Error(respuesta.data?.mensaje || "Error al crear la reservación manual");
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const cancelarReservacionServicio = async (idReservacion) => {
+  try {
+    const respuesta = await API.patch(`/reservaciones/cancelar-reservacion/${idReservacion}`);
+
+    if (respuesta.data?.ok) {
+      return respuesta.data;
+    }
+    throw new Error(respuesta.data?.mensaje || "Error al cancelar la reservación");
   } catch (error) {
     throw error;
   }
@@ -93,20 +126,6 @@ export const crearReservacionServicio = async (datosReservacion) => {
     }
   } catch (error) {
 
-    throw error;
-  }
-};
-
-export const obtenerReservacionPorIdServicio = async (idReservacion) => {
-  try {
-    const respuesta = await API.get(`/reservaciones/${idReservacion}`);
-    
-    if (respuesta.data && respuesta.data.ok) {
-      return respuesta.data;
-    } else {
-      throw new Error(respuesta.data?.mensaje || "Error al obtener reservación");
-    }
-  } catch (error) {
     throw error;
   }
 };

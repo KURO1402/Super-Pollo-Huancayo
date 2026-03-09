@@ -62,6 +62,10 @@ API.interceptors.response.use(
       }
     }
 
+    if (status === 404) {
+      return Promise.reject(error);
+    }
+
     const mensaje = error.response?.data?.mensaje || "Error interno del servidor";
     return Promise.reject(new Error(mensaje));
   }

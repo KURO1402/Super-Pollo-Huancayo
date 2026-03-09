@@ -13,7 +13,7 @@ import { ModalDetalleReserva } from "../../componentes/panel-admin/reserva-panel
 import { ModalEditarReserva } from "../../componentes/panel-admin/reserva-panel/ModalEditarReserva";
 import { FilaReserva } from "../../componentes/panel-admin/reserva-panel/FilaReserva";
 import { 
-  listarReservacionesServicio,
+  listarReservacionesPorRangoServicio,
   obtenerDetalleReservacionServicio,
   actualizarReservacionServicio
 } from "../../servicios/reservacionesServicio";
@@ -44,7 +44,7 @@ const HistorialReservasPagina = () => {
   const cargarReservaciones = async () => {
     try {
       setCargando(true);
-      const reservaciones = await listarReservacionesServicio();
+      const reservaciones = await listarReservacionesPorRangoServicio();
       setReservas(reservaciones);
     } catch (error) {
 
