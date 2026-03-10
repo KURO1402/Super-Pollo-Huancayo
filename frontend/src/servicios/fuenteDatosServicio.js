@@ -27,3 +27,5 @@ export const obtenerCategoriasServicio = async () => {
     throw error;
   }
 };
+
+//eliminar este archivo

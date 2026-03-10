@@ -21,7 +21,6 @@ export const obtenerMetodosPagoServicio = async () => {
     }
 }
 
-
 export const obtenerVentasServicio = async ({ limit, offset } = {}) => {
     try {
         const params = new URLSearchParams();

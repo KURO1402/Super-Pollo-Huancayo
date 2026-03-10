@@ -4,13 +4,13 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from '@fullcalendar/core/locales/es';
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { FiClock, FiLoader, FiCalendar } from "react-icons/fi";
+import { useState, useRef, useCallback } from "react";
+import { FiClock, FiCalendar } from "react-icons/fi";
 
 import Modal from "../../componentes/ui/modal/Modal";
 import { useModal } from "../../hooks/useModal";
 import FormularioReservaManual from "../../componentes/panel-admin/reserva-panel/FormularioReservaManual";
-import ModalCancelarReserva from "../../componentes/panel-admin/reserva-panel/ModalCancelarReserva";
+import ModalDetalleReserva from "../../componentes/panel-admin/reserva-panel/ModalDetalleReserva";
 import { useReservacionAdminStore } from "../../store/useReservacionAdminStore";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
@@ -28,7 +28,7 @@ const CalendarioReservasPagina = () => {
 
   const calendarioRef = useRef(null);
   const modalNuevaReserva = useModal();
-  const modalCancelarReserva = useModal();
+  const modalDetalleReserva = useModal();
 
   const cargandoRef = useRef(false);
   const rangoActualRef = useRef(null);
@@ -113,7 +113,7 @@ const CalendarioReservasPagina = () => {
     );
     if (reserva) {
       setReservaSeleccionada(reserva);
-      modalCancelarReserva.abrir();
+      modalDetalleReserva.abrir();
     }
   };
 
@@ -135,17 +135,6 @@ const CalendarioReservasPagina = () => {
       }
     } catch (error) {
       mostrarAlerta.error(error.response?.data?.mensaje || "Error al guardar la reserva");
-    }
-  };
-
-  const manejarReservaCancelada = async (idReservacion) => {
-    try {
-      await cancelarReservacion(idReservacion);
-      mostrarAlerta.exito("Reserva cancelada exitosamente");
-      modalCancelarReserva.cerrar();
-      setReservaSeleccionada(null);
-    } catch (error) {
-      mostrarAlerta.error(error.response?.data?.mensaje || "Error al cancelar la reserva");
     }
   };
 
@@ -252,18 +241,17 @@ const CalendarioReservasPagina = () => {
       </Modal>
 
       <Modal
-        estaAbierto={modalCancelarReserva.estaAbierto}
-        onCerrar={modalCancelarReserva.cerrar}
-        titulo={`Reserva #${reservaSeleccionada?.id_reservacion || ''}`}
+        estaAbierto={modalDetalleReserva.estaAbierto}
+        onCerrar={modalDetalleReserva.cerrar}
+        titulo={`Detalle de la reservación`}
         tamaño="md"
         mostrarHeader={true}
         mostrarFooter={false}
       >
         {reservaSeleccionada && (
-          <ModalCancelarReserva
+          <ModalDetalleReserva
             reserva={reservaSeleccionada}
-            onClose={modalCancelarReserva.cerrar}
-            onCancelada={manejarReservaCancelada}
+            onClose={modalDetalleReserva.cerrar}
           />
         )}
       </Modal>

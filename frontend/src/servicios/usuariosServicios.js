@@ -64,7 +64,7 @@ export const eliminarUsuarioServicio = async (id_usuario) => {
   } catch (error) {
     throw error;
   }
-}; //
+};
 
 export const obtenerUsuarioPorIdServicio = async () => {
   try {

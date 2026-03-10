@@ -9,7 +9,7 @@ import { useBusqueda } from "../../hooks/useBusqueda";
 import { useFiltro } from "../../hooks/useFiltro";
 import { usePaginacion } from "../../hooks/usePaginacion";
 import { useModal } from "../../hooks/useModal";
-import { ModalDetalleReserva } from "../../componentes/panel-admin/reserva-panel/ModalDetalleReserva";
+import ModalDetalleReserva from "../../componentes/panel-admin/reserva-panel/ModalDetalleReserva";
 import { ModalEditarReserva } from "../../componentes/panel-admin/reserva-panel/ModalEditarReserva";
 import { FilaReserva } from "../../componentes/panel-admin/reserva-panel/FilaReserva";
 import { 
