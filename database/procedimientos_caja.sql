@@ -136,7 +136,8 @@ END //
 CREATE PROCEDURE sp_registrar_ingreso_caja(
     IN p_monto DECIMAL(10,2),
     IN p_descripcion TEXT,
-    IN p_id_usuario INT
+    IN p_id_usuario INT,
+    IN p_id_venta INT
 )
 BEGIN
     DECLARE v_id_caja INT;
@@ -173,7 +174,8 @@ BEGIN
         monto_movimiento,
         descripcion_mov_caja,
         id_caja,
-        id_usuario
+        id_usuario,
+        id_venta
     )
     VALUES (
         'ingreso',
@@ -181,7 +183,8 @@ BEGIN
         p_monto,
         p_descripcion,
         v_id_caja,
-        p_id_usuario
+        p_id_usuario,
+        p_id_venta
     );
 
     SET v_id_movimiento = LAST_INSERT_ID();

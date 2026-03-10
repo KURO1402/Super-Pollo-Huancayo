@@ -41,11 +41,11 @@ const consultarCajaAbiertaModel = async () => {
     }
 }
 
-const registrarIngresoCajaModel = async (monto, descripcion, usuarioId) => {
+const registrarIngresoCajaModel = async (monto, descripcion, usuarioId, ventaId=null) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.execute('CALL sp_registrar_ingreso_caja(?, ?, ?)', [monto, descripcion, usuarioId]);
+        const [rows] = await conexion.execute('CALL sp_registrar_ingreso_caja(?, ?, ?, ?)', [monto, descripcion, usuarioId, ventaId]);
         return rows[0][0];
     } catch (err) {
         console.log(err.message)

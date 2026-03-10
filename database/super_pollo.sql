@@ -101,18 +101,7 @@ CREATE TABLE eventos_caja (
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- Registra los ingresos y egresos realizados durante una sesión de caja
-CREATE TABLE movimientos_caja (
-    id_movimiento_caja INT AUTO_INCREMENT PRIMARY KEY,
-    tipo_movimiento ENUM('ingreso', 'egreso') NOT NULL,
-    fecha_movimiento DATETIME NOT NULL,
-    monto_movimiento DECIMAL(6,2) NOT NULL,
-    descripcion_mov_caja TEXT NOT NULL,
-    id_caja INT NOT NULL,
-    id_usuario INT NOT NULL,
-    FOREIGN KEY (id_caja) REFERENCES caja(id_caja) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE RESTRICT ON UPDATE CASCADE
-);
+
 
 -- Registra los arqueos de caja realizados para verificar el saldo físico vs el esperado
 CREATE TABLE arqueos_caja (
@@ -283,6 +272,21 @@ CREATE TABLE ventas (
     FOREIGN KEY (id_medio_pago) REFERENCES medio_pago(id_medio_pago) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+-- Registra los ingresos y egresos realizados durante una sesión de caja
+CREATE TABLE movimientos_caja (
+    id_movimiento_caja INT AUTO_INCREMENT PRIMARY KEY,
+    tipo_movimiento ENUM('ingreso', 'egreso') NOT NULL,
+    fecha_movimiento DATETIME NOT NULL,
+    monto_movimiento DECIMAL(6,2) NOT NULL,
+    descripcion_mov_caja TEXT NOT NULL,
+    id_caja INT NOT NULL,
+    id_usuario INT NOT NULL,
+    id_venta INT DEFAULT NULL,
+    FOREIGN KEY (id_caja) REFERENCES caja(id_caja) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
 -- Almacena los comprobantes electrónicos emitidos por cada venta (boleta/factura SUNAT)
 CREATE TABLE comprobantes (
     id_comprobante INT AUTO_INCREMENT PRIMARY KEY,
@@ -293,10 +297,13 @@ CREATE TABLE comprobantes (
     fecha_emision DATE,
     fecha_vencimiento DATE,
     sunat_transaccion TINYINT(4) NOT NULL,
-    aceptado_por_sunat TINYINT(1),
+    estado_sunat ENUM('pendiente', 'enviado', 'rechazado') NOT NULL DEFAULT 'pendiente',
     url_comprobante_pdf VARCHAR(150),
+    public_id_pdf VARCHAR(150) NULL,
     url_comprobante_xml VARCHAR(150),
-    fecha_envio DATETIME,
+    public_id_xml VARCHAR(150) NULL,
+    fecha_envio DATETIME NULL,
+    fecha_limite_correccion DATETIME NULL,
     FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
     FOREIGN KEY (id_tipo_comprobante) REFERENCES tipo_comprobante(id_tipo_comprobante) ON DELETE CASCADE
 );

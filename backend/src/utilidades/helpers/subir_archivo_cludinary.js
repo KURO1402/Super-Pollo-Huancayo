@@ -11,7 +11,7 @@ const subirArchivoCloudinary = (buffer, nombreArchivo, formato) => {
             },
             (error, result) => {
                 if (error) reject(error);
-                else resolve(result.secure_url);
+                else resolve({ url: result.secure_url, publicId: result.public_id });
             }
         );
         stream.end(buffer);
