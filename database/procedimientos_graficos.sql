@@ -14,14 +14,12 @@ CREATE PROCEDURE sp_resumen_ventas_egresos_mensual(
     IN p_cantidad_meses INT
 )
 BEGIN
-    DECLARE v_fecha_inicio DATE;
-    SET v_fecha_inicio = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL (p_cantidad_meses - 1) MONTH), '%Y-%m-01');
     SET lc_time_names = 'es_PE';
 
     SELECT 
         DATE_FORMAT(cal.periodo, '%b %Y') AS mes,
-        COALESCE(SUM(v.total_venta), 0) + COALESCE(SUM(CASE WHEN mc.tipo_movimiento = 'ingreso' THEN mc.monto_movimiento ELSE 0 END), 0) AS ingresos,
-        COALESCE(SUM(CASE WHEN mc.tipo_movimiento = 'egreso' THEN mc.monto_movimiento ELSE 0 END), 0) AS egresos
+        COALESCE(mc.total_ingresos_caja, 0) + COALESCE(pr.total_reservaciones, 0) AS ingresos,
+        COALESCE(mc.total_egresos_caja, 0) AS egresos
     FROM (
         SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL seq MONTH), '%Y-%m-01') AS periodo
         FROM (
@@ -34,11 +32,27 @@ BEGIN
         ) AS nums
         WHERE seq < p_cantidad_meses
     ) AS cal
-    LEFT JOIN ventas v 
-        ON DATE_FORMAT(v.fecha_registro, '%Y-%m-01') = cal.periodo
-    LEFT JOIN movimientos_caja mc 
-        ON DATE_FORMAT(mc.fecha_movimiento, '%Y-%m-01') = cal.periodo
-    GROUP BY cal.periodo
+
+    -- Solo movimientos de caja (sin ventas)
+    LEFT JOIN (
+        SELECT 
+            DATE_FORMAT(fecha_movimiento, '%Y-%m-01') AS periodo,
+            SUM(CASE WHEN tipo_movimiento = 'ingreso' THEN monto_movimiento ELSE 0 END) AS total_ingresos_caja,
+            SUM(CASE WHEN tipo_movimiento = 'egreso'  THEN monto_movimiento ELSE 0 END) AS total_egresos_caja
+        FROM movimientos_caja
+        GROUP BY DATE_FORMAT(fecha_movimiento, '%Y-%m-01')
+    ) AS mc ON mc.periodo = cal.periodo
+
+    -- Pagos de reservación solo confirmados
+    LEFT JOIN (
+        SELECT 
+            DATE_FORMAT(fecha_pago, '%Y-%m-01') AS periodo,
+            SUM(monto_pagado) AS total_reservaciones
+        FROM pago_reservacion
+        WHERE estado_pago = 'confirmado'
+        GROUP BY DATE_FORMAT(fecha_pago, '%Y-%m-01')
+    ) AS pr ON pr.periodo = cal.periodo
+
     ORDER BY cal.periodo ASC;
 END //
 

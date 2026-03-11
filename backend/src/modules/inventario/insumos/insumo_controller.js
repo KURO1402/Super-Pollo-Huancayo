@@ -84,6 +84,7 @@ const obtenerInsumosController = async (req, res) => {
 
 const obtenerInsumoIDController = async (req, res) => {
     try {
+        console.log(req.params);
         const { idInsumo } = req.params;
         const resultado = await obtenerInsumoIDService(idInsumo);
 

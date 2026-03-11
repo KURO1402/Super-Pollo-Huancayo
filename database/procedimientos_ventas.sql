@@ -160,8 +160,8 @@ SELECT
 
     c.serie,
     c.numero_correlativo,
-    DATE_FORMAT (c.fecha_emision, '%d-%m-%Y') AS fecha_emision,
-    DATE_FORMAT (c.fecha_vencimiento, '%d-%m-%Y') AS fecha_vencimiento,
+    DATE_FORMAT(c.fecha_emision, '%d-%m-%Y') AS fecha_emision,
+    DATE_FORMAT(c.fecha_vencimiento, '%d-%m-%Y') AS fecha_vencimiento,
     c.sunat_transaccion,
     c.estado_sunat,
     c.url_comprobante_pdf,
@@ -202,36 +202,29 @@ CREATE PROCEDURE sp_obtener_ventas (
 ) BEGIN
 SELECT
     v.id_venta,
-    v.porcentaje_igv,
     v.total_gravada,
     v.total_igv,
     v.total_venta,
     mp.nombre_medio_pago,
-    DATE_FORMAT (v.fecha_registro, '%d-%m-%Y') AS fecha,
-    DATE_FORMAT (v.fecha_registro, '%H:%i:%s') AS hora,
+    DATE_FORMAT(v.fecha_registro, '%d-%m-%Y') AS fecha,
+    DATE_FORMAT(v.fecha_registro, '%H:%i:%s') AS hora,
     c.estado_sunat,
-    c.fecha_limite_correccion
+    c.fecha_limite_correccion,
+    c.serie,
+    c.numero_correlativo
 FROM
     ventas v
     LEFT JOIN medio_pago mp ON v.id_medio_pago = mp.id_medio_pago
     LEFT JOIN comprobantes c ON c.id_venta = v.id_venta
 WHERE
-    (
-        p_fecha_inicio IS NULL
-        OR DATE (v.fecha_registro) >= p_fecha_inicio
-    )
-    AND (
-        p_fecha_fin IS NULL
-        OR DATE (v.fecha_registro) <= p_fecha_fin
-    )
+    (p_fecha_inicio IS NULL OR DATE(v.fecha_registro) >= p_fecha_inicio)
+    AND (p_fecha_fin IS NULL OR DATE(v.fecha_registro) <= p_fecha_fin)
 ORDER BY
     v.fecha_registro DESC
-LIMIT
-    p_limit
-OFFSET
-    p_offset;
-
+LIMIT p_limit
+OFFSET p_offset;
 END //
+
 -- ─── SP: Contar Ventas ────────────────────────────────────────────────────────
 CREATE PROCEDURE sp_contar_ventas (IN p_fecha_inicio DATE, IN p_fecha_fin DATE) BEGIN
 SELECT

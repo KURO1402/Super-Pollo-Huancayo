@@ -159,12 +159,12 @@ const anularVentaService = async (idVenta, idUsuario) => {
 // ─── Obtener ventas ───────────────────────────────────────────────────────────
 const obtenerVentasService = async (querys) => {
     const allowedQuerys = ['limit', 'offset', 'fechaInicio', 'fechaFin'];
-    const keysInvalidas = Object.keys(querys).filter(key => !allowedQuerys.includes(key));
+    const keysInvalidas = Object.keys({ ...querys }).filter(key => !allowedQuerys.includes(key));
     if (keysInvalidas.length > 0) throw crearError('Filtro no valido', 400);
-
     const { fechaInicio, fechaFin, limit, offset } = querys;
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
+
 
     const cacheKey = `ventas:count:${fechaInicio || 'null'}:${fechaFin || 'null'}`;
     const cachedTotal = cache.get(cacheKey);
@@ -174,14 +174,21 @@ const obtenerVentasService = async (querys) => {
         if (!ventas || ventas.length === 0) throw crearError('No se encontraron ventas', 404);
         return { ok: true, cantidad_filas: cachedTotal, ventas };
     }
-
+    
     const totalVentas = await contarVentasModel(fechaInicio ?? null, fechaFin ?? null);
+    
     cache.set(cacheKey, totalVentas);
+    
 
     const ventas = await obtenerVentasModel(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
     if (!ventas || ventas.length === 0) throw crearError('No se encontraron ventas', 404);
+    
 
-    return { ok: true, cantidad_filas: totalVentas, ventas };
+    return { 
+        ok: true, 
+        cantidad_filas: totalVentas, 
+        ventas 
+    };
 };
 
 // ─── Obtener detalle de venta ─────────────────────────────────────────────────

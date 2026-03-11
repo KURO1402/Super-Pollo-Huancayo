@@ -1,276 +1,252 @@
 import { FiShoppingCart, FiUser, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa6";
 import { useState, useEffect } from "react";
-import { generarVentaServicio, obtenerMetodosPagoServicio } from '../../servicios/ventasServicio';
+import {
+  generarVentaServicio,
+  obtenerMetodosPagoServicio,
+  obtenerTiposComprobanteServicio,
+} from "../../servicios/ventasServicio";
 import { obtenerProductosServicio } from "../../servicios/productoServicios";
-import { useVentaStore } from '../../store/useVentaStore';
+import { useVentaStore } from "../../store/useVentaStore";
 import Modal from "../../componentes/ui/modal/Modal";
 import { ModalConfirmacion } from "../../componentes/ui/modal/ModalConfirmacion";
 import { BarraBusqueda } from "../../componentes/busqueda-filtros/BarraBusqueda";
 import { useModal } from "../../hooks/useModal";
 import { useConfirmacion } from "../../hooks/useConfirmacion";
 import { useBusqueda } from "../../hooks/useBusqueda";
-import {TarjetaProducto} from "../../componentes/panel-admin/ventas/TarjetaProducto";
+import { TarjetaProducto } from "../../componentes/panel-admin/ventas/TarjetaProducto";
 import { DetalleVenta } from "../../componentes/panel-admin/ventas/DetalleVenta";
 import { ResumenVenta } from "../../componentes/panel-admin/ventas/ResumenVenta";
 import { FormularioCliente } from "../../componentes/panel-admin/ventas/FormularioCliente";
 import { ModalComprobanteGenerado } from "../../componentes/panel-admin/ventas/ModalComprobanteGenerado";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
-const LIMITE_MONTO = 700; 
+// id_tipo_comprobante: 1=Boleta, 2=Factura, 3=Nota de Venta (según tu BD)
+// soloRuc y requiereCliente se derivan del id
+const esFactura = (id) => id === 2;
+const esNotaVenta = (id) => id === 3;
 
 const GenerarVentaPagina = () => {
-  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
+  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } =
+    useBusqueda();
   const { detalle, limpiarVenta } = useVentaStore();
   const { estaAbierto, abrir, cerrar } = useModal();
-  const { confirmacionVisible, mensajeConfirmacion, tituloConfirmacion, solicitarConfirmacion, ocultarConfirmacion, confirmarAccion} = useConfirmacion();
-  
-  const [tipoComprobante, setTipoComprobante] = useState(1);
-  const [cargandoMetodoPago, setCargandoMetodoPago] = useState(true);
+  const {
+    confirmacionVisible,
+    mensajeConfirmacion,
+    tituloConfirmacion,
+    solicitarConfirmacion,
+    ocultarConfirmacion,
+    confirmarAccion,
+  } = useConfirmacion();
+
+  const [tiposComprobante, setTiposComprobante] = useState([]);
+  const [cargandoTipos, setCargandoTipos] = useState(true);
+  const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
   const [metodosPago, setMetodosPago] = useState([]);
+  const [cargandoMetodoPago, setCargandoMetodoPago] = useState(true);
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState("");
-  const [observaciones, setObservaciones] = useState("");
   const [datosCliente, setDatosCliente] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [mostrarModalComprobante, setMostrarModalComprobante] = useState(false);
   const [datosComprobante, setDatosComprobante] = useState(null);
   const [productos, setProductos] = useState([]);
   const [cargandoProductos, setCargandoProductos] = useState(true);
-  const [mostrarAlertaLimite, setMostrarAlertaLimite] = useState(false);
 
+  // ── Cargar tipos de comprobante ───────────────────────────────────────────
   useEffect(() => {
-    const cargarProductos = async () => {
+    (async () => {
+      try {
+        setCargandoTipos(true);
+        const resp = await obtenerTiposComprobanteServicio();
+        setTiposComprobante(resp);
+        if (resp.length > 0) setTipoSeleccionado(resp[0]);
+      } catch {
+        mostrarAlerta.error("Error al cargar tipos de comprobante");
+      } finally {
+        setCargandoTipos(false);
+      }
+    })();
+  }, []);
+
+  // ── Cargar productos ──────────────────────────────────────────────────────
+  useEffect(() => {
+    (async () => {
       try {
         setCargandoProductos(true);
-        const respuesta = await obtenerProductosServicio();
-        const productosData = respuesta.productos || respuesta || [];
-        setProductos(productosData);
-      } catch (error) {
-        console.error('Error al cargar productos:', error);
+        const resp = await obtenerProductosServicio();
+        setProductos(resp.productos || resp || []);
+      } catch {
         setProductos([]);
       } finally {
         setCargandoProductos(false);
       }
-    };
-
-    cargarProductos();
+    })();
   }, []);
 
+  // ── Cargar métodos de pago ────────────────────────────────────────────────
   useEffect(() => {
-    const cargarMetodosPago = async () => {
+    (async () => {
       try {
         setCargandoMetodoPago(true);
-        const respuesta = await obtenerMetodosPagoServicio();
-        
-        if (respuesta && respuesta.length > 0) {
-          setMetodosPago(respuesta);
-          setMetodoPagoSeleccionado(respuesta[0].id_medio_pago.toString());
-        } else {
-          setMetodosPago([]);
-          setMetodoPagoSeleccionado("");
+        const resp = await obtenerMetodosPagoServicio();
+        if (resp?.length > 0) {
+          setMetodosPago(resp);
+          setMetodoPagoSeleccionado(resp[0].id_medio_pago.toString());
         }
-      } catch (error) {
-        console.error('Error al cargar métodos de pago:', error);
+      } catch {
         setMetodosPago([]);
-        setMetodoPagoSeleccionado("");
       } finally {
         setCargandoMetodoPago(false);
       }
-    };
-
-    cargarMetodosPago();
+    })();
   }, []);
 
+  // ── Cambio de tipo de comprobante ─────────────────────────────────────────
   const handleTipoComprobante = (tipo) => {
-    setTipoComprobante(tipo);
-    if (tipo === 2 && datosCliente && datosCliente.tipoDocumento !== "2") {
+    setTipoSeleccionado(tipo);
+    // Si cambia a factura y el cliente no tiene RUC, limpiarlo
+    if (
+      esFactura(tipo.id_tipo_comprobante) &&
+      datosCliente &&
+      datosCliente.tipoDocumento !== "2"
+    ) {
+      setDatosCliente(null);
+      mostrarAlerta.advertencia("Para factura se requiere cliente con RUC");
+    }
+    // Si cambia desde factura, limpiar cliente
+    if (!esFactura(tipo.id_tipo_comprobante) && datosCliente) {
       setDatosCliente(null);
     }
-    if (tipo === 1 && datosCliente && datosCliente.tipoDocumento !== "1") {
-      setDatosCliente(null);
-    }
   };
 
-  const handleAbrirModalCliente = () => {
-    abrir();
-  };
-
-  const handleCerrarModalCliente = () => {
-    cerrar();
-  };
-
+  // ── Guardar cliente desde modal ───────────────────────────────────────────
   const handleClienteGuardado = (cliente) => {
-    if (tipoComprobante === 2) {
+    const idTipo = tipoSeleccionado?.id_tipo_comprobante;
+    if (esFactura(idTipo)) {
       if (cliente.tipoDocumento !== "2") {
-        mostrarAlerta.error("Para factura se requiere RUC");
+        mostrarAlerta.error("Para factura solo se acepta RUC");
         return;
       }
-      if (cliente.numeroDocumento.length !== 11) {
+      if (cliente.numeroDocumento?.length !== 11) {
         mostrarAlerta.error("El RUC debe tener 11 dígitos");
         return;
       }
-      if (!cliente.direccion || cliente.direccion.trim() === "") {
+      if (!cliente.direccion?.trim()) {
         mostrarAlerta.error("La dirección es obligatoria para factura");
         return;
       }
-    } else { 
-      if (cliente.tipoDocumento !== "1") {
-        mostrarAlerta.error("Para boleta se requiere DNI");
+    } else {
+      if (cliente.tipoDocumento === "2") {
+        mostrarAlerta.error("Para boleta o nota de venta use DNI");
         return;
       }
-      if (cliente.numeroDocumento.length !== 8) {
+      if (cliente.numeroDocumento?.length !== 8) {
         mostrarAlerta.error("El DNI debe tener 8 dígitos");
         return;
       }
     }
-    
-    mostrarAlerta.exito("Cliente agregado a la venta");
     setDatosCliente(cliente);
     cerrar();
+    mostrarAlerta.exito("Cliente agregado");
   };
 
+  // ── Quitar cliente ────────────────────────────────────────────────────────
   const handleEliminarCliente = () => {
     solicitarConfirmacion(
       "¿Desea quitar el cliente de esta venta?",
       () => {
         setDatosCliente(null);
-        mostrarAlerta.exito("Cliente quitado de la venta");
+        mostrarAlerta.exito("Cliente quitado");
       },
-      "Quitar cliente"
+      { titulo: "Quitar cliente" },
     );
   };
 
-  const calcularTotales = () => {
-    const subtotal = detalle.reduce((acc, item) => {
-      const precio = item.precio_unitario || item.precioProducto || item.precio || 0;
-      return acc + (precio * item.cantidad);
-    }, 0);
-    
-    const impuesto = subtotal * 0.18;
-    const total = subtotal + impuesto;
-    
-    return { subtotal, impuesto, total };
-  };
-
-  const { subtotal, impuesto, total } = calcularTotales();
-  
-  const excedeLimite = total >= LIMITE_MONTO;
-
-  useEffect(() => {
-    if (excedeLimite && !mostrarAlertaLimite) {
-      mostrarAlerta.advertencia(`El monto total de S/ ${total.toFixed(2)} supera o iguala el límite de S/ ${LIMITE_MONTO}. No se pueden generar comprobantes por montos mayores o iguales a S/ ${LIMITE_MONTO}.`);
-      setMostrarAlertaLimite(true);
-    } else if (!excedeLimite && mostrarAlertaLimite) {
-      setMostrarAlertaLimite(false);
-    }
-  }, [excedeLimite, total, mostrarAlertaLimite]);
-
-  const handleGenerarComprobante = async () => {
-    
-    if (detalle.length === 0) {
-      mostrarAlerta.advertencia("Debe agregar al menos un producto");
-      return;
-    }
-
-    if (excedeLimite) {
-      mostrarAlerta.error(`No se puede generar el comprobante. El monto total de S/ ${total.toFixed(2)} supera el límite permitido de S/ ${LIMITE_MONTO}.`);
-      return;
-    }
-
-    if (tipoComprobante === 2 && !datosCliente) {
-      mostrarAlerta.advertencia("Para factura debe seleccionar un cliente con RUC");
-      return;
-    }
-
-    if (!metodoPagoSeleccionado) {
-      mostrarAlerta.advertencia("Debe seleccionar un método de pago");
-      return;
-    }
-
-    setCargando(true);
-
-    try {
-      const ventaData = {
-        tipoComprobante: Number(tipoComprobante),
-        medioPago: Number(metodoPagoSeleccionado),
-        cliente: {}
-      };
-
-      if (tipoComprobante === 2) {
-        if (datosCliente) {
-          ventaData.cliente = {
-            idTipoDoc: 2,
-            numDoc: Number(datosCliente.numeroDocumento),
-            denominacionCliente: datosCliente.nombre,
-            direccionCliente: datosCliente.direccion || "",
-            email: datosCliente.email || ""
-          };
-        }
-      } else {
-        if (datosCliente) {
-          ventaData.cliente = {
-            idTipoDoc: 1,
-            numDoc: Number(datosCliente.numeroDocumento),
-            denominacionCliente: datosCliente.nombre,
-            email: datosCliente.email || ""
-          };
-        } else {
-          ventaData.cliente = {
-            idTipoDoc: 1,
-            numDoc: 10000000,
-            denominacionCliente: "Clientes Varios",
-            email: ""
-          };
-        }
-      }
-
-      ventaData.productos = detalle.map((item) => ({
-        idProducto: item.id_producto || item.idProducto || item.id,
-        cantidad: item.cantidad
-      }));
-
-      if (observaciones.trim() !== "") {
-        ventaData.observaciones = observaciones;
-      }
-
-      console.log("Enviando venta:", ventaData);
-
-      const respuesta = await generarVentaServicio(ventaData);
-      
-      if (respuesta && respuesta.ok) {
-        setDatosComprobante({
-          ...respuesta,
-          tipoComprobante,
-          tipoComprobanteTexto: tipoComprobante === 2 ? 'Factura' : 'Boleta'
-        });
-        
-        setMostrarModalComprobante(true);
-        
-        limpiarVenta();
-        setObservaciones("");
-        setDatosCliente(null);
-        setMostrarAlertaLimite(false);
-      }
-    } catch (error) {
-      mostrarAlerta.error(error.message || "Error al generar el comprobante");
-    } finally {
-      setCargando(false);
-    }
-  };
-
+  // ── Limpiar venta ─────────────────────────────────────────────────────────
   const handleLimpiarVenta = () => {
     if (detalle.length > 0 || datosCliente) {
       solicitarConfirmacion(
         "¿Estás seguro de limpiar toda la venta?",
         () => {
           limpiarVenta();
-          setObservaciones("");
           setDatosCliente(null);
-          setMostrarAlertaLimite(false);
-          mostrarAlerta.exito("Venta limpiada correctamente");
+          mostrarAlerta.exito("Venta limpiada");
         },
-        "Limpiar venta"
+        { titulo: "Limpiar venta" },
       );
+    }
+  };
+
+  // ── Generar comprobante ───────────────────────────────────────────────────
+  const handleGenerarComprobante = async () => {
+    if (detalle.length === 0) {
+      mostrarAlerta.advertencia("Debe agregar al menos un producto");
+      return;
+    }
+    const idTipo = tipoSeleccionado?.id_tipo_comprobante;
+    if (esFactura(idTipo) && !datosCliente) {
+      mostrarAlerta.advertencia(
+        "Para factura debe seleccionar un cliente con RUC",
+      );
+      return;
+    }
+    if (!metodoPagoSeleccionado) {
+      mostrarAlerta.advertencia("Debe seleccionar un método de pago");
+      return;
+    }
+
+    setCargando(true);
+    try {
+      let clientePayload;
+      if (esFactura(idTipo) && datosCliente) {
+        clientePayload = {
+          idTipoDoc: 2,
+          numDoc: Number(datosCliente.numeroDocumento),
+          denominacionCliente: datosCliente.nombre,
+          direccionCliente: datosCliente.direccion?.trim() || "",
+        };
+      } else if (datosCliente) {
+        clientePayload = {
+          idTipoDoc: 1,
+          numDoc: Number(datosCliente.numeroDocumento),
+          denominacionCliente: datosCliente.nombre,
+        };
+      } else {
+        clientePayload = {
+          idTipoDoc: 1,
+          numDoc: 10000000,
+          denominacionCliente: "Clientes Varios",
+        };
+      }
+
+      const ventaData = {
+        tipoComprobante: Number(idTipo),
+        medioPago: Number(metodoPagoSeleccionado),
+        cliente: clientePayload,
+        productos: detalle.map((item) => ({
+          idProducto: item.id_producto || item.idProducto || item.id,
+          cantidad: item.cantidad,
+        })),
+      };
+
+      const respuesta = await generarVentaServicio(ventaData);
+
+      if (respuesta?.ok) {
+        setDatosComprobante({
+          ...respuesta,
+          tipoComprobante: idTipo,
+          tipoComprobanteTexto:
+            tipoSeleccionado?.nombre_tipo_comprobante || "Comprobante",
+        });
+        setMostrarModalComprobante(true);
+        limpiarVenta();
+        setDatosCliente(null);
+      }
+    } catch (error) {
+      mostrarAlerta.error(error.message || "Error al generar el comprobante");
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -280,241 +256,263 @@ const GenerarVentaPagina = () => {
   };
 
   const handleDescargarPDF = () => {
-    if (datosComprobante?.urlPdf) {
-      window.open(datosComprobante.urlPdf, '_blank');
-    }
+    if (datosComprobante?.urlPdf)
+      window.open(datosComprobante.urlPdf, "_blank");
   };
 
-  const handleDescargarXML = () => {
-    if (datosComprobante?.urlXml) {
-      window.open(datosComprobante.urlXml, '_blank');
-    }
-  };
-
-  const getTipoDocumentoTexto = (tipoDoc) => {
-    switch(tipoDoc) {
-      case "1": return "DNI";
-      case "2": return "RUC";
-      default: return "Documento";
-    }
-  };
-
-  let filtrados = filtrarPorBusqueda(productos, [
-    "nombre_producto", 
-    "descripcion_producto"
+  // ── Helpers UI ────────────────────────────────────────────────────────────
+  const idTipoActual = tipoSeleccionado?.id_tipo_comprobante;
+  const filtrados = filtrarPorBusqueda(productos, [
+    "nombre_producto",
+    "descripcion_producto",
   ]);
+  const labelCliente = esFactura(idTipoActual)
+    ? "Cliente (RUC requerido)"
+    : "Cliente (opcional)";
+  const placeholderCliente = esFactura(idTipoActual)
+    ? "Seleccione un cliente con RUC"
+    : "Clientes Varios";
 
   return (
     <div className="p-2">
-      <div className="mb-4 flex items-center space-x-2">
+      {/* Título */}
+      <div className="mb-4 flex items-center gap-2">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Punto de Venta
         </h1>
         <FiShoppingCart className="text-2xl text-blue-500" />
       </div>
 
-      {excedeLimite && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
-          <span className="font-bold">⚠️ Límite excedido:</span>
-          <span>El monto total de S/ {total.toFixed(2)} supera el límite permitido de S/ {LIMITE_MONTO}. No se pueden generar comprobantes.</span>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Panel izquierdo: productos */}
         <div className="lg:col-span-1">
           <div className="mb-3">
             <BarraBusqueda
               valor={terminoBusqueda}
               onChange={setTerminoBusqueda}
-              placeholder="Buscar por producto..."
+              placeholder="Buscar producto..."
             />
           </div>
-          
           {cargandoProductos ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">Cargando productos...</p>
-              </div>
+            <div className="flex flex-col items-center justify-center h-32 gap-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+              <p className="text-gray-500 text-sm">Cargando productos...</p>
             </div>
           ) : productos.length === 0 ? (
-            <div className="text-center py-8">
-              <FiShoppingCart className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-500 dark:text-gray-400">No hay productos disponibles</p>
+            <div className="text-center py-8 text-gray-500">
+              <FiShoppingCart className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No hay productos disponibles</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-2 max-h-[70vh] overflow-y-auto">
+            <div className="grid grid-cols-1 gap-2 max-h-[70vh] overflow-y-auto pr-1">
               {filtrados.map((producto) => (
-                <TarjetaProducto key={producto.id_producto} producto={producto} />
+                <TarjetaProducto
+                  key={producto.id_producto}
+                  producto={producto}
+                />
               ))}
             </div>
           )}
         </div>
 
-        <div className="col-span-3">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0 border-b border-gray-200 dark:border-gray-700 pb-4 lg:pb-0">
-            <div className="flex w-full lg:w-auto">
-              <button
-                className={`flex-1 lg:flex-none px-4 lg:px-8 py-3 font-medium cursor-pointer border-b-2 lg:border-b-3 transition-colors duration-200 text-sm lg:text-base ${
-                  tipoComprobante === 1
-                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                }`}
-                onClick={() => handleTipoComprobante(1)}
-              >
-                Boleta
-              </button>
-              <button
-                className={`flex-1 lg:flex-none px-4 lg:px-8 py-3 font-medium cursor-pointer border-b-2 lg:border-b-3 transition-colors duration-200 text-sm lg:text-base ${
-                  tipoComprobante === 2
-                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                }`}
-                onClick={() => handleTipoComprobante(2)}
-              >
-                Factura
-              </button>
+        {/* Panel derecho: formulario */}
+        <div className="col-span-3 space-y-4">
+          {/* Tabs tipo comprobante */}
+          {cargandoTipos ? (
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+                />
+              ))}
             </div>
-            <div className="w-full lg:w-auto lg:ml-auto">
+          ) : (
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-0">
+              <div className="flex">
+                {tiposComprobante.map((tipo) => (
+                  <button
+                    key={tipo.id_tipo_comprobante}
+                    onClick={() => handleTipoComprobante(tipo)}
+                    className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${
+                      tipoSeleccionado?.id_tipo_comprobante ===
+                      tipo.id_tipo_comprobante
+                        ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                        : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400"
+                    }`}
+                  >
+                    {tipo.nombre_tipo_comprobante.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+              {/* Serie solo lectura */}
               <input
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm w-full lg:w-48 xl:w-56 cursor-default"
-                value={tipoComprobante === 1 ? "B001" : "F001"}
                 readOnly
+                value={tipoSeleccionado?.serie || ""}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm w-28 cursor-default"
               />
             </div>
-          </div>
-          
-          <div className="py-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Cliente 
-              {tipoComprobante === 2 && <span className="text-red-500"> *</span>} 
-              {tipoComprobante === 1 && <span className="text-gray-500 text-xs ml-1">(Opcional)</span>}
-            </label>
+          )}
 
+          {/* Nota Factura */}
+          {esFactura(idTipoActual) && (
+            <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-sm text-amber-800 dark:text-amber-300">
+              <span className="shrink-0 mt-0.5">⚠️</span>
+              <span>
+                La factura requiere un cliente con{" "}
+                <strong>RUC de 11 dígitos</strong> y dirección fiscal.
+              </span>
+            </div>
+          )}
+
+          {/* Nota Nota de Venta */}
+          {esNotaVenta(idTipoActual) && (
+            <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg text-sm text-blue-800 dark:text-blue-300">
+              <span className="shrink-0 mt-0.5">ℹ️</span>
+              <span>
+                La nota de venta <strong>no se envía a SUNAT</strong> y no es
+                válida para crédito fiscal.
+              </span>
+            </div>
+          )}
+
+          {/* Cliente */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {labelCliente}
+              {esFactura(idTipoActual) && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
+            </label>
             {datosCliente ? (
               <div className="flex items-center gap-2 p-3 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20">
-                <FiCheck className="text-green-600 dark:text-green-400 shrink-0" size={20} />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <FiCheck
+                  className="text-green-600 dark:text-green-400 shrink-0"
+                  size={18}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {datosCliente.nombre}
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {getTipoDocumentoTexto(datosCliente.tipoDocumento)}: {datosCliente.numeroDocumento}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {datosCliente.tipoDocumento === "2" ? "RUC" : "DNI"}:{" "}
+                    {datosCliente.numeroDocumento}
                     {datosCliente.direccion && ` • ${datosCliente.direccion}`}
                   </p>
                 </div>
                 <button
-                  onClick={handleAbrirModalCliente}
-                  className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors"
+                  onClick={abrir}
+                  className="p-1.5 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors"
                   title="Editar cliente"
                 >
-                  <FiEdit2 size={18} />
+                  <FiEdit2 size={16} />
                 </button>
                 <button
                   onClick={handleEliminarCliente}
-                  className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                  className="p-1.5 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
                   title="Quitar cliente"
                 >
-                  <FiX size={18} />
+                  <FiX size={16} />
                 </button>
               </div>
             ) : (
-              <div className="flex gap-2 w-full">
-                <div className="grow flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
-                  <FiUser className="text-gray-400" />
-                  <span className="text-gray-500 dark:text-gray-500 text-sm">
-                    {tipoComprobante === 1 ? "Clientes Varios" : "Seleccione un cliente con RUC"}
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                  <FiUser className="text-gray-400 shrink-0" />
+                  <span className="text-gray-500 text-sm truncate">
+                    {placeholderCliente}
                   </span>
                 </div>
                 <button
-                  onClick={handleAbrirModalCliente}
-                  className="w-20 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 flex items-center justify-center"
-                  title={tipoComprobante === 1 ? "Agregar cliente (opcional)" : "Agregar cliente (obligatorio)"}
+                  onClick={abrir}
+                  className="w-20 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                  title="Agregar cliente"
                 >
                   <FaPlus />
                 </button>
               </div>
             )}
           </div>
-          
-          <div className="py-2">
-            <div className="flex flex-col lg:flex-row gap-3 w-full">
-              <div className="w-full lg:w-1/2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Método de Pago
-                </label>
-                {cargandoMetodoPago ? (
-                  <div className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 text-sm">
-                    Cargando métodos de pago...
-                  </div>
-                ) : (
-                  <select
-                    value={metodoPagoSeleccionado}
-                    onChange={(e) => setMetodoPagoSeleccionado(e.target.value)}
-                    className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
-                  >
-                    <option value="" disabled>Seleccione método</option>
-                    {metodosPago.map((metodo) => (
-                      <option key={metodo.id_medio_pago} value={metodo.id_medio_pago}>
-                        {metodo.nombre_medio_pago}
-                      </option>
-                    ))}
-                  </select>
-                )}
+
+          {/* Método de pago */}
+          <div className="w-full sm:w-1/2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Método de Pago <span className="text-red-500">*</span>
+            </label>
+            {cargandoMetodoPago ? (
+              <div className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 text-sm">
+                Cargando...
               </div>
-              <div className="w-full lg:w-1/2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Observaciones
-                </label>
-                <textarea
-                  rows={2}
-                  value={observaciones}
-                  onChange={(e) => setObservaciones(e.target.value)}
-                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
-                  placeholder="Observaciones..."
-                />
-              </div>
-            </div>
+            ) : (
+              <select
+                value={metodoPagoSeleccionado}
+                onChange={(e) => setMetodoPagoSeleccionado(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="" disabled>
+                  Seleccione método
+                </option>
+                {metodosPago.map((m) => (
+                  <option key={m.id_medio_pago} value={m.id_medio_pago}>
+                    {m.nombre_medio_pago.charAt(0).toUpperCase() + m.nombre_medio_pago.slice(1)}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
+          {/* Detalle y resumen */}
           <DetalleVenta />
+          <ResumenVenta />
 
-          <ResumenVenta subtotal={subtotal} impuesto={impuesto} total={total} />
-
-          <div className="mt-4 flex flex-col sm:flex-row gap-3">
+          {/* Botones acción */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               onClick={handleLimpiarVenta}
               disabled={detalle.length === 0 && !datosCliente}
-              className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+              className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
             >
               Limpiar Todo
             </button>
             <button
               onClick={handleGenerarComprobante}
-              disabled={detalle.length === 0 || cargando || excedeLimite || (tipoComprobante === 2 && !datosCliente) || !metodoPagoSeleccionado}
-              className={`flex-1 sm:flex-2 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                excedeLimite
-                  ? 'bg-gray-400 cursor-not-allowed text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white'
-              }`}
-              title={excedeLimite ? `No se puede generar comprobantes por montos ≥ S/ ${LIMITE_MONTO}` : ''}
+              disabled={
+                detalle.length === 0 ||
+                cargando ||
+                (esFactura(idTipoActual) && !datosCliente) ||
+                !metodoPagoSeleccionado
+              }
+              className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               {cargando ? (
                 <>
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   Procesando...
                 </>
               ) : (
-                "Generar Comprobante"
+                `Generar ${tipoSeleccionado?.nombre_tipo_comprobante || "Comprobante"}`
               )}
             </button>
           </div>
         </div>
       </div>
 
+      {/* Modal agregar/editar cliente */}
       {estaAbierto && (
         <Modal
           estaAbierto={estaAbierto}
@@ -527,26 +525,28 @@ const GenerarVentaPagina = () => {
           <FormularioCliente
             onSubmit={handleClienteGuardado}
             onCancelar={cerrar}
-            tipoComprobante={tipoComprobante} 
+            tipoComprobante={idTipoActual}
+            soloRuc={esFactura(idTipoActual)}
           />
         </Modal>
       )}
 
+      {/* Modal comprobante generado */}
       <ModalComprobanteGenerado
         estaAbierto={mostrarModalComprobante}
         onCerrar={handleCerrarModalComprobante}
         datosComprobante={datosComprobante}
         onDescargarPDF={handleDescargarPDF}
-        onDescargarXML={handleDescargarXML}
       />
 
+      {/* Modal confirmación genérico */}
       <ModalConfirmacion
         visible={confirmacionVisible}
         onCerrar={ocultarConfirmacion}
         onConfirmar={confirmarAccion}
         titulo={tituloConfirmacion}
         mensaje={mensajeConfirmacion}
-        textoConfirmar="Sí, quitar"
+        textoConfirmar="Confirmar"
         textoCancelar="Cancelar"
         tipo="peligro"
       />

@@ -22,8 +22,8 @@ const navItems = [
     name: "Ventas",
     rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
     subItems: [
-      { name: "Generar Venta", path: "/admin/generar-venta" },
-      { name: "Historial de Comprobantes", path: "/admin/registro-ventas" },
+      { name: "Punto de venta", path: "/admin/generar-venta" },
+      { name: "Historial de Ventas", path: "/admin/registro-ventas" },
     ],
   },
   {
