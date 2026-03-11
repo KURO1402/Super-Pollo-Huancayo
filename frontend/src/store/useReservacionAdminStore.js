@@ -5,6 +5,7 @@ import {
   obtenerReservacionPorIdServicio,
   crearReservacionManualServicio,
   cancelarReservacionServicio,
+  obtenerMesasDisponiblesAdminServicio,
 } from '../servicios/reservacionesServicio';
 
 export const useReservacionAdminStore = create((set, get) => ({
@@ -14,6 +15,9 @@ export const useReservacionAdminStore = create((set, get) => ({
   cargandoDetalle: false,
   guardando: false,
   error: null,
+
+  mesasDisponibles: [],
+  cargandoMesas: false,
 
   cargarReservacionesPorRango: async (fechaInicio, fechaFin) => {
     try {
@@ -54,6 +58,18 @@ export const useReservacionAdminStore = create((set, get) => ({
     }
   },
 
+  cargarMesasDisponibles: async (fecha, hora) => {
+    try {
+      set({ cargandoMesas: true });
+      const mesas = await obtenerMesasDisponiblesAdminServicio(fecha, hora);
+      set({ mesasDisponibles: mesas });
+    } catch (error) {
+      set({ mesasDisponibles: [] });
+    } finally {
+      set({ cargandoMesas: false });
+    }
+  },
+
   cancelarReservacion: async (idReservacion) => {
     try {
       set({ guardando: true, error: null });
@@ -75,4 +91,6 @@ export const useReservacionAdminStore = create((set, get) => ({
   },
 
   limpiarDetalle: () => set({ reservacionDetalle: null, error: null }),
+
+  limpiarMesasDisponibles: () => set({ mesasDisponibles: [] }),
 }));

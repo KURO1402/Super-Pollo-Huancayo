@@ -134,7 +134,8 @@ const CalendarioReservasPagina = () => {
         );
       }
     } catch (error) {
-      mostrarAlerta.error(error.response?.data?.mensaje || "Error al guardar la reserva");
+      mostrarAlerta.error(error.message || "Error al guardar la reserva");
+      console.log(error.message)
     }
   };
 

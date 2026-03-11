@@ -157,3 +157,16 @@ export const actualizarReservacionServicio = async (idReservacion, datosActualiz
     throw error;
   }
 };
+
+export const obtenerMesasDisponiblesAdminServicio = async (fecha, hora) => {
+  try {
+    const respuesta = await API.get('/reservaciones/mesas', {
+      params: { fecha, hora }
+    });
+    if (respuesta.data?.ok) return respuesta.data.mesas || [];
+    return [];
+  } catch (error) {
+    if (error.response?.status === 404) return [];
+    throw error;
+  }
+};
