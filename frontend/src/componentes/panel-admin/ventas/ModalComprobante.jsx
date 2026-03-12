@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiEye, FiDownload, FiX, FiExternalLink, FiPrinter } from "react-icons/fi";
+import { FiEye, FiDownload, FiExternalLink, FiPrinter } from "react-icons/fi";
 import Modal from "../../ui/modal/Modal";
 import { BadgeSunat } from "./BadgeSunat";
 
@@ -105,10 +105,6 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                                 <FiExternalLink /> Ver XML
                             </a>
                         )}
-                        <button onClick={() => { onCerrar(); setVerPDF(false); }}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium text-sm transition-colors">
-                            <FiX /> Cerrar
-                        </button>
                     </div>
                 </div>
             ) : (
