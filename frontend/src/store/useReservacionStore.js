@@ -1,63 +1,58 @@
 import { create } from 'zustand'
-import { obtenerMesasDisponiblesServicio } from '../servicios/reservacionesServicio';
+import {
+  obtenerMesasDisponiblesServicio,
+  crearReservaUsuarioServicio,   // ← agregar
+} from '../servicios/reservacionesServicio';
 
 export const useReservacionStore = create((set, get) => ({
-  // Estado
   pasoActual: 1,
   datos: {
     fecha: '',
     hora: '',
     personas: 2,
-    mesas: [], // Array de objetos { id, numero, capacidad, piso, disponible }
+    mesas: [],
   },
-  
+
   mesasDisponibles: [],
   cargandoMesas: false,
   errorMesas: null,
 
-  // Cambiar paso
-  setPaso: (paso) => set({ 
-    pasoActual: Math.max(1, Math.min(3, paso)) 
+  // ─── Reserva creada ───────────────────────────────────────
+  reservaCreada: null,
+  creandoReserva: false,
+  errorReserva: null,
+
+  setPaso: (paso) => set({
+    pasoActual: Math.max(1, Math.min(3, paso))
   }),
-  
-  // Actualizar datos de reserva
-  updateDatos: (nuevosDatos) => set((state) => ({ 
-    datos: { 
-      ...state.datos, 
-      ...nuevosDatos
-    } 
+
+  updateDatos: (nuevosDatos) => set((state) => ({
+    datos: { ...state.datos, ...nuevosDatos }
   })),
 
-  // Buscar mesas disponibles (opcional - para futuras implementaciones)
   buscarMesasDisponibles: async (fecha, hora) => {
     if (!fecha || !hora) {
-      set({ 
-        mesasDisponibles: [],
-        errorMesas: 'Fecha y hora son requeridas'
-      });
+      set({ mesasDisponibles: [], errorMesas: 'Fecha y hora son requeridas' });
       return;
     }
 
     set({ cargandoMesas: true, errorMesas: null });
-    
+
     try {
-      const respuesta = await obtenerMesasDisponiblesServicio(fecha, hora);
-      
-      const mesasTransformadas = respuesta.mesas.map(mesa => ({
-        id: mesa.idMesa,
-        numero: mesa.numeroMesa.toString(),
+      const mesas = await obtenerMesasDisponiblesServicio(fecha, hora);
+
+      // Transformar al formato que usa el croquis
+      // el backend devuelve id_mesa, numero_mesa, capacidad, estado
+      const mesasTransformadas = mesas.map(mesa => ({
+        id: mesa.id_mesa,
+        numero: mesa.numero_mesa.toString(),
         capacidad: mesa.capacidad,
-        disponible: true
+        disponible: mesa.estado === 'disponible',
       }));
 
-      set({ 
-        mesasDisponibles: mesasTransformadas,
-        cargandoMesas: false,
-        errorMesas: null
-      });
-
+      set({ mesasDisponibles: mesasTransformadas, cargandoMesas: false, errorMesas: null });
     } catch (error) {
-      set({ 
+      set({
         mesasDisponibles: [],
         cargandoMesas: false,
         errorMesas: error.message || 'Error al cargar mesas disponibles'
@@ -65,68 +60,72 @@ export const useReservacionStore = create((set, get) => ({
     }
   },
 
-  // Limpiar mesas
-  limpiarMesas: () => set({ 
+  // ─── Crear reserva ────────────────────────────────────────
+  crearReserva: async () => {
+    const { datos } = get();
+
+    const payload = {
+      fecha: datos.fecha,
+      hora: datos.hora,
+      cantidadPersonas: datos.personas,
+      mesas: datos.mesas.map(m => ({ idMesa: m.id })),
+    };
+
+    set({ creandoReserva: true, errorReserva: null });
+
+    try {
+      const respuesta = await crearReservaUsuarioServicio(payload);
+      set({ reservaCreada: respuesta, creandoReserva: false });
+      return respuesta;
+    } catch (error) {
+      set({
+        errorReserva: error.message || 'Error al crear la reserva',
+        creandoReserva: false
+      });
+      throw error;
+    }
+  },
+
+  limpiarMesas: () => set({
     mesasDisponibles: [],
     datos: { ...get().datos, mesas: [] }
   }),
 
-  // Calcular costo total de mesas (S/ 15 por mesa)
   getCostoMesas: () => {
     const { datos } = get();
     const COSTO_POR_MESA = 15;
     return (datos.mesas?.length || 0) * COSTO_POR_MESA;
   },
 
-  // Calcular anticipo (50% del costo de mesas)
   getAnticipo: () => {
     const costoMesas = get().getCostoMesas();
-    return Math.round(costoMesas * 0.5 * 100) / 100; 
+    return Math.round(costoMesas * 0.5 * 100) / 100;
   },
 
-  // Obtener total (igual al costo de mesas)
-  getTotal: () => {
-    return get().getCostoMesas();
-  },
+  getTotal: () => get().getCostoMesas(),
 
-  // Calcular saldo pendiente
-  getSaldoPendiente: () => {
-    const total = get().getTotal();
-    const anticipo = get().getAnticipo();
-    return total - anticipo;
-  },
+  getSaldoPendiente: () => get().getTotal() - get().getAnticipo(),
 
-  // Validar si puede avanzar del Paso 1
   puedeAvanzarPaso1: () => {
     const { datos } = get();
     return datos.fecha && datos.hora && datos.personas >= 2;
   },
 
-  // Validar si puede avanzar del Paso 2
   puedeAvanzarPaso2: () => {
     const { datos } = get();
-    
-    // Verificar que haya mesas seleccionadas
-    if (!datos.mesas || datos.mesas.length === 0) {
-      return false;
-    }
-    
-    // Verificar que la capacidad total sea suficiente
+    if (!datos.mesas || datos.mesas.length === 0) return false;
     const capacidadTotal = datos.mesas.reduce((total, mesa) => total + mesa.capacidad, 0);
     return capacidadTotal >= datos.personas;
   },
 
-  // Resetear reserva
   resetReserva: () => set({
     pasoActual: 1,
-    datos: {
-      fecha: '',
-      hora: '',
-      personas: 2,
-      mesas: [],
-    },
+    datos: { fecha: '', hora: '', personas: 2, mesas: [] },
     mesasDisponibles: [],
     cargandoMesas: false,
-    errorMesas: null
+    errorMesas: null,
+    reservaCreada: null,
+    creandoReserva: false,
+    errorReserva: null,
   })
 }));

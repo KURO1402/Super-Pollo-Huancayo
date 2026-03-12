@@ -13,7 +13,6 @@ import { obtenerReservacionesPorUsuario } from "../../servicios/reservacionesSer
 
 const MisReservaciones = () => {
   const [filtro, setFiltro] = useState("todas");
-  // const [reservaciones, setReservaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 

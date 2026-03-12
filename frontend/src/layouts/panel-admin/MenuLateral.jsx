@@ -57,11 +57,8 @@ const navItems = [
   {
     icon: <FiCalendar size={20} />,
     name: "Reservas",
+    path: "/admin/calendario-reservas",
     rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
-    subItems: [
-      { name: "Calendario", path: "/admin/calendario-reservas" },
-      { name: "Historial de Reservaciones", path: "/admin/historial-reservas" },
-    ],
   },
   {
     icon: <FiUsers size={20} />,

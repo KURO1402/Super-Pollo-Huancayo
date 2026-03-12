@@ -1,26 +1,31 @@
 import { useState, useEffect } from "react";
-import { FiMail, FiPhone, FiUser, FiFileText, FiShield } from "react-icons/fi";
+import { FiMail, FiPhone, FiUser, FiShield } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
 import { GoPencil } from "react-icons/go";
 import Modal from "../../componentes/ui/modal/Modal"
 import { useModal } from "../../hooks/useModal"
-
 import { BotonSimple } from "../../componentes/ui/botones/BotonSimple"
-import mostrarAlerta from "../../utilidades/toastUtilidades";
-import ModalEditarPerfil from "../../componentes/ModalEditarPerfil";
-import ModalActualizarCorreo from "../../componentes/ModalActualizarCorreo";
-import ModalCambiarClave from "../../componentes/ModalCambiarClave";
+
+import { obtenerUsuarioPorIdServicio } from "../../servicios/usuariosServicios";
+
+import ModalActualizarCorreo from "../../componentes/panel-admin/usuario/ModalActualizarCorreo"; 
+import ModalActualizarClave from "../../componentes/panel-admin/usuario/ModalActualizarClave";
+import FormularioEditUsuario from "../../componentes/panel-admin/usuario/FormularioEditUsuario";
+
 import { useAutenticacionStore } from "../../store/useAutenticacionStore";
 
-import { 
-  obtenerUsuarioActualServicio,
+import mostrarAlerta from "../../utilidades/toastUtilidades";
+
+import {
   actualizarPerfilUsuarioServicio,
   actualizarCorreoUsuarioServicio,
-  actualizarClaveUsuarioServicio } from "../../servicios/usuarioServicio"
+  actualizarClaveUsuarioServicio 
+} from "../../servicios/usuarioServicio"
 
 const PerfilUsuario = () => {
   const [perfilUsuario, setPerfilUsuario] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const [actualizando, setActualizando] = useState(false);
   const { usuario } = useAutenticacionStore();
   
   const { 
@@ -41,79 +46,51 @@ const PerfilUsuario = () => {
     cerrar: cerrarClave 
   } = useModal();
 
+
   useEffect(() => {
     const cargarUsuario = async () => {
       try {
         setCargando(true);
-        const respuesta = await obtenerUsuarioActualServicio(usuario.idUsuario);
-        
+        const respuesta = await obtenerUsuarioPorIdServicio(usuario.id_usuario);
         if (respuesta.ok && respuesta.usuario) {
-          const usuarioMapeado = {
-            idUsuario: usuario.idUsuario,
-            nombre: respuesta.usuario.nombresUsuario,
-            apellido: respuesta.usuario.apellidosUsuario,
-            tipoDocumento: obtenerTipoDocumentoTexto(respuesta.usuario.idTipoDocumento),
-            numeroDocumento: respuesta.usuario.numeroDocumentoUsuario,
-            correo: respuesta.usuario.correoUsuario,
-            telefono: respuesta.usuario.telefonoUsuario,
-            idRol: respuesta.usuario.idRol
-          };
-          setPerfilUsuario(usuarioMapeado);
+          setPerfilUsuario(respuesta.usuario);
         } else {
           throw new Error("No se pudieron cargar los datos del perfilUsuario");
         }
       } catch (error) {
-        
-        setPerfilUsuario({
-          idUsuario: 1,
-          nombre: "Usuario",
-          apellido: "Demo",
-          tipoDocumento: "DNI",
-          numeroDocumento: "00000000",
-          correo: "perfilUsuario@demo.com",
-          telefono: "000000000",
-          idRol: 3,
-          estado: "activo"
+        mostrarAlerta.error('Error al cargar los datos del perfil');
+        setPerfilUsuario({  
+          id_usuario: usuario?.id_usuario || 1,
+          nombre_usuario: "Usuario",
+          apellido_usuario: "Demo",
+          correo_usuario: "perfilUsuario@demo.com",
+          telefono_usuario: "000000000",
+          nombre_rol: "Usuario",
+          estado_usuario: "activo"
         });
       } finally {
         setCargando(false);
       }
     };
 
-    cargarUsuario();
-  }, []);
-
-  const obtenerTipoDocumentoTexto = (idTipoDocumento) => {
-    const tipos = {
-      1: "DNI",
-      2: "Pasaporte",
-      3: "Carné de Extranjería", 
-      4: "RUC"
-    };
-    return tipos[idTipoDocumento] || "DNI";
-  };
-
-  const obtenerIdTipoDocumento = (tipoDocumento) => {
-    const tipos = {
-      "DNI": 1,
-      "Pasaporte": 2,
-      "Carné de Extranjería": 3,
-      "RUC": 4
-    };
-    return tipos[tipoDocumento] || 1;
-  };
+    if (usuario?.id_usuario) {
+      cargarUsuario();
+    }
+  }, [usuario]);
 
   const handlePerfilActualizado = async (datosActualizados) => {
     try {
+      setActualizando(true);
+      
       const datosParaBackend = {
-        nombresUsuario: datosActualizados.nombre,
-        apellidosUsuario: datosActualizados.apellido,
-        telefonoUsuario: datosActualizados.telefono,
-        idTipoDocumento: obtenerIdTipoDocumento(datosActualizados.tipoDocumento),
-        numeroDocumentoUsuario: datosActualizados.numeroDocumento
+        nombresUsuario: datosActualizados.nombre_usuario || datosActualizados.nombre,
+        apellidosUsuario: datosActualizados.apellido_usuario || datosActualizados.apellido,
+        telefonoUsuario: datosActualizados.telefono_usuario || datosActualizados.telefono,
+        idTipoDocumento: datosActualizados.id_tipo_documento || datosActualizados.idTipoDocumento,
+        numeroDocumentoUsuario: datosActualizados.numero_documento_usuario || datosActualizados.numeroDocumento
       };
 
-      const respuesta = await actualizarPerfilUsuarioServicio(perfilUsuario.idUsuario, datosParaBackend);
+      const respuesta = await actualizarPerfilUsuarioServicio(perfilUsuario.id_usuario, datosParaBackend);
       
       if (respuesta.ok) {
         setPerfilUsuario(prev => ({
@@ -122,23 +99,35 @@ const PerfilUsuario = () => {
         }));
         cerrarEditar();
         mostrarAlerta.exito(respuesta.mensaje || "Perfil actualizado exitosamente");
+        
+        // Recargar datos actualizados
+        const datosActualizados = await obtenerUsuarioPorIdServicio(perfilUsuario.id_usuario);
+        if (datosActualizados.ok && datosActualizados.usuario) {
+          setPerfilUsuario(datosActualizados.usuario);
+        }
+      } else {
+        throw new Error(respuesta.mensaje || 'Error al actualizar el perfil');
       }
     } catch (error) {
       mostrarAlerta.error(error.message || "Error al actualizar el perfil");
+    } finally {
+      setActualizando(false);
     }
   };
 
   const handleCorreoActualizado = async (datosCorreo) => {
     try {
-      const respuesta = await actualizarCorreoUsuarioServicio(perfilUsuario.idUsuario, datosCorreo);
+      const respuesta = await actualizarCorreoUsuarioServicio(perfilUsuario.id_usuario, datosCorreo);
       
       if (respuesta.ok) {
         setPerfilUsuario(prev => ({
           ...prev,
-          correo: datosCorreo.nuevoCorreo
+          correo_usuario: datosCorreo.nuevoCorreo || datosCorreo.correo
         }));
         cerrarCorreo();
         mostrarAlerta.exito(respuesta.mensaje || "Correo actualizado exitosamente");
+      } else {
+        throw new Error(respuesta.mensaje || 'Error al actualizar el correo');
       }
     } catch (error) {
       mostrarAlerta.error(error.message || "Error al actualizar el correo");
@@ -148,14 +137,16 @@ const PerfilUsuario = () => {
 
   const handleClaveActualizada = async (datosClave) => {
     try {
-      const respuesta = await actualizarClaveUsuarioServicio(perfilUsuario.idUsuario, datosClave);
+      const respuesta = await actualizarClaveUsuarioServicio(perfilUsuario.id_usuario, datosClave);
       
       if (respuesta.ok) {
         cerrarClave();
         mostrarAlerta.exito(respuesta.mensaje || "Contraseña actualizada exitosamente");
+      } else {
+        throw new Error(respuesta.mensaje || 'Error al actualizar la contraseña');
       }
     } catch (error) {
-      mostrarAlerta.error("Error al actualizar la contraseña");
+      mostrarAlerta.error(error.message || "Error al actualizar la contraseña");
       throw error;
     }
   };
@@ -164,18 +155,9 @@ const PerfilUsuario = () => {
     return `${nombre?.charAt(0) || ''}${apellido?.charAt(0) || ''}`.toUpperCase();
   };
 
-  const obtenerRolTexto = (idRol) => {
-    const roles = {
-      1: "Superadministrador",
-      2: "Administrador", 
-      3: "Usuario"
-    };
-    return roles[idRol] || "Usuario";
-  };
-
   if (cargando) {
     return (
-      <section className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+      <section className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center min-h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rojo"></div>
         </div>
@@ -185,7 +167,7 @@ const PerfilUsuario = () => {
 
   if (!perfilUsuario) {
     return (
-      <section className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+      <section className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center min-h-96">
           <p className="text-white text-lg">No se pudo cargar la información del perfilUsuario</p>
         </div>
@@ -194,7 +176,7 @@ const PerfilUsuario = () => {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         
         <div className="text-center mb-16">
@@ -212,11 +194,11 @@ const PerfilUsuario = () => {
           <div className="lg:col-span-1">
             <div className="bg-gray-800 rounded-3xl shadow-2xl border border-gray-700 overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
               
-              <div className="bg-gradient-to-r from-azul-secundario to-azul-primario py-8 px-6 text-center">
+              <div className="bg-linear-to-r from-azul-secundario to-azul-primario py-8 px-6 text-center">
                 <div className="relative inline-block">
                   <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center shadow-2xl border-4 border-white/30">
                     <span className="text-4xl font-bold text-white">
-                      {getIniciales(perfilUsuario.nombre, perfilUsuario.apellido)}
+                      {getIniciales(perfilUsuario.nombre_usuario, perfilUsuario.apellido_usuario)}
                     </span>
                   </div>
                   <div className="absolute -bottom-2 -right-2 bg-amarillo rounded-full p-2 shadow-lg">
@@ -225,11 +207,11 @@ const PerfilUsuario = () => {
                 </div>
                 
                 <h2 className="text-2xl font-bold text-white mt-6 mb-2">
-                  {perfilUsuario.nombre} {perfilUsuario.apellido}
+                  {perfilUsuario.nombre_usuario} {perfilUsuario.apellido_usuario}
                 </h2>
                 <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2">
                   <FiShield className="w-4 h-4 text-white" />
-                  <span className="text-white font-medium text-sm">{obtenerRolTexto(perfilUsuario.idRol)}</span>
+                  <span className="text-white font-medium text-sm">{perfilUsuario.nombre_rol}</span>
                 </div>
               </div>
 
@@ -244,20 +226,20 @@ const PerfilUsuario = () => {
                   <div className="flex-1">
                     <p className="text-sm text-gray-400">Email</p>
                     <p className="font-semibold text-white truncate">
-                      {perfilUsuario.correo}
+                      {perfilUsuario.correo_usuario}
                     </p>
                   </div>
                   <GoPencil className="w-4 h-4 text-gray-400" />
                 </div>
 
-                <div className="flex items-center gap-4 p-4 bg-gray-700 rounded-2xl hover:bg-gray-600 transition-colors">
+                <div className="flex items-center gap-4 p-4 bg-gray-700 rounded-2xl">
                   <div className="w-12 h-12 bg-azul-primario/10 rounded-xl flex items-center justify-center">
                     <FiPhone className="w-6 h-6 text-azul-primario" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-gray-400">Teléfono</p>
                     <p className="font-semibold text-white">
-                      {perfilUsuario.telefono || 'No especificado'}
+                      {perfilUsuario.telefono_usuario || 'No especificado'}
                     </p>
                   </div>
                 </div>
@@ -268,7 +250,7 @@ const PerfilUsuario = () => {
           <div className="lg:col-span-2">
             <div className="bg-gray-800 rounded-3xl shadow-2xl border border-gray-700 overflow-hidden">
               
-              <div className="bg-gradient-to-r from-gray-700 to-gray-600 px-8 py-6 border-b border-gray-600">
+              <div className="bg-linear-to-r from-gray-700 to-gray-600 px-8 py-6 border-b border-gray-600">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold text-white">
@@ -302,7 +284,7 @@ const PerfilUsuario = () => {
                           </label>
                         </div>
                         <p className="text-lg font-bold text-white">
-                          {perfilUsuario.nombre}
+                          {perfilUsuario.nombre_usuario}
                         </p>
                       </div>
 
@@ -316,7 +298,7 @@ const PerfilUsuario = () => {
                           </label>
                         </div>
                         <p className="text-lg font-bold text-white">
-                          {perfilUsuario.apellido}
+                          {perfilUsuario.apellido_usuario}
                         </p>
                       </div>
                     </div>
@@ -337,44 +319,14 @@ const PerfilUsuario = () => {
                         <GoPencil className="w-4 h-4 text-gray-400" />
                       </div>
                       <p className="text-lg font-bold text-white">
-                        {perfilUsuario.correo}
+                        {perfilUsuario.correo_usuario}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="bg-gray-700 rounded-2xl p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 bg-amarillo/20 rounded-lg flex items-center justify-center">
-                            <FiFileText className="w-5 h-5 text-yellow-600" />
-                          </div>
-                          <label className="text-sm font-semibold text-gray-400">
-                            Tipo Doc.
-                          </label>
-                        </div>
-                        <p className="text-lg font-bold text-white">
-                          {perfilUsuario.tipoDocumento}
-                        </p>
-                      </div>
-
-                      <div className="bg-gray-700 rounded-2xl p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 bg-amarillo/20 rounded-lg flex items-center justify-center">
-                            <FiFileText className="w-5 h-5 text-yellow-600" />
-                          </div>
-                          <label className="text-sm font-semibold text-gray-400">
-                            N° Documento
-                          </label>
-                        </div>
-                        <p className="text-lg font-bold text-white">
-                          {perfilUsuario.numeroDocumento}
-                        </p>
-                      </div>
-                    </div>
-
                     <div 
-                      className="bg-gradient-to-r from-azul-primario/5 to-azul-secundario/5 rounded-2xl p-6 border border-gray-700 cursor-pointer hover:from-azul-primario/10 hover:to-azul-secundario/10 transition-all"
+                      className="bg-linear-to-r from-azul-primario/5 to-azul-secundario/5 rounded-2xl p-6 border border-gray-700 cursor-pointer hover:from-azul-primario/10 hover:to-azul-secundario/10 transition-all"
                       onClick={abrirClave}
                     >
                       <div className="flex items-center justify-between mb-3">
@@ -405,21 +357,26 @@ const PerfilUsuario = () => {
         </div>
       </div>
 
+      {/* Modal para editar perfil */}
       <Modal
         estaAbierto={modalEditarAbierto}
         onCerrar={cerrarEditar}
         titulo="Editar Perfil"
-        tamaño="lg"
+        tamaño="md"
         mostrarHeader
         mostrarFooter={false}
       >
-        <ModalEditarPerfil 
-          usuario={perfilUsuario}
-          onClose={cerrarEditar}
-          onPerfilActualizado={handlePerfilActualizado}
-        />
+        {perfilUsuario && (
+          <FormularioEditUsuario 
+            usuario={perfilUsuario}
+            onSubmit={handlePerfilActualizado}
+            cerrar={cerrarEditar}
+            cargando={actualizando}
+          />
+        )}
       </Modal>
 
+      {/* Modal para actualizar correo */}
       <Modal
         estaAbierto={modalCorreoAbierto}
         onCerrar={cerrarCorreo}
@@ -428,13 +385,17 @@ const PerfilUsuario = () => {
         mostrarHeader
         mostrarFooter={false}
       >
-        <ModalActualizarCorreo
-          usuario={perfilUsuario}
-          onClose={cerrarCorreo}
-          onCorreoActualizado={handleCorreoActualizado}
-        />
+        {perfilUsuario && (
+          <ModalActualizarCorreo
+            idUsuario={perfilUsuario.id_usuario}
+            correoActual={perfilUsuario.correo_usuario}
+            onClose={cerrarCorreo}
+            onCorreoActualizado={handleCorreoActualizado}
+          />
+        )}
       </Modal>
 
+      {/* Modal para cambiar contraseña */}
       <Modal
         estaAbierto={modalClaveAbierto}
         onCerrar={cerrarClave}
@@ -443,11 +404,13 @@ const PerfilUsuario = () => {
         mostrarHeader
         mostrarFooter={false}
       >
-        <ModalCambiarClave
-          usuario={perfilUsuario}
-          onClose={cerrarClave}
-          onClaveActualizada={handleClaveActualizada}
-        />
+        {perfilUsuario && (
+          <ModalActualizarClave
+            idUsuario={perfilUsuario.id_usuario}
+            onClose={cerrarClave}
+            onClaveActualizada={handleClaveActualizada}
+          />
+        )}
       </Modal>
     </section>
   );

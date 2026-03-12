@@ -27,7 +27,6 @@ const NuevaReservacion = () => {
 
   const { formState: { isValid }, getValues } = methods;
 
-  // Manejar el submit del Paso 1
   const handleAvanzarPaso1 = () => {
     const data = getValues();
     updateDatos(data);
@@ -36,7 +35,6 @@ const NuevaReservacion = () => {
 
   const valores = getValues();
 
-  // Verificar si puede avanzar desde el Paso 2
   const verificarPaso2 = () => {
     if (!datos.mesas || datos.mesas.length === 0) {
       return false;
@@ -46,29 +44,22 @@ const NuevaReservacion = () => {
     return capacidadTotal >= datos.personas;
   };
 
-  // Avanzar del Paso 2 al Paso 3
   const handleAvanzarPaso2 = () => {
     if (verificarPaso2()) {
       setPaso(3);
     }
   };
 
-  // Verificar si puede avanzar desde el Paso 1
   const puedeAvanzarDesdeP1 = valores.fecha && valores.hora && valores.personas >= 2;
-/*   console.log("Datos del formulario:", getValues());
-  console.log("Puede avanzar desde P1:", puedeAvanzarDesdeP1); */
 
-  // Verificar si puede avanzar desde el Paso 2
   const puedeAvanzarDesdeP2 = verificarPaso2();
 
-  // Calcular capacidad actual para mostrar en alerta
   const capacidadActual = datos.mesas?.reduce((total, mesa) => total + mesa.capacidad, 0) || 0;
 
   return (
     <main className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-8 md:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         
-        {/* Header */}
         <header className="text-center mb-8 md:mb-12">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4">
             NUEVA <span className="text-red-600">RESERVACIÓN</span>
@@ -144,10 +135,8 @@ const NuevaReservacion = () => {
           </div>
         )}
 
-        {/* Botones de navegación para Paso 3 */}
         {pasoActual === 3 && (
           <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6 md:mt-8">
-            {/* Botón Volver */}
             <button
               type="button"
               onClick={() => setPaso(2)}
@@ -157,7 +146,6 @@ const NuevaReservacion = () => {
               Volver a Mesas
             </button>
 
-            {/* Botón Nueva Reservación */}
             <button
               type="button"
               onClick={() => {
@@ -176,7 +164,6 @@ const NuevaReservacion = () => {
           </div>
         )}
 
-        {/* Información adicional en el Paso 2 */}
         {pasoActual === 2 && !puedeAvanzarDesdeP2 && datos.mesas?.length > 0 && (
           <div className="mt-4 p-4 bg-yellow-600/10 border border-yellow-600/30 rounded-xl text-center">
             <p className="text-yellow-400 text-sm">
@@ -186,7 +173,6 @@ const NuevaReservacion = () => {
           </div>
         )}
 
-        {/* Mensaje cuando no hay mesas seleccionadas */}
         {pasoActual === 2 && datos.mesas?.length === 0 && (
           <div className="mt-4 p-4 bg-blue-600/10 border border-blue-600/30 rounded-xl text-center">
             <p className="text-blue-400 text-sm">

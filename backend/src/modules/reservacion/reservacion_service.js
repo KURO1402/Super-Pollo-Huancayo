@@ -202,7 +202,7 @@ const registrarReservacionManualService = async (datos) => {
 
     const idReservacion = await registrarReservacionModel(fecha, hora, cantidadPersonas, null, mesas, fechaHoraReserva, codigoReservacion);
 
-    await registrarPagoReservacionModel(10 * mesas.length, null, idReservacion);
+    // await registrarPagoReservacionModel(10 * mesas.length, null, idReservacion);
 
     const info = await enviarCorreoReservacion({ correo, codigoReservacion, fecha, hora, cantidadPersonas, mesasConInfo });
 
