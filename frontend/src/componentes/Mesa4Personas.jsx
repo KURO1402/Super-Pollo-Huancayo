@@ -22,16 +22,15 @@ const Mesa4Personas = ({
     >
       <div className={`absolute inset-0 rounded-2xl transition-all duration-300 transform
         ${seleccionada 
-          ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-xl shadow-red-500/30' 
+          ? 'bg-linear-to-br from-red-500 to-red-600 shadow-xl shadow-red-500/30' 
           : disponible 
-            ? 'bg-gradient-to-br from-gray-800 to-gray-900 group-hover:from-gray-700 group-hover:to-gray-800' 
-            : 'bg-gradient-to-br from-gray-900 to-gray-950 opacity-50'
+            ? 'bg-linear-to-br from-gray-800 to-gray-900 group-hover:from-gray-700 group-hover:to-gray-800' 
+            : 'bg-linear-to-br from-gray-900 to-gray-950 opacity-50'
         } 
         ${seleccionada ? 'scale-105 ring-4 ring-red-400/50' : ''}
         ${disponible && !seleccionada ? 'group-hover:scale-102' : ''}`}
       />
       
-      {/* Marco de la mesa */}
       <div className={`absolute inset-3 rounded-xl border-2 transition-all duration-300
         ${seleccionada 
           ? 'border-red-300 shadow-inner shadow-red-300/20' 
@@ -40,74 +39,64 @@ const Mesa4Personas = ({
             : 'border-gray-700'
         }`}>
         
-        {/* Silla superior izquierda*/}
-        <div className="absolute -top-4 left-4"> {/* Posición fija en lugar de porcentaje */}
+        <div className="absolute -top-4 left-4">
           <div className={`w-6 h-5 rounded-md transition-all duration-300 relative
             ${seleccionada 
-              ? 'bg-gradient-to-b from-red-300 to-red-400 shadow-md shadow-red-300/30' 
-              : 'bg-gradient-to-b from-gray-600 to-gray-700'
+              ? 'bg-linear-to-b from-red-300 to-red-400 shadow-md shadow-red-300/30' 
+              : 'bg-linear-to-b from-gray-600 to-gray-700'
             }`}>
-            {/* Respaldo de la silla */}
-            <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-t-md bg-gradient-to-b from-gray-800 to-gray-700"></div>
-            {/* Patas de la silla */}
+            <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-t-md bg-linear-to-b from-gray-800 to-gray-700"></div>
             <div className="absolute -bottom-0.5 left-1/4 w-1 h-0.5 rounded-b bg-gray-800"></div>
             <div className="absolute -bottom-0.5 right-1/4 w-1 h-0.5 rounded-b bg-gray-800"></div>
           </div>
         </div>
         
-        {/* Silla superior derecha */}
         <div className="absolute -top-4 right-4">
           <div className={`w-6 h-5 rounded-md transition-all duration-300 relative
             ${seleccionada 
-              ? 'bg-gradient-to-b from-red-300 to-red-400 shadow-md shadow-red-300/30' 
-              : 'bg-gradient-to-b from-gray-600 to-gray-700'
+              ? 'bg-linear-to-b from-red-300 to-red-400 shadow-md shadow-red-300/30' 
+              : 'bg-linear-to-b from-gray-600 to-gray-700'
             }`}>
-            <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-t-md bg-gradient-to-b from-gray-800 to-gray-700"></div>
+            <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-t-md bg-linear-to-b from-gray-800 to-gray-700"></div>
             <div className="absolute -bottom-0.5 left-1/4 w-1 h-0.5 rounded-b bg-gray-800"></div>
             <div className="absolute -bottom-0.5 right-1/4 w-1 h-0.5 rounded-b bg-gray-800"></div>
           </div>
         </div>
         
-        {/* Silla inferior izquierda */}
         <div className="absolute -bottom-4 left-4"> 
           <div className={`w-6 h-5 rounded-md transition-all duration-300 relative
             ${seleccionada 
-              ? 'bg-gradient-to-t from-red-300 to-red-400 shadow-md shadow-red-300/30' 
-              : 'bg-gradient-to-t from-gray-600 to-gray-700'
+              ? 'bg-linear-to-t from-red-300 to-red-400 shadow-md shadow-red-300/30' 
+              : 'bg-linear-to-t from-gray-600 to-gray-700'
             }`}>
-            {/* Respaldo de la silla */}
-            <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-b-md bg-gradient-to-t from-gray-800 to-gray-700"></div>
+            <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-b-md bg-linear-to-t from-gray-800 to-gray-700"></div>
             <div className="absolute -top-0.5 left-1/4 w-1 h-0.5 rounded-t bg-gray-800"></div>
             <div className="absolute -top-0.5 right-1/4 w-1 h-0.5 rounded-t bg-gray-800"></div>
           </div>
         </div>
         
-        {/* Silla inferior derecha */}
         <div className="absolute -bottom-4 right-4">
           <div className={`w-6 h-5 rounded-md transition-all duration-300 relative
             ${seleccionada 
-              ? 'bg-gradient-to-t from-red-300 to-red-400 shadow-md shadow-red-300/30' 
-              : 'bg-gradient-to-t from-gray-600 to-gray-700'
+              ? 'bg-linear-to-t from-red-300 to-red-400 shadow-md shadow-red-300/30' 
+              : 'bg-linear-to-t from-gray-600 to-gray-700'
             }`}>
-            <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-b-md bg-gradient-to-t from-gray-800 to-gray-700"></div>
+            <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-4 h-1.5 rounded-b-md bg-linear-to-t from-gray-800 to-gray-700"></div>
             <div className="absolute -top-0.5 left-1/4 w-1 h-0.5 rounded-t bg-gray-800"></div>
             <div className="absolute -top-0.5 right-1/4 w-1 h-0.5 rounded-t bg-gray-800"></div>
           </div>
         </div>
         
         <div className={`absolute inset-4 flex items-center justify-center rounded-lg
-          ${seleccionada ? 'bg-gradient-to-br from-red-400/90 to-red-500/90' : 'bg-gradient-to-br from-gray-700 to-gray-800'}`}>
+          ${seleccionada ? 'bg-linear-to-br from-red-400/90 to-red-500/90' : 'bg-linear-to-br from-gray-700 to-gray-800'}`}>
           
-          {/* Detalles de la mesa */}
           <div className={`absolute inset-0.5 rounded-md border ${
             seleccionada ? 'border-red-300/30' : 'border-gray-600/30'
           }`}></div>
           
-          {/* Patas de la mesa */}
-          <div className="absolute -left-1 bottom-0 w-0.5 h-1.5 bg-gradient-to-t from-gray-800 to-gray-900 rounded-t"></div>
-          <div className="absolute -right-1 bottom-0 w-0.5 h-1.5 bg-gradient-to-t from-gray-800 to-gray-900 rounded-t"></div>
+          <div className="absolute -left-1 bottom-0 w-0.5 h-1.5 bg-linear-to-t from-gray-800 to-gray-900 rounded-t"></div>
+          <div className="absolute -right-1 bottom-0 w-0.5 h-1.5 bg-linear-to-t from-gray-800 to-gray-900 rounded-t"></div>
           
-          {/* Número de mesa */}
           <div className="relative z-10">
             <div className={`text-xl font-bold drop-shadow-lg
               ${seleccionada 
@@ -121,22 +110,19 @@ const Mesa4Personas = ({
             </div>
           </div>
           
-          {/* Efecto de brillo */}
-          <div className={`absolute top-0 left-0 w-full h-1/2 rounded-t-lg bg-gradient-to-b from-white/10 to-transparent
+          <div className={`absolute top-0 left-0 w-full h-1/2 rounded-t-lg bg-linear-to-b from-white/10 to-transparent
             ${seleccionada ? 'from-red-300/20' : 'from-white/5'}`}></div>
         </div>
       </div>
       
-      {/* Indicador de selección */}
       {seleccionada && (
         <div className="absolute -top-1 -right-1 z-20 animate-pulse">
-          <div className="bg-gradient-to-br from-white to-gray-100 rounded-full p-1 shadow-xl">
+          <div className="bg-linear-to-br from-white to-gray-100 rounded-full p-1 shadow-xl">
             <FiCheck className="w-3 h-3 text-red-600" />
           </div>
         </div>
       )}
       
-      {/* Indicador de no disponible */}
       {!disponible && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="bg-gray-900/80 rounded-full p-1">
@@ -145,7 +131,6 @@ const Mesa4Personas = ({
         </div>
       )}
       
-      {/* Info flotante simplificada */}
       <div className={`absolute -bottom-5 left-1/2 transform -translate-x-1/2
         transition-all duration-300 opacity-0 group-hover:opacity-100
         ${seleccionada ? 'opacity-100' : ''}`}>
@@ -156,10 +141,9 @@ const Mesa4Personas = ({
         </div>
       </div>
       
-      {/* Efecto de hover */}
       {disponible && !seleccionada && (
         <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/5 to-transparent animate-shimmer"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-red-500/5 to-transparent animate-shimmer"></div>
         </div>
       )}
     </button>

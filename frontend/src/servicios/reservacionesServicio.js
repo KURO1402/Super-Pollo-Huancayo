@@ -79,23 +79,15 @@ export const confirmarReservacionServicio = async (idReservacion) => {
 
 // PARA EL USUARIO
 
-export const registrarReservacionServicio = async (data) => {
+export const crearReservaUsuarioServicio = async (datos) => {
   try {
-    const respuesta = await API.post('/reservaciones', data);
-    return respuesta.data;
+    const respuesta = await API.post('/reservaciones/crear-reserva', datos);
+    if (respuesta.data?.ok) return respuesta.data;
+    throw new Error(respuesta.data?.mensaje || 'Error al crear la reserva');
   } catch (error) {
     throw error;
   }
-}
-
-export const generarPreferenciaMercadoPago = async (reservationId) => {
-  try {
-    const respuesta = await API.post(`/reservaciones/${reservationId}/crear-preferencia`);
-    return respuesta.data;
-  } catch (error) {
-    throw error;
-  }
-}
+};
 
 export const obtenerReservacionesPorUsuario = async () => {
   try {

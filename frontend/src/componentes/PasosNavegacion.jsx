@@ -60,7 +60,7 @@ const PasosNavegacion = () => {
           {pasos.map((paso, index) => (
             <div key={paso.numero} className="flex items-center">
               <div 
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 transition-all flex-shrink-0 ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 transition-all shrink-0 ${
                   paso.numero === pasoActual
                     ? "bg-red-600 border-red-600 text-white"
                     : paso.numero < pasoActual

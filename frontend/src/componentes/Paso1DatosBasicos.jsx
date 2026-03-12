@@ -15,7 +15,6 @@ const Paso1DatosBasicos = () => {
   const personasForm = watch('personas') || 2;
   const fechaForm = watch('fecha');
 
-  // Ajustar número de días visibles según el ancho de pantalla
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) { 
@@ -32,14 +31,12 @@ const Paso1DatosBasicos = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Verificar si hoy ya pasó el horario de reservas
   const hoyEstaDisponible = () => {
     const ahora = new Date();
     const horaActual = ahora.getHours();
-    return horaActual < 20; // Si ya pasó de las 8pm, hoy no está disponible
+    return horaActual < 20;
   };
 
-  // Validar si una hora está disponible para reserva
   const validarDisponibilidadHora = (fecha, hora) => {
     const ahora = new Date();
     const fechaReserva = new Date(`${fecha}T${hora}:00`);
@@ -49,13 +46,12 @@ const Paso1DatosBasicos = () => {
     
     if (esHoy) {
       const diferenciaHoras = (fechaReserva - ahora) / (1000 * 60 * 60);
-      return diferenciaHoras >= 2; // Mínimo 2 horas de anticipación
+      return diferenciaHoras >= 2;
     }
     
     return true;
   };
 
-  // Filtrar horarios disponibles según la fecha
   useEffect(() => {
     if (fechaForm) {
       const horariosFiltrados = horasDisponibles.map(horario => ({
@@ -71,7 +67,6 @@ const Paso1DatosBasicos = () => {
     }
   }, [fechaForm, horaForm, setValue]);
 
-  // Generar días disponibles
   useEffect(() => {
     const dias = [];
     const hoy = new Date();
@@ -177,7 +172,7 @@ const Paso1DatosBasicos = () => {
         </p>
         {!hoyDisponible && (
           <div className="mt-4 p-3 bg-blue-600/10 border border-blue-600/30 rounded-lg flex items-center gap-2 max-w-2xl mx-auto">
-            <FiAlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+            <FiAlertCircle className="w-4 h-4 text-blue-400 shrink-0" />
             <p className="text-blue-400 text-sm text-left">
               Las reservas para hoy ya no están disponibles. Por favor selecciona una fecha a partir de mañana.
             </p>
@@ -237,7 +232,7 @@ const Paso1DatosBasicos = () => {
       <div className="bg-gray-800 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-700">
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/10 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
               <FiCalendar className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-white">Selecciona una Fecha</h3>
@@ -254,7 +249,7 @@ const Paso1DatosBasicos = () => {
             type="button"
             onClick={handleAnterior}
             disabled={indiceInicio === 0}
-            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all flex-shrink-0 ${
+            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${
               indiceInicio === 0
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 : 'bg-gray-700 text-white hover:bg-gray-600'
@@ -275,7 +270,7 @@ const Paso1DatosBasicos = () => {
                   type="button"
                   onClick={() => !esPasado && handleSeleccionarFecha(dia)}
                   disabled={esPasado}
-                  className={`px-3 py-2 sm:px-4 sm:py-3 rounded-xl sm:rounded-full transition-all min-w-[70px] sm:min-w-[80px] lg:min-w-[90px] flex flex-col items-center ${
+                  className={`px-3 py-2 sm:px-4 sm:py-3 rounded-xl sm:rounded-full transition-all min-w-17.5 sm:min-w-20 lg:min-w-22.5 flex flex-col items-center ${
                     esPasado
                       ? 'bg-gray-900 text-gray-500 cursor-not-allowed opacity-50'
                       : fechaSeleccionada === dia.isoString
@@ -301,7 +296,7 @@ const Paso1DatosBasicos = () => {
             type="button"
             onClick={handleSiguiente}
             disabled={indiceInicio >= diasVisibles.length - diasAMostrar}
-            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all flex-shrink-0 ${
+            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${
               indiceInicio >= diasVisibles.length - diasAMostrar
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 : 'bg-gray-700 text-white hover:bg-gray-600'
@@ -313,7 +308,7 @@ const Paso1DatosBasicos = () => {
 
         {esHoy() && (
           <div className="mt-4 p-3 bg-yellow-600/10 border border-yellow-600/30 rounded-lg flex items-center gap-2 justify-center">
-            <FiAlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+            <FiAlertCircle className="w-4 h-4 text-yellow-400 shrink-0" />
             <p className="text-yellow-400 text-sm text-center sm:text-left">
               Estás reservando para hoy. Recuerda que necesitas al menos 2 horas de anticipación.
             </p>
@@ -329,7 +324,7 @@ const Paso1DatosBasicos = () => {
       <div className="bg-gray-800 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-700">
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/10 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
               <FiClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-white">Selecciona el Horario</h3>
@@ -385,7 +380,7 @@ const Paso1DatosBasicos = () => {
       <div className="bg-gray-800 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-700">
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/10 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
               <FiUsers className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold text-white">Número de Personas</h3>
@@ -402,7 +397,7 @@ const Paso1DatosBasicos = () => {
               }
             }}
             disabled={personasForm <= 2}
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all flex-shrink-0 ${
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all shrink-0 ${
               personasForm <= 2
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 : 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
@@ -411,7 +406,7 @@ const Paso1DatosBasicos = () => {
             -
           </button>
 
-          <div className="bg-gray-700 px-6 py-4 sm:px-12 sm:py-6 rounded-xl sm:rounded-2xl min-w-[120px] sm:min-w-[150px] text-center">
+          <div className="bg-gray-700 px-6 py-4 sm:px-12 sm:py-6 rounded-xl sm:rounded-2xl min-w-30 sm:min-w-37.5 text-center">
             <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
               {personasForm}
             </div>
@@ -428,7 +423,7 @@ const Paso1DatosBasicos = () => {
               }
             }}
             disabled={personasForm >= 20}
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all flex-shrink-0 ${
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all shrink-0 ${
               personasForm >= 20
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 : 'bg-green-600 text-white hover:bg-green-700 active:scale-95'
