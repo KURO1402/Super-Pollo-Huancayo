@@ -194,19 +194,19 @@ const StockInsumosSeccion = () => {
             </button>
 
             <button
-              onClick={() => navigate('/admin/stock/entrada')}
+              onClick={() => navigate('/admin/historial-entradas')}
               className="px-3 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors text-sm flex items-center gap-1 whitespace-nowrap"
             >
               <FiArrowDown size={14} />
-              Entrada
+              Entradas
             </button>
 
             <button
-              onClick={() => navigate('/admin/stock/salida')}
+              onClick={() => navigate('/admin/historial-salidas')}
               className="px-3 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium transition-colors text-sm flex items-center gap-1 whitespace-nowrap"
             >
               <FiArrowUp size={14} />
-              Salida
+              Salidas
             </button>
           </div>
         </div>
