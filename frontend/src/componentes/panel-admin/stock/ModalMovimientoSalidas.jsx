@@ -23,7 +23,7 @@ export const ModalMovimientoSalidas = ({ onClose, onGuardar }) => {
   const obtenerInsumos = async () => {
     try {
       const respuesta = await listarInsumoServicio();
-      setInsumos(respuesta?.data || respuesta || []);
+      setInsumos(respuesta?.insumos || respuesta || []);
     } catch (error) {
       alertasCRUD.error('Error al cargar los insumos');
       setInsumos([]); 

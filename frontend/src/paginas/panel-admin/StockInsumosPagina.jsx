@@ -110,9 +110,8 @@ const StockInsumosSeccion = () => {
   };
 
   const insumosFiltrados = filtrarPorBusqueda(insumos, [
-    "nombreInsumo",
-    "unidadMedida",
-    "categoriaProducto"
+    "nombre_insumo",
+    "unidad_medida",
   ]);
 
   const filasInsumos = insumosFiltrados.map((insumo) => (
@@ -149,7 +148,7 @@ const StockInsumosSeccion = () => {
             <BarraBusqueda
               valor={terminoBusqueda} 
               onChange={setTerminoBusqueda}
-              placeholder="Buscar por nombre de insumo, unidad o categoría..."
+              placeholder="Buscar por nombre de insumo o unidad"
             />
             <div className="flex flex-wrap gap-2">
               <button 
