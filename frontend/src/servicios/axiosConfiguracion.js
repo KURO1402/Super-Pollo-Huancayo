@@ -2,29 +2,29 @@ import axios from 'axios';
 import { useAutenticacionStore } from '../store/useAutenticacionStore';
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL,
-    withCredentials: true,
-}); 
+  baseURL: import.meta.env.VITE_BACKEND_URL,
+  withCredentials: true,
+});
 
 API.interceptors.request.use(
-    (config) => {
-        const authStorage = localStorage.getItem('auth-storage');
-        let accessToken = null;
-        
-        if (authStorage) {
-            try {
-                const parsed = JSON.parse(authStorage);
-                accessToken = parsed.state.accessToken;
-            } catch (error) {}
-        }
-        if (accessToken) {
-            config.headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  (config) => {
+    const authStorage = localStorage.getItem('auth-storage');
+    let accessToken = null;
+
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage);
+        accessToken = parsed.state.accessToken;
+      } catch (error) { }
     }
+    if (accessToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 API.interceptors.response.use(
@@ -61,13 +61,10 @@ API.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-
-    if (status === 404) {
-      return Promise.reject(error);
-    }
-
-    const mensaje = error.response?.data?.mensaje || "Error interno del servidor";
-    return Promise.reject(new Error(mensaje));
+    const errorPersonalizado = new Error(error.response?.data?.mensaje || "Error interno del servidor");
+    errorPersonalizado.status = error.response?.status;
+    errorPersonalizado.data = error.response?.data;
+    return Promise.reject(errorPersonalizado);
   }
 );
 

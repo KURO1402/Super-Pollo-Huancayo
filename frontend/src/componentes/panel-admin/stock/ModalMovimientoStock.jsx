@@ -22,12 +22,16 @@ export const ModalMovimientoStock = ({ onClose, onGuardar }) => {
 
   const obtenerInsumos = async () => {
     try {
-      const respuesta = await listarInsumoServicio();
-
-      setInsumos(respuesta?.insumos || respuesta || []);
+      const primeraRespuesta = await listarInsumoServicio({ limit: 1, offset: 0 });
+      const total = primeraRespuesta?.cantidad_filas || 10;
+  
+      const respuesta = await listarInsumoServicio({ limit: total, offset: 0 });
+      const data = respuesta?.insumos || [];
+      
+      setInsumos(Array.isArray(data) ? data : []);
     } catch (error) {
       alertasCRUD.error('Error al cargar los insumos');
-      setInsumos([]); 
+      setInsumos([]);
     } finally {
       setCargando(false);
     }

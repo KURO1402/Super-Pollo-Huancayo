@@ -19,12 +19,12 @@ const RegistroVentasPagina = () => {
         detalleVenta, cargandoDetalle, obtenerDetalleVenta,
     } = useVentaStore();
 
-    const modalDetalle     = useModal();
+    const modalDetalle = useModal();
     const modalComprobante = useModal();
 
-    const [fechaInicio, setFechaInicio]                 = useState('');
-    const [fechaFin, setFechaFin]                       = useState('');
-    const [comprobante, setComprobante]                 = useState(null);
+    const [fechaInicio, setFechaInicio] = useState('');
+    const [fechaFin, setFechaFin] = useState('');
+    const [comprobante, setComprobante] = useState(null);
     const [cargandoComprobante, setCargandoComprobante] = useState(false);
 
     const paginacion = usePaginacion({
