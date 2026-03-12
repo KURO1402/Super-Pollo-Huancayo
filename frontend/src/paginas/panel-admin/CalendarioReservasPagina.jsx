@@ -7,11 +7,13 @@ import esLocale from '@fullcalendar/core/locales/es';
 import { useState, useRef, useCallback } from "react";
 import { FiClock, FiCalendar } from "react-icons/fi";
 
+import { useReservacionAdminStore } from "../../store/useReservacionAdminStore";
 import Modal from "../../componentes/ui/modal/Modal";
 import { useModal } from "../../hooks/useModal";
 import FormularioReservaManual from "../../componentes/panel-admin/reserva-panel/FormularioReservaManual";
 import ModalDetalleReserva from "../../componentes/panel-admin/reserva-panel/ModalDetalleReserva";
-import { useReservacionAdminStore } from "../../store/useReservacionAdminStore";
+import BuscadorReservacion from "../../componentes/panel-admin/reserva-panel/BuscadorReservacion";
+import ModalGestionReserva from "../../componentes/panel-admin/reserva-panel/ModalGestionReserva";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
 const CalendarioReservasPagina = () => {
@@ -21,6 +23,7 @@ const CalendarioReservasPagina = () => {
     cargarReservacionesPorRango,
     crearReservacionManual,
     cancelarReservacion,
+    limpiarReservacionBuscada,
   } = useReservacionAdminStore();
 
   const [reservaSeleccionada, setReservaSeleccionada] = useState(null);
@@ -29,6 +32,7 @@ const CalendarioReservasPagina = () => {
   const calendarioRef = useRef(null);
   const modalNuevaReserva = useModal();
   const modalDetalleReserva = useModal();
+  const modalGestionReserva = useModal();
 
   const cargandoRef = useRef(false);
   const rangoActualRef = useRef(null);
@@ -68,9 +72,7 @@ const CalendarioReservasPagina = () => {
   const getColorPorEstado = (estado) => {
     const colores = {
       pendiente: '#f59e0b',
-      pagado: '#10b981',
       completado: '#3b82f6',
-      cancelado: '#ef4444',
     };
     return colores[estado] || '#f59e0b';
   };
@@ -139,6 +141,24 @@ const CalendarioReservasPagina = () => {
     }
   };
 
+  const manejarReservaEncontrada = () => {
+    modalGestionReserva.abrir();
+  };
+
+  const manejarAccionGestion = () => {
+    modalGestionReserva.cerrar();
+    limpiarReservacionBuscada();
+    rangoActualRef.current = null;
+    const api = calendarioRef.current?.getApi();
+    if (api) {
+      const { activeStart, activeEnd } = api.view;
+      cargarReservacionesPorRango(
+        activeStart.toISOString().split('T')[0],
+        activeEnd.toISOString().split('T')[0]
+      );
+    }
+  };
+
   const renderizarEvento = (info) => {
     const estado = info.event.extendedProps?.estado || "pendiente";
     const estilos = obtenerEstiloEstado(estado);
@@ -172,10 +192,15 @@ const CalendarioReservasPagina = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Calendario de Reservas</h1>
         </div>
         <p className="text-gray-600 dark:text-gray-400">Visualiza y gestiona todas las reservas programadas</p>
+        <div className="mb-4">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Buscar reservación por código
+          </p>
+          <BuscadorReservacion onEncontrada={manejarReservaEncontrada} />
+        </div>
         <div className="flex flex-wrap gap-4 mt-4">
           {[
             { color: 'bg-yellow-500', label: 'Pendiente' },
-            { color: 'bg-green-500',  label: 'Pagado'    },
             { color: 'bg-blue-500',   label: 'Completado'},
           ].map(({ color, label }) => (
             <div key={label} className="flex items-center gap-2">
@@ -255,6 +280,25 @@ const CalendarioReservasPagina = () => {
             onClose={modalDetalleReserva.cerrar}
           />
         )}
+      </Modal>
+      <Modal
+        estaAbierto={modalGestionReserva.estaAbierto}
+        onCerrar={() => {
+          modalGestionReserva.cerrar();
+          limpiarReservacionBuscada();
+        }}
+        titulo="Gestión de Reserva"
+        tamaño="md"
+        mostrarHeader={true}
+        mostrarFooter={false}
+      >
+        <ModalGestionReserva
+          onCerrar={() => {
+            modalGestionReserva.cerrar();
+            limpiarReservacionBuscada();
+          }}
+          onAccion={manejarAccionGestion}
+        />
       </Modal>
     </div>
   );

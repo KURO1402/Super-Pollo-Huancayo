@@ -5,7 +5,9 @@ import {
   obtenerReservacionPorIdServicio,
   crearReservacionManualServicio,
   cancelarReservacionServicio,
-  obtenerMesasDisponiblesAdminServicio,
+  obtenerMesasDisponiblesServicio,
+  buscarReservacionPorCodigoServicio,
+  confirmarReservacionServicio,
 } from '../servicios/reservacionesServicio';
 
 export const useReservacionAdminStore = create((set, get) => ({
@@ -18,6 +20,9 @@ export const useReservacionAdminStore = create((set, get) => ({
 
   mesasDisponibles: [],
   cargandoMesas: false,
+
+  reservacionBuscada: null,
+  cargandoBusqueda: false,
 
   cargarReservacionesPorRango: async (fechaInicio, fechaFin) => {
     try {
@@ -45,6 +50,8 @@ export const useReservacionAdminStore = create((set, get) => ({
     }
   },
 
+  limpiarDetalle: () => set({ reservacionDetalle: null, error: null }),
+
   crearReservacionManual: async (datos) => {
     try {
       set({ guardando: true, error: null });
@@ -61,7 +68,7 @@ export const useReservacionAdminStore = create((set, get) => ({
   cargarMesasDisponibles: async (fecha, hora) => {
     try {
       set({ cargandoMesas: true });
-      const mesas = await obtenerMesasDisponiblesAdminServicio(fecha, hora);
+      const mesas = await obtenerMesasDisponiblesServicio(fecha, hora);
       set({ mesasDisponibles: mesas });
     } catch (error) {
       set({ mesasDisponibles: [] });
@@ -69,6 +76,8 @@ export const useReservacionAdminStore = create((set, get) => ({
       set({ cargandoMesas: false });
     }
   },
+  
+  limpiarMesasDisponibles: () => set({ mesasDisponibles: [] }),
 
   cancelarReservacion: async (idReservacion) => {
     try {
@@ -90,7 +99,37 @@ export const useReservacionAdminStore = create((set, get) => ({
     }
   },
 
-  limpiarDetalle: () => set({ reservacionDetalle: null, error: null }),
+  buscarReservacionPorCodigo: async (codigo) => {
+    try {
+      set({ cargandoBusqueda: true, reservacionBuscada: null, error: null });
+      const respuesta = await buscarReservacionPorCodigoServicio(codigo);
+      set({ reservacionBuscada: respuesta.reservacion ?? null });
+    } catch (error) {
+      set({ reservacionBuscada: null, error: error.message });
+      throw error;
+    } finally {
+      set({ cargandoBusqueda: false });
+    }
+  },
 
-  limpiarMesasDisponibles: () => set({ mesasDisponibles: [] }),
+  limpiarReservacionBuscada: () => set({ reservacionBuscada: null, error: null }),
+
+  confirmarReservacion: async (idReservacion) => {
+    try {
+      set({ guardando: true, error: null });
+      await confirmarReservacionServicio(idReservacion);
+      set((state) => ({
+        reservaciones: state.reservaciones.map((r) =>
+          r.id_reservacion === idReservacion
+            ? { ...r, estado_reservacion: 'confirmado' }
+            : r
+        ),
+      }));
+    } catch (error) {
+      set({ error: 'Error al confirmar la reservación' });
+      throw error;
+    } finally {
+      set({ guardando: false });
+    }
+  },
 }));

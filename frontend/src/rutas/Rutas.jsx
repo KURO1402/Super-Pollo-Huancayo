@@ -34,7 +34,6 @@ import CajaActualPagina from "../paginas/panel-admin/CajaActualPagina";
 import HistorialCajasPagina from "../paginas/panel-admin/HistorialCajasPagina";
 
 import CalendarioReservasPagina from "../paginas/panel-admin/CalendarioReservasPagina";
-import HistorialReservasPagina from "../paginas/panel-admin/HistorialReservasPagina";
 
 import UsuariosPagina from "../paginas/panel-admin/UsuariosPagina";
 import Perfil from "../paginas/panel-admin/Perfil";
@@ -95,7 +94,6 @@ const AppRutas = () => {
                     { path: 'gestion-productos', element: <GestionProductosPagina/> },
                     { path: 'gestion-imagenes', element: <GestionImagenesPagina/> },
                     { path: 'calendario-reservas', element: <CalendarioReservasPagina/> },
-                    { path: 'historial-reservas', element: <HistorialReservasPagina/> },
                     { path: 'caja-actual', element: <CajaActualPagina/> },
                     { path: 'historial-cajas', element: <HistorialCajasPagina/> },
                     { path: 'usuarios', element: <UsuariosPagina/> },
