@@ -114,18 +114,11 @@ const StockInsumosSeccion = () => {
     modalEditarInsumo.abrir();
   };
 
-<<<<<<< HEAD
-  const insumosFiltrados = filtrarPorBusqueda(insumos, [
-    "nombre_insumo",
-    "unidad_medida",
-  ]);
-=======
   const handleLimpiarFiltros = () => {
     setTerminoBusqueda('');
     setFiltroNivelStock('');
     setPagina(1);
   };
->>>>>>> feature/correcciones-login-insumos-frontend
 
   const filasInsumos = insumosLocales.map((insumo) => (
     <FilaInsumo
@@ -164,11 +157,8 @@ const StockInsumosSeccion = () => {
             <BarraBusqueda
               valor={terminoBusqueda}
               onChange={setTerminoBusqueda}
-<<<<<<< HEAD
-              placeholder="Buscar por nombre de insumo o unidad"
-=======
+
               placeholder="Buscar por nombre de insumo..."
->>>>>>> feature/correcciones-login-insumos-frontend
             />
 
             <select
