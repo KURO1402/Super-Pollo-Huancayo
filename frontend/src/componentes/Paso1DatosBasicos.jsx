@@ -228,7 +228,6 @@ const Paso1DatosBasicos = () => {
         })} 
       />
 
-      {/* SELECTOR DE FECHA */}
       <div className="bg-gray-800 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-700">
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
@@ -320,7 +319,6 @@ const Paso1DatosBasicos = () => {
         )}
       </div>
 
-      {/* SELECTOR DE HORA */}
       <div className="bg-gray-800 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-700">
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
@@ -376,7 +374,6 @@ const Paso1DatosBasicos = () => {
         )}
       </div>
 
-      {/* SELECTOR DE PERSONAS */}
       <div className="bg-gray-800 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-700">
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
