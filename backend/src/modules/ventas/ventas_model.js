@@ -23,8 +23,7 @@ const insertarVentaModel = async ({
         );
         return { idVenta: result[0][0].id_venta };
     } catch (error) {
-        console.log(error.message);
-        throw new Error('Error al insertar la venta en la base de datos');
+        throw new Error(error.message || 'Error al isnertar venta en la base de datos');
     } finally {
         if (conexion) conexion.release();
     }
