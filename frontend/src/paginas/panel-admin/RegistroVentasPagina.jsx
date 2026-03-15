@@ -8,7 +8,8 @@ import { FilaVenta } from '../../componentes/panel-admin/ventas/FilaVenta';
 import { ModalDetalleVenta } from '../../componentes/panel-admin/ventas/ModalDetalleVenta';
 import { ModalComprobante } from '../../componentes/panel-admin/ventas/ModalComprobante';
 import { useModal } from "../../hooks/useModal";
-import { anularVentaServicio, obtenerComprobanteServicio } from '../../servicios/ventasServicio';
+import { anularVentaServicio } from '../../servicios/ventasServicio';
+import { obtenerTiposComprobanteServicio } from '../../servicios/tipoComprobanteServicio';
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
 const RegistroVentasPagina = () => {
@@ -57,7 +58,7 @@ const RegistroVentasPagina = () => {
         setCargandoComprobante(true);
         modalComprobante.abrir();
         try {
-            const data = await obtenerComprobanteServicio(idVenta);
+            const data = await obtenerTiposComprobanteServicio(idVenta);
             setComprobante(data);
         } catch (err) {
             mostrarAlerta.error(err.message || "Error al obtener el comprobante");

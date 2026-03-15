@@ -2,8 +2,9 @@ import { create } from "zustand";
 import {
   obtenerVentasServicio,
   obtenerDetalleVentaServicio,
-  obtenerComprobanteServicio,
 } from "../servicios/ventasServicio";
+
+import { obtenerTiposComprobanteServicio } from "../servicios/tipoComprobanteServicio";
 
 export const useVentaStore = create((set, get) => ({
   detalle: [],
@@ -62,7 +63,7 @@ export const useVentaStore = create((set, get) => ({
   obtenerComprobante: async (idVenta) => {
     set({ cargandoComprobante: true, error: null });
     try {
-      const comprobante = await obtenerComprobanteServicio(idVenta);
+      const comprobante = await obtenerTiposComprobanteServicio(idVenta);
       set({ comprobante, cargandoComprobante: false });
       return comprobante;
     } catch (error) {

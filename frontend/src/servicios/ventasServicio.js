@@ -89,17 +89,3 @@ export const obtenerDetalleVentaServicio = async (idVenta) => {
     throw new Error(mensaje);
   }
 };
-
-// ── Comprobante de venta ──────────────────────────────────────────────────────
-export const obtenerComprobanteServicio = async (idVenta) => {
-  try {
-    const respuesta = await API.get(`/ventas/comprobante-venta/${idVenta}`);
-    if (!respuesta.data.ok) {
-      throw new Error(respuesta.data.mensaje || "Error al obtener el comprobante");
-    }
-    return respuesta.data.comprobante;
-  } catch (error) {
-    const mensaje = error.response?.data?.mensaje || error.message || "Error al obtener comprobante";
-    throw new Error(mensaje);
-  }
-};
