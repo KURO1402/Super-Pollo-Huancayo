@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiCreditCard } from "react-icons/fi";
 import { useMedioPagoStore } from "../../store/useMedioPagoStore";
 import { useModal } from "../../hooks/useModal";
 import { useConfirmacion } from "../../hooks/useConfirmacion";
@@ -49,8 +49,8 @@ const MediosPagoPagina = () => {
         mostrarAlerta.exito("Medio de pago creado correctamente");
       }
       handleCerrar();
-    } catch {
-      mostrarAlerta.error("Ocurrió un error al guardar");
+    } catch (err) {
+      mostrarAlerta.error(err.message || "Ocurrió un error al guardar");
     }
   };
 
@@ -72,12 +72,15 @@ const MediosPagoPagina = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-5xl mx-auto py-4">
+      <div className="max-w-full px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Medios de Pago
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Medios de Pago
+              </h1>
+              <FiCreditCard size={32} className="text-gray-700 dark:text-gray-300"/>
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {mediosPago.length > 0
                 ? `${mediosPago.length} medio${mediosPago.length !== 1 ? "s" : ""} registrado${mediosPago.length !== 1 ? "s" : ""}`

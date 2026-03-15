@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiGrid } from "react-icons/fi";
 import { useCategoriaStore } from "../../store/useCategoriaStore";
 import { useModal } from "../../hooks/useModal";
 import { useConfirmacion } from "../../hooks/useConfirmacion";
@@ -49,8 +49,8 @@ const CategoriaProductosPagina = () => {
         mostrarAlerta.exito("Categoría creada correctamente");
       }
       handleCerrar();
-    } catch {
-      mostrarAlerta.error("Ocurrió un error al guardar");
+    } catch (err) {
+      mostrarAlerta.error(err.message || "Ocurrió un error al guardar");
     }
   };
 
@@ -72,12 +72,15 @@ const CategoriaProductosPagina = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-full px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Categorías de Productos
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Categorías de Productos
+              </h1>
+              <FiGrid size={28} className="text-gray-700 dark:text-gray-300" />
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {categorias.length > 0
                 ? `${categorias.length} categoría${categorias.length !== 1 ? "s" : ""} registrada${categorias.length !== 1 ? "s" : ""}`

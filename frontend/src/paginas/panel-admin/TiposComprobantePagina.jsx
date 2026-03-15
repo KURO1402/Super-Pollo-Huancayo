@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiFileText } from "react-icons/fi";
 import { useTipoComprobanteStore } from "../../store/useTipoComprobanteStore";
 import { useModal } from "../../hooks/useModal";
 import { useConfirmacion } from "../../hooks/useConfirmacion";
@@ -49,8 +49,8 @@ const TiposComprobantePagina = () => {
         mostrarAlerta.exito("Tipo de comprobante creado correctamente");
       }
       handleCerrar();
-    } catch {
-      mostrarAlerta.error("Ocurrió un error al guardar");
+    } catch(err) {
+      mostrarAlerta.error(err.message || "Ocurrió un error al guardar");
     }
   };
 
@@ -72,12 +72,15 @@ const TiposComprobantePagina = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-full px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Tipos de Comprobante
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Tipos de Comprobante
+              </h1>
+              <FiFileText size={32} className="text-gray-700 dark:text-gray-300"/>
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {tiposComprobante.length > 0
                 ? `${tiposComprobante.length} tipo${tiposComprobante.length !== 1 ? "s" : ""} registrado${tiposComprobante.length !== 1 ? "s" : ""}`

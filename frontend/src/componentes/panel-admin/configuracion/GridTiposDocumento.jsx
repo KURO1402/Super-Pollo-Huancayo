@@ -1,4 +1,5 @@
-import { FiEdit2, FiTrash2, FiFileText } from "react-icons/fi";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { PiIdentificationCard } from "react-icons/pi";
 
 const getGradientByIndex = (id) => {
   const gradients = [
@@ -48,7 +49,7 @@ const GridTiposDocumento = ({ tiposDocumento, cargando, onEditar, onEliminar }) 
       <div className="flex flex-col items-center justify-center py-32 px-4">
         <div className="relative mb-6">
           <div className="w-28 h-28 bg-gray-50 dark:bg-gray-800 rounded-3xl flex items-center justify-center">
-            <FiFileText size={48} className="text-gray-300 dark:text-gray-600" />
+            <PiIdentificationCard size={54} className="text-gray-300 dark:text-gray-600" />
           </div>
           <div className="absolute -top-2 -right-2 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-500/30">
             +
@@ -82,7 +83,7 @@ const GridTiposDocumento = ({ tiposDocumento, cargando, onEditar, onEliminar }) 
                 <div className={`relative shrink-0 w-16 h-16 rounded-xl bg-linear-to-br ${gradient} shadow-lg flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                   {initials}
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-md border-2 border-white dark:border-gray-800">
-                    <FiFileText size={12} className="text-gray-600 dark:text-gray-300" />
+                    <PiIdentificationCard size={16} className="text-gray-600 dark:text-gray-300" />
                   </div>
                 </div>
 

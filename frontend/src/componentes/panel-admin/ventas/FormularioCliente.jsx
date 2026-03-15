@@ -4,18 +4,23 @@ import { useEffect, useState } from "react";
 import { obtenerTiposDocumentoServicio } from "../../../servicios/tiposDocService";
 import { buscarPorDNI, buscarPorRUC } from "../../../servicios/consultarClienteService";
 
-/**
- * Props:
- *  - onSubmit(data)
- *  - onCancelar()
- *  - tipoComprobante: 1 | 2 | 3
- *  - soloRuc: boolean  → cuando es true solo muestra RUC y lo deshabilita
- */
+const TIPO_DNI = 1;
+const TIPO_RUC = 2;
+
+const getPlaceholder = (idTipo) => {
+  if (Number(idTipo) === TIPO_DNI) return "12345678";
+  if (Number(idTipo) === TIPO_RUC) return "10123456789";
+  return "Número de documento";
+};
+
+const puedeConsultar = (idTipo) =>
+  Number(idTipo) === TIPO_DNI || Number(idTipo) === TIPO_RUC;
+
 export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloRuc = false }) => {
   const [tiposDocumento, setTiposDocumento] = useState([]);
-  const [cargando, setCargando]             = useState(true);
-  const [errorCarga, setErrorCarga]         = useState(null);
-  const [buscando, setBuscando]             = useState(false);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState(null);
+  const [buscando, setBuscando] = useState(false);
   const [mensajeBusqueda, setMensajeBusqueda] = useState("");
 
   const {
@@ -23,51 +28,47 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
     formState: { errors },
   } = useForm({
     defaultValues: {
-      tipoDocumento: soloRuc ? "2" : "1",
+      tipoDocumento: soloRuc ? String(TIPO_RUC) : String(TIPO_DNI),
     },
   });
 
-  // ── Cargar tipos de documento ─────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
         const data = await obtenerTiposDocumentoServicio();
-        // Solo DNI (id=1) y RUC (id=2)
-        const filtrados = data.filter((d) =>
-          d.id_tipo_documento === 1 || d.id_tipo_documento === 2
-        );
-        setTiposDocumento(filtrados);
+        const lista = soloRuc
+          ? data.filter((d) => d.id_tipo_documento === TIPO_RUC)
+          : data;
+        setTiposDocumento(lista);
       } catch (err) {
         setErrorCarga(err.message);
       } finally {
         setCargando(false);
       }
     })();
-  }, []);
+  }, [soloRuc]);
 
-  // Si soloRuc cambia, forzar el select a RUC
   useEffect(() => {
-    if (soloRuc) setValue("tipoDocumento", "2");
+    if (soloRuc) setValue("tipoDocumento", String(TIPO_RUC));
   }, [soloRuc, setValue]);
 
-  const tipo      = watch("tipoDocumento");
+  const tipo = watch("tipoDocumento");
   const numeroDoc = watch("numeroDocumento");
 
-  const getPlaceholder = () => {
-    if (tipo === "1") return "12345678";
-    if (tipo === "2") return "10123456789";
-    return "Número de documento";
-  };
+  useEffect(() => {
+    setValue("numeroDocumento", "");
+    setMensajeBusqueda("");
+  }, [tipo, setValue]);
 
-  // ── Buscar por DNI / RUC ──────────────────────────────────────────────────
   const handleBuscar = async () => {
+    if (!puedeConsultar(tipo)) return;
     if (!numeroDoc) { setMensajeBusqueda("Ingrese un número de documento"); return; }
 
     setBuscando(true);
     setMensajeBusqueda("");
 
     try {
-      if (tipo === "1") {
+      if (Number(tipo) === TIPO_DNI) {
         if (numeroDoc.length !== 8) { setMensajeBusqueda("El DNI debe tener 8 dígitos"); return; }
         const data = await buscarPorDNI(numeroDoc);
         if (data.success) {
@@ -80,7 +81,7 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
           setMensajeBusqueda("No se encontraron resultados");
           setValue("nombre", "");
         }
-      } else if (tipo === "2") {
+      } else if (Number(tipo) === TIPO_RUC) {
         if (numeroDoc.length !== 11) { setMensajeBusqueda("El RUC debe tener 11 dígitos"); return; }
         const data = await buscarPorRUC(numeroDoc);
         if (data?.ruc) {
@@ -101,10 +102,12 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
     }
   };
 
+  const esConsultable = puedeConsultar(tipo);
+  const esRuc = Number(tipo) === TIPO_RUC;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-      {/* Aviso factura */}
       {soloRuc && (
         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-sm text-amber-800 dark:text-amber-300">
           ⚠️ La <strong>factura</strong> requiere <strong>RUC</strong>. Solo puedes ingresar clientes con RUC válido.
@@ -112,7 +115,6 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
       )}
 
       <div className="grid grid-cols-2 gap-4">
-        {/* Tipo de documento */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Tipo de Documento *
@@ -132,13 +134,11 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
                 }`}
             >
               <option value="" disabled>Selecciona un tipo</option>
-              {tiposDocumento
-                .filter((d) => !soloRuc || d.id_tipo_documento === 2)
-                .map((d) => (
-                  <option key={d.id_tipo_documento} value={d.id_tipo_documento}>
-                    {d.nombre_tipo_documento}
-                  </option>
-                ))}
+              {tiposDocumento.map((d) => (
+                <option key={d.id_tipo_documento} value={d.id_tipo_documento}>
+                  {d.nombre_tipo_documento}
+                </option>
+              ))}
             </select>
           )}
           {errors.tipoDocumento && (
@@ -146,7 +146,6 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
           )}
         </div>
 
-        {/* Número de documento */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Número de Documento *
@@ -154,12 +153,12 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
           <div className="flex rounded-lg shadow-sm">
             <input
               type="text"
-              placeholder={getPlaceholder()}
+              placeholder={getPlaceholder(tipo)}
               {...register("numeroDocumento", {
                 required: "Campo obligatorio",
                 validate: (v) => {
-                  if (tipo === "1" && v.length !== 8)  return "DNI debe tener 8 dígitos";
-                  if (tipo === "2" && v.length !== 11) return "RUC debe tener 11 dígitos";
+                  if (Number(tipo) === TIPO_DNI && v.length !== 8)  return "DNI debe tener 8 dígitos";
+                  if (Number(tipo) === TIPO_RUC && v.length !== 11) return "RUC debe tener 11 dígitos";
                   return true;
                 },
               })}
@@ -168,9 +167,12 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
             <button
               type="button"
               onClick={handleBuscar}
-              disabled={buscando}
-              className={`px-3 flex items-center justify-center rounded-r-lg transition-colors ${
-                buscando
+              disabled={!esConsultable || buscando}
+              title={!esConsultable ? "La consulta automática solo está disponible para DNI y RUC" : "Buscar datos"}
+              className={`px-3 flex items-center justify-center rounded-r-lg transition-colors border border-l-0 border-gray-300 dark:border-gray-600 ${
+                !esConsultable
+                  ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                  : buscando
                   ? "bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed"
                   : "bg-blue-500 hover:bg-blue-600 text-white"
               }`}
@@ -193,19 +195,23 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
               {mensajeBusqueda}
             </p>
           )}
+          {!esConsultable && tipo && (
+            <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
+              Consulta automática no disponible para este tipo de documento.
+            </p>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {/* Nombre / Razón social */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {tipo === "2" ? "Razón Social *" : "Nombre Completo *"}
+            {esRuc ? "Razón Social *" : "Nombre Completo *"}
           </label>
           <input
             type="text"
             {...register("nombre", { required: "Campo obligatorio" })}
-            placeholder={tipo === "2" ? "Razón social de la empresa" : "Nombre completo"}
+            placeholder={esRuc ? "Razón social de la empresa" : "Nombre completo"}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           {errors.nombre && (
@@ -213,8 +219,7 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
           )}
         </div>
 
-        {/* Nombre comercial (solo RUC) */}
-        {tipo === "2" && (
+        {esRuc && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Nombre Comercial
@@ -229,17 +234,16 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
         )}
       </div>
 
-      {/* Dirección */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Dirección {tipo === "2" && <span className="text-red-500">*</span>}
+          Dirección {esRuc && <span className="text-red-500">*</span>}
         </label>
         <input
           type="text"
           {...register("direccion", {
-            required: tipo === "2" ? "La dirección fiscal es obligatoria para RUC" : false,
+            required: esRuc ? "La dirección fiscal es obligatoria para RUC" : false,
           })}
-          placeholder={tipo === "2" ? "Dirección fiscal (obligatoria)" : "Dirección (opcional)"}
+          placeholder={esRuc ? "Dirección fiscal (obligatoria)" : "Dirección (opcional)"}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         {errors.direccion && (
@@ -247,7 +251,6 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
         )}
       </div>
 
-      {/* Email */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Correo Electrónico
@@ -265,7 +268,6 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
         )}
       </div>
 
-      {/* Botones */}
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
