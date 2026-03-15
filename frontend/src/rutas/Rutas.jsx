@@ -35,6 +35,11 @@ import HistorialCajasPagina from "../paginas/panel-admin/HistorialCajasPagina";
 
 import CalendarioReservasPagina from "../paginas/panel-admin/CalendarioReservasPagina";
 
+import CategoriaProductosPagina from "../paginas/panel-admin/CategoriaProductosPagina";
+import TiposDocumentoPagina from "../paginas/panel-admin/TiposDocumentoPagina";
+import MediosPagoPagina from "../paginas/panel-admin/MediosPagoPagina";
+import TiposComprobantePagina from "../paginas/panel-admin/TiposComprobantePagina";
+
 import UsuariosPagina from "../paginas/panel-admin/UsuariosPagina";
 import Perfil from "../paginas/panel-admin/Perfil";
 import PagoExitoso from "../paginas/usuario/PagoExitoso";
@@ -98,6 +103,10 @@ const AppRutas = () => {
                     { path: 'historial-cajas', element: <HistorialCajasPagina/> },
                     { path: 'usuarios', element: <UsuariosPagina/> },
                     { path: 'perfil', element: <Perfil/> },
+                    { path: 'categorias-productos', element: <CategoriaProductosPagina /> },
+                    { path: 'tipos-documento', element: <TiposDocumentoPagina /> },
+                    { path: 'medios-pago', element: <MediosPagoPagina /> },
+                    { path: 'tipos-comprobante', element: <TiposComprobantePagina /> },
                 ]
                 }
             ]
