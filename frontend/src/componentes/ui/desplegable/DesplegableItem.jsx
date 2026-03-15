@@ -21,14 +21,23 @@ export const DesplegableItem = ({
 
   if (tag === "a" && to) {
     return (
-      <Link to={to} className={clasesCombinadas} onClick={handleClick}>
+      <Link
+        to={to}
+        className={clasesCombinadas}
+        onClick={handleClick}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         {children}
       </Link>
     );
   }
 
   return (
-    <button onClick={handleClick} className={clasesCombinadas}>
+    <button
+      onClick={handleClick}
+      onMouseDown={(e) => e.stopPropagation()}
+      className={clasesCombinadas}
+    >
       {children}
     </button>
   );

@@ -1,74 +1,75 @@
-import { FiBox, FiCalendar, FiUser } from "react-icons/fi";
+import { FiBox, FiCalendar, FiUser, FiSettings, FiLogOut, FiChevronRight } from "react-icons/fi";
 import { useState } from "react";
 import { Desplegable } from "../ui/desplegable/Desplegable";
 import { DesplegableItem } from "../ui/desplegable/DesplegableItem";
 import { useAutenticacionStore } from "../../store/useAutenticacionStore";
+import { ROLES } from "../../constantes/roles";
 
 export default function DesplegableUsuario() {
   const [estaAbierto, setEstaAbierto] = useState(false);
+  const [configAbierto, setConfigAbierto] = useState(false);
   const { usuario, logout } = useAutenticacionStore();
+
+  const esAdmin = usuario?.id_rol === ROLES.ADMINISTRADOR;
+  const iniciales = usuario?.nombre_usuario?.charAt(0).toUpperCase() ?? "";
+  const rolTexto = usuario?.id_rol === 2 ? "Colaborador" : "Administrador";
 
   function alternarDesplegable() {
     setEstaAbierto(!estaAbierto);
+    setConfigAbierto(false);
   }
 
   function cerrarDesplegable() {
     setEstaAbierto(false);
+    setConfigAbierto(false);
   }
+
   return (
     <div className="relative">
       <button
         onClick={alternarDesplegable}
-        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
+        className="dropdown-toggle flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition-colors duration-200"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11 bg-red-600 flex items-center justify-center text-white font-bold text-xl">
-          {usuario.nombre_usuario ? usuario.nombre_usuario.charAt(0).toUpperCase() : ''}
+          {iniciales}
         </span>
+        <div className="hidden sm:flex flex-col items-start leading-tight">
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 max-w-25 truncate">
+            {usuario?.nombre_usuario}
+          </span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{rolTexto}</span>
+        </div>
 
-        <span className="block mr-1 font-medium text-theme-sm">{usuario.nombre_usuario}</span>
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
-            estaAbierto ? "rotate-180" : ""
-          }`}
-          width="18"
-          height="20"
-          viewBox="0 0 18 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform durationshrink-0 ${estaAbierto ? "rotate-180" : ""}`}
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round"
         >
-          <path
-            d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
 
       <Desplegable
         estaAbierto={estaAbierto}
         onClose={cerrarDesplegable}
-        className="absolute right-0 mt-4.25 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+        className="absolute right-0 mt-2 w-64 flex flex-col rounded-2xl border border-gray-100 bg-white shadow-xl dark:border-gray-700/60 dark:bg-gray-900 overflow-hidden"
       >
-        <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {usuario.nombre_usuario} {" "} {usuario.apellido_usuario}
-          </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            Rol: { usuario.id_rol === 2 ? "Colaborador": "Administrador"}
-          </span>
+        <div className="px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-700/60">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+            {usuario?.nombre_usuario} {usuario?.apellido_usuario}
+          </p>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{rolTexto}</span>
         </div>
 
-        <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+        <ul className="flex flex-col gap-0.5 p-2">
           <li>
             <DesplegableItem
               onItemClick={cerrarDesplegable}
               tag="a"
               to="/admin/perfil"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              <FiUser size={20}/>
+              <FiUser size={16} className="text-gray-400 dark:text-grayshrink-0" />
               Editar Perfil
             </DesplegableItem>
           </li>
@@ -77,45 +78,75 @@ export default function DesplegableUsuario() {
               onItemClick={cerrarDesplegable}
               tag="a"
               to="/admin/calendario-reservas"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              <FiCalendar size={20}/>
+              <FiCalendar size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
               Calendario
             </DesplegableItem>
-          </li> 
+          </li>
           <li>
             <DesplegableItem
               onItemClick={cerrarDesplegable}
               tag="a"
               to="/admin/stock-insumos"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              <FiBox size={20}/>
+              <FiBox size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
               Stock
             </DesplegableItem>
           </li>
+
+          {esAdmin && (
+            <li>
+              <button
+                onClick={() => setConfigAbierto((prev) => !prev)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl transition-colors duration-150 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                <FiSettings size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                <span className="flex-1 text-left">Configuración</span>
+                <FiChevronRight
+                  size={14}
+                  className={`text-gray-400 dark:text-gray-500 transition-transform duration-200 ${configAbierto ? "rotate-90" : ""}`}
+                />
+              </button>
+
+              <div
+                className={`overflow-hidden transition-all duration-300 ${configAbierto ? "max-h-48" : "max-h-0"}`}
+              >
+                <ul className="pl-9 pr-2 pb-1 space-y-0.5">
+                  {[
+                    { nombre: "Categorías de Productos", ruta: "/admin/categorias-productos" },
+                    { nombre: "Tipos de Documento",      ruta: "/admin/tipos-documento" },
+                    { nombre: "Medios de Pago",          ruta: "/admin/medios-pago" },
+                    { nombre: "Tipos de Comprobante",    ruta: "/admin/tipos-comprobante" },
+                  ].map((item) => (
+                    <li key={item.ruta}>
+                      <DesplegableItem
+                        onItemClick={cerrarDesplegable}
+                        tag="a"
+                        to={item.ruta}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 rounded-lg transition-colors duration-150 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                      >
+                        <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600 shrink-0" />
+                        {item.nombre}
+                      </DesplegableItem>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+          )}
         </ul>
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300 cursor-pointer"
-        >
-          <svg
-            className="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+
+        <div className="p-2 border-t border-gray-100 dark:border-gray-700/60">
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500 rounded-xl transition-colors duration-150 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 cursor-pointer"
           >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M15.1007 19.247C14.6865 19.247 14.3507 18.9112 14.3507 18.497L14.3507 14.245H12.8507V18.497C12.8507 19.7396 13.8581 20.747 15.1007 20.747H18.5007C19.7434 20.747 20.7507 19.7396 20.7507 18.497L20.7507 5.49609C20.7507 4.25345 19.7433 3.24609 18.5007 3.24609H15.1007C13.8581 3.24609 12.8507 4.25345 12.8507 5.49609V9.74501L14.3507 9.74501V5.49609C14.3507 5.08188 14.6865 4.74609 15.1007 4.74609L18.5007 4.74609C18.9149 4.74609 19.2507 5.08188 19.2507 5.49609L19.2507 18.497C19.2507 18.9112 18.9149 19.247 18.5007 19.247H15.1007ZM3.25073 11.9984C3.25073 12.2144 3.34204 12.4091 3.48817 12.546L8.09483 17.1556C8.38763 17.4485 8.86251 17.4487 9.15549 17.1559C9.44848 16.8631 9.44863 16.3882 9.15583 16.0952L5.81116 12.7484L16.0007 12.7484C16.4149 12.7484 16.7507 12.4127 16.7507 11.9984C16.7507 11.5842 16.4149 11.2484 16.0007 11.2484L5.81528 11.2484L9.15585 7.90554C9.44864 7.61255 9.44847 7.13767 9.15547 6.84488C8.86248 6.55209 8.3876 6.55226 8.09481 6.84525L3.52309 11.4202C3.35673 11.5577 3.25073 11.7657 3.25073 11.9984Z"
-              fill=""
-            />
-          </svg>
-          Cerrar Sesión
-        </button>
+            <FiLogOut size={16} className="shrink-0" />
+            Cerrar Sesión
+          </button>
+        </div>
       </Desplegable>
     </div>
   );
