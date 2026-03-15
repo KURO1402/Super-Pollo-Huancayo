@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { FiSearch } from "react-icons/fi";
 import { useEffect, useState } from "react";
-import { obtenerTiposDocumento } from "../../../servicios/tiposDocService";
+import { obtenerTiposDocumentoServicio } from "../../../servicios/tiposDocService";
 import { buscarPorDNI, buscarPorRUC } from "../../../servicios/consultarClienteService";
 
 /**
@@ -31,7 +31,7 @@ export const FormularioCliente = ({ onSubmit, onCancelar, tipoComprobante, soloR
   useEffect(() => {
     (async () => {
       try {
-        const data = await obtenerTiposDocumento();
+        const data = await obtenerTiposDocumentoServicio();
         // Solo DNI (id=1) y RUC (id=2)
         const filtrados = data.filter((d) =>
           d.id_tipo_documento === 1 || d.id_tipo_documento === 2
