@@ -1,4 +1,3 @@
-// componentes/usuario/ModalEditarPerfil.jsx - VERSIÓN SIMPLIFICADA
 import { useState } from "react";
 import { FiUser, FiPhone, FiFileText } from "react-icons/fi";
 import { BotonSimple } from "../../ui/botones/BotonSimple";
