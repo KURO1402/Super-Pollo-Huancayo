@@ -8,7 +8,10 @@ const {
   listarPedidosModel,
   listarMesasPorPedidoModel,
   listarDetallePorPedidoModel,
-  validarMesaDisponibleModel
+  validarMesaDisponibleModel,
+  obtenerEstadoPedidoModel,
+  obtenerDetallePedidoModel,
+  obtenerMesasDeUnPedidoModel
 } = require('./pedidos_model')
 
 const obtenerMesasPedidoService = async (fecha, hora) => {
@@ -183,8 +186,41 @@ const listarPedidosService = async (fecha, hora) => {
     };
 };
 
+const obtenerPedidoCompletoService = async (idPedido) => {
+
+    if (!idPedido || isNaN(idPedido)) {
+      throw crearError('Se necesita especificar un pedido válido.', 400);
+    }
+  
+    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+  
+    if (!estadoPedido || estadoPedido.length === 0) {
+      throw crearError('No se encontró el pedido.', 404);
+    }
+  
+    const detallePedido = await obtenerDetallePedidoModel(idPedido);
+    const mesasPedido = await obtenerMesasDeUnPedidoModel(idPedido);
+  
+    return {
+      ok: true,
+      id_pedido: estadoPedido.id_pedido,
+      estado_pedido: estadoPedido.estado_pedido,
+      detalle: detallePedido.map(item => ({
+        id_detalle_pedido: item.id_detalle_pedido,
+        id_producto: item.id_producto,
+        nombre_producto: item.nombre_producto,
+        cantidad_pedido: item.cantidad_pedido
+      })),
+      mesas: mesasPedido.map(item => ({
+        id_mesa: item.id_mesa,
+        numero_mesa: item.numero_mesa
+      }))
+    };
+  };
+
 module.exports = {
   obtenerMesasPedidoService,
   insertarPedidoService,
-  listarPedidosService
+  listarPedidosService,
+  obtenerPedidoCompletoService
 }

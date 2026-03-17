@@ -6,11 +6,13 @@ const { autenticacionToken, verificarRoles } = require('../../middlewares/autent
 const {
   obtenerMesasPedidoController,
   insertarPedidoController,
-  listarPedidosController
+  listarPedidosController,
+  obtenerPedidoCompletoController
 } = require('./pedido_controller');
 
 router.get('/mesas', autenticacionToken, verificarRoles(2, 3), obtenerMesasPedidoController);
 router.get('/', autenticacionToken, verificarRoles(2, 3), listarPedidosController);
 router.post('/crear-pedido', autenticacionToken, verificarRoles(2,3), insertarPedidoController);
+router.get('/pedido/:idPedido', obtenerPedidoCompletoController);
 
 module.exports = router;

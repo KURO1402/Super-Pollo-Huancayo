@@ -8,6 +8,9 @@ DROP PROCEDURE IF EXISTS sp_insertar_pedido;
 DROP PROCEDURE IF EXISTS sp_insertar_mesa_pedido;
 DROP PROCEDURE IF EXISTS sp_insertar_detalle_pedido;
 DROP PROCEDURE IF EXISTS sp_validar_mesa_disponible;
+DROP PROCEDURE IF EXISTS sp_obtener_estado_pedido;
+DROP PROCEDURE IF EXISTS sp_obtener_detalle_pedido;
+DROP PROCEDURE IF EXISTS sp_obtener_mesas_de_un_pedido;
 
 DELIMITER //
 
@@ -155,6 +158,37 @@ BEGIN
              AND expira_en > NOW())
 
         ) AS ocupada;
+END //
+
+CREATE PROCEDURE sp_obtener_estado_pedido(IN p_id_pedido INT)
+BEGIN
+    SELECT 
+        id_pedido,
+        estado_pedido
+    FROM pedido_mesa
+    WHERE id_pedido = p_id_pedido;
+END //
+
+CREATE PROCEDURE sp_obtener_detalle_pedido(IN p_id_pedido INT)
+BEGIN
+    SELECT 
+        dp.id_detalle_pedido,
+        dp.id_producto,
+        p.nombre_producto,
+        dp.cantidad_pedido
+    FROM detalle_pedido dp
+    INNER JOIN productos p ON dp.id_producto = p.id_producto
+    WHERE dp.id_pedido = p_id_pedido;
+END //
+
+CREATE PROCEDURE sp_obtener_mesas_de_un_pedido(IN p_id_pedido INT)
+BEGIN
+    SELECT 
+        mp.id_mesa,
+        m.numero_mesa
+    FROM mesas_pedido mp
+    INNER JOIN mesas m ON mp.id_mesa = m.id_mesa
+    WHERE mp.id_pedido = p_id_pedido;
 END //
 
 DELIMITER ;

@@ -114,11 +114,58 @@ const validarMesaDisponibleModel = async (idMesa, fechaHora) => {
     }
 };
 
+const obtenerEstadoPedidoModel = async (idPedido) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute('CALL sp_obtener_estado_pedido(?)', [idPedido]);
+        return rows[0][0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al obtener el estado del pedido en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
+const obtenerDetallePedidoModel = async (idPedido) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute('CALL sp_obtener_detalle_pedido(?)', [idPedido]);
+        return rows[0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al obtener el detalle del pedido en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+
+const obtenerMesasDeUnPedidoModel = async (idPedido) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute('CALL sp_obtener_mesas_de_un_pedido(?)', [idPedido]);
+        return rows[0];
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al obtener las mesas del pedido en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
   obtenerMesasPedidoModel,
   insertarPedidoCompletoModel,
   listarPedidosModel,
   listarMesasPorPedidoModel,
   listarDetallePorPedidoModel,
-  validarMesaDisponibleModel
+  validarMesaDisponibleModel,
+  obtenerEstadoPedidoModel,
+  obtenerDetallePedidoModel,
+  obtenerMesasDeUnPedidoModel
 }
