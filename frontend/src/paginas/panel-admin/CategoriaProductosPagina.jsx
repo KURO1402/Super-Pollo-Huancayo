@@ -58,8 +58,12 @@ const CategoriaProductosPagina = () => {
     solicitarConfirmacion(
       `¿Estás seguro de eliminar la categoría "${categoria.nombre_categoria}"?`,
       async () => {
-        await eliminarCategoria(categoria.id_categoria);
-        mostrarAlerta.exito("Categoría eliminada correctamente");
+        try {
+          await eliminarCategoria(categoria.id_categoria);
+          mostrarAlerta.exito("Categoría eliminada correctamente");
+        } catch (err) {
+          mostrarAlerta.error(err.message || "Error al eliminar la categoría");
+        }
       },
       {
         titulo: "Eliminar categoría",

@@ -25,16 +25,16 @@ const insertarTipoComprobanteService = async (datos) => {
         throw crearError('Se necesita la serie del nuevo tipo de comprobante', 400);
     }
 
-    const nombreSerieCoincidente = await contarTipoComprobantePorNombreSerieModel(nombreComprobante, serie);
-    if (nombreSerieCoincidente > 0) {
-        throw crearError('Ya existe un tipo de comprobante con ese nombre o serie', 409);
+    const nombreSerieActivo = await contarTipoComprobantePorNombreSerieModel(nombreComprobante, serie);
+    if (nombreSerieActivo > 0) {
+        throw crearError('Ya existe un tipo de comprobante activo con ese nombre o serie', 409);
     }
 
     const tipo_comprobante = await insertarTipoComprobanteModel(nombreComprobante, serie);
 
     return {
         ok: true,
-        mensaje: 'Tipo de comprobante insertado correctamente',
+        mensaje: 'Tipo de comprobante registrado correctamente',
         tipo_comprobante
     };
 };

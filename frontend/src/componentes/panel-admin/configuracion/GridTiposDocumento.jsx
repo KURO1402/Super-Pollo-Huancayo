@@ -26,7 +26,7 @@ const getInitials = (nombre) => {
 const GridTiposDocumento = ({ tiposDocumento, cargando, onEditar, onEliminar }) => {
   if (cargando) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
         {[...Array(6)].map((_, i) => (
           <div key={i} className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 shadow-sm">
             <div className="p-6">
@@ -66,7 +66,7 @@ const GridTiposDocumento = ({ tiposDocumento, cargando, onEditar, onEliminar }) 
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
       {tiposDocumento.map((tipo) => {
         const gradient = getGradientByIndex(tipo.id_tipo_documento);
         const initials = getInitials(tipo.nombre_tipo_documento);
