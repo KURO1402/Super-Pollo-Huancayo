@@ -13,6 +13,6 @@ const {
 router.get('/mesas', autenticacionToken, verificarRoles(2, 3), obtenerMesasPedidoController);
 router.get('/', autenticacionToken, verificarRoles(2, 3), listarPedidosController);
 router.post('/crear-pedido', autenticacionToken, verificarRoles(2,3), insertarPedidoController);
-router.get('/pedido/:idPedido', obtenerPedidoCompletoController);
+router.get('/pedido/:idPedido', autenticacionToken, verificarRoles(2, 3), obtenerPedidoCompletoController);
 
 module.exports = router;
