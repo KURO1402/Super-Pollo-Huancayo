@@ -119,7 +119,7 @@ const obtenerInsumosService = async (limit, offset, nombreInsumo, nivelStock) =>
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        console.log('Cache hit');
+        
         const insumos = await obtenerInsumosModel(limite, desplazamiento, nombreInsumo, nivelStock);
 
         if (!insumos || insumos.length === 0) {
@@ -133,7 +133,7 @@ const obtenerInsumosService = async (limit, offset, nombreInsumo, nivelStock) =>
         };
     }
 
-    console.log('Cache miss');
+
 
     const totalRegistros = await contarInsumosModel(nombreInsumo, nivelStock);
 
@@ -238,7 +238,7 @@ const obtenerMovimientosStockService = async (querys) => {
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        console.log('Cache hit');
+        
         const movimientos = await obtenerMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo, limite, desplazamiento);
 
         if (!movimientos || movimientos.length === 0) {
@@ -252,7 +252,7 @@ const obtenerMovimientosStockService = async (querys) => {
         };
     }
 
-    console.log('Cache miss');
+
 
     const totalRegistros = await contarMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo);
 

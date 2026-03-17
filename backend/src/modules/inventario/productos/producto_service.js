@@ -415,7 +415,6 @@ const obtenerProductosGestionService = async (querys) => {
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        console.log('Cache hit');
 
         const productos = await obtenerProductosGestionModel(nombre, insumosUsa, categoria, limite, desplazamiento);
 
@@ -430,7 +429,6 @@ const obtenerProductosGestionService = async (querys) => {
         };
     }
 
-    console.log('Cache miss');
 
     const totalRegistros = await contarProductosGestionModel(nombre, insumosUsa, categoria);
 
@@ -470,7 +468,7 @@ const obtenerProductosDeshabilitadosService = async (querys) => {
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        console.log('Cache hit');
+        
 
         const productos = await obtenerProductosDeshabilitadosModel(nombre, categoria, limite, desplazamiento);
 
@@ -485,7 +483,7 @@ const obtenerProductosDeshabilitadosService = async (querys) => {
         };
     }
 
-    console.log('Cache miss');
+    
 
     const totalRegistros = await contarProductosDeshabilitadosModel(nombre, categoria);
 
@@ -564,7 +562,7 @@ const obtenerImagenesProductosService = async (querys) => {
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        console.log('Cache hit');
+        
 
         const imagenes = await obtenerImagenesProductosModel(nombre, limite, desplazamiento);
 
@@ -579,7 +577,7 @@ const obtenerImagenesProductosService = async (querys) => {
         };
     }
 
-    console.log('Cache miss');
+    
 
     const totalRegistros = await contarImagenesProductosModel(nombre);
 

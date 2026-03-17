@@ -25,6 +25,7 @@ import RegistroVentasPagina from "../paginas/panel-admin/RegistroVentasPagina";
 
 import GestionProductosPagina from "../paginas/panel-admin/GestionProductosPagina";
 import GestionImagenesPagina from "../paginas/panel-admin/GestionImagenesPagina";
+import ProductosDeshabilitadosPagina from "../paginas/panel-admin/ProductosDeshabilitadosPagina";
 
 import StockInsumosPagina from "../paginas/panel-admin/StockInsumosPagina";
 import HistorialEntradasPagina from "../paginas/panel-admin/HistorialEntradasPagina";
@@ -98,6 +99,7 @@ const AppRutas = () => {
                     { path: 'historial-salidas', element: <HistorialSalidasPagina/> },
                     { path: 'gestion-productos', element: <GestionProductosPagina/> },
                     { path: 'gestion-imagenes', element: <GestionImagenesPagina/> },
+                    { path: 'productos-deshabilitados', element: <ProductosDeshabilitadosPagina /> },
                     { path: 'calendario-reservas', element: <CalendarioReservasPagina/> },
                     { path: 'caja-actual', element: <CajaActualPagina/> },
                     { path: 'historial-cajas', element: <HistorialCajasPagina/> },
