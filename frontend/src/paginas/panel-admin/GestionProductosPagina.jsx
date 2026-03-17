@@ -114,24 +114,24 @@ const GestionProductosPagina = () => {
         </div>
       </div>
 
-      <Tabla
-        encabezados={["PRODUCTO", "PRECIO", "CATEGORÍA", "USA INSUMOS", "GESTIÓN INSUMOS", "ACCIONES"]}
-        registros={filasProductos}
-      />
-
-      {productosFiltrados.length === 0 && !cargando && (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 mt-2">
+      {productosFiltrados.length === 0 ? (
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <BsBoxSeam className="text-5xl text-gray-300 dark:text-gray-600 mx-auto mb-3" />
           <p className="text-gray-500 dark:text-gray-400">
             {busqueda ? "No se encontraron productos con ese criterio" : "No hay productos registrados aún"}
           </p>
         </div>
+      ) : (
+        <Tabla
+          encabezados={["PRODUCTO", "PRECIO", "CATEGORÍA", "INVENTARIO", "GESTIÓN INSUMOS", "ACCIONES"]}
+          registros={filasProductos}
+        />
       )}
 
       {/* Modal receta */}
       <Modal
         estaAbierto={modalReceta.estaAbierto}
-        onCerrar={modalReceta.cerrar}
+        onCerrar={() => { modalReceta.cerrar(); refetch(); }}
         titulo={`Insumos: ${productoSeleccionado?.nombre_producto || ''}`}
         tamaño="xl"
         mostrarHeader={true}
@@ -139,7 +139,7 @@ const GestionProductosPagina = () => {
         {productoSeleccionado && (
           <ModalReceta
             producto={productoSeleccionado}
-            onClose={modalReceta.cerrar}
+            onClose={() => { modalReceta.cerrar(); refetch(); }}
             onGuardar={refetch}
           />
         )}

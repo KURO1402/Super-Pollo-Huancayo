@@ -5,9 +5,9 @@ import { MdOutlineNoFood } from "react-icons/md";
 export const FilaProducto = ({ producto, onGestionarInsumos, onEditarProducto, onDeshabilitarProducto }) => {
   const getUsaInsumosClases = (usaInsumos) => {
     if (usaInsumos === 1 || usaInsumos === 'Sí') {
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      return "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200";
     }
-    return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
   };
 
   const getConfiguracionInsumos = (usaInsumos) => {
@@ -52,7 +52,7 @@ export const FilaProducto = ({ producto, onGestionarInsumos, onEditarProducto, o
 
       <td className="px-4 py-3">
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getUsaInsumosClases(producto.usa_insumos)}`}>
-          {producto.usa_insumos === 1 || producto.usa_insumos === 'Sí' ? 'Con insumos' : 'Sin insumos'}
+          {producto.usa_insumos === 1 || producto.usa_insumos === 'Sí' ? 'Si' : 'No'}
         </span>
       </td>
 
