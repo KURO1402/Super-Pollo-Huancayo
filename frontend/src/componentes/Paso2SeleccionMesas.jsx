@@ -54,7 +54,6 @@ const Paso2SeleccionMesas = () => {
 
   const getMesaInfo = (mesaId) => {
     const mesaBackend = mesasDisponibles.find(m => m.id === mesaId);
-    console.log(mesaBackend);
     return mesaBackend ?? { id: mesaId, numero: mesaId.toString(), capacidad: 4, disponible: false };
   };
 

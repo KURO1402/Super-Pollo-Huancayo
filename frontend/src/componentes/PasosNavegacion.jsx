@@ -1,8 +1,8 @@
 import { FiCheck } from "react-icons/fi";
-import { useAutenticacionStore } from "../store/useAutenticacionStore";
+import { useReservacionStore } from "../store/useReservacionStore";
 
 const PasosNavegacion = () => {
-  const { pasoActual } = useAutenticacionStore();
+  const { pasoActual } = useReservacionStore();
 
   const pasos = [
     { numero: 1, nombre: "Datos Básicos" },
