@@ -9,7 +9,7 @@ export const useUsuariosStore = create((set, get) => ({
     paginaActual: 1,
     limite: 10,
     filtros: {
-        busqueda: '',
+        valorBusqueda: '',
         rol: '',
     },
 
@@ -20,9 +20,13 @@ export const useUsuariosStore = create((set, get) => ({
         set({ cargando: true, error: null });
         try {
             const data = await obtenerUsuariosServicio({ limite, offset, filtros });
-            set({ usuarios: data.usuarios, total: data.total, cargando: false, error: null });
+            set({ usuarios: data.usuarios, total: data.total, cargando: false });
         } catch (error) {
-            set({ error: error.message, cargando: false });
+            if (error?.status === 404) {
+                set({ usuarios: [], total: 0, cargando: false });
+            } else {
+                set({ error: error.message, cargando: false });
+            }
         }
     },
 
@@ -54,7 +58,7 @@ export const useUsuariosStore = create((set, get) => ({
     },
 
     setLimite: (nuevoLimite) => {
-        set({ limite: nuevoLimite, paginaActual: 1});
+        set({ limite: nuevoLimite, paginaActual: 1 });
         get().cargarUsuarios();
     },
 
@@ -67,15 +71,15 @@ export const useUsuariosStore = create((set, get) => ({
     },
 
     limpiarFiltros: () => {
-        set({ filtros: { busqueda: '', rol: '' }, paginaActual: 1 });  
+        set({ filtros: { valorBusqueda: '', rol: '' }, paginaActual: 1 });
         get().cargarUsuarios();
     },
 
     limpiarError: () => set({ error: null }),
-    reset: () =>
-        set({
+
+    reset: () => set({
         usuarios: [], total: 0, cargando: false, error: null,
         paginaActual: 1, limite: 10,
-        filtros: { busqueda: '', rol: '' },
+        filtros: { valorBusqueda: '', rol: '' },
     }),
 }));

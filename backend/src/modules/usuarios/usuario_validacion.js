@@ -8,19 +8,19 @@ const validarActualizarUsuario = (datos, idUsuario) => {
     }
 
     const {
-        nombreUsuario,
-        apellidoUsuario
+        nombresUsuario,
+        apellidosUsuario
     } = datos;
 
     if (!idUsuario || typeof idUsuario !== 'number') {
         throw crearError('El ID del usuario es obligatorio y debe ser un valor numérico válido', 400);
     }
 
-    if (!nombreUsuario || typeof nombreUsuario !== 'string' || !nombreUsuario.trim()) {
+    if (!nombresUsuario || typeof nombresUsuario !== 'string' || !nombresUsuario.trim()) {
         throw crearError('El nombre del usuario es obligatorio y no puede estar vacío', 400);
     }
 
-    if (!apellidoUsuario || typeof apellidoUsuario !== 'string' || !apellidoUsuario.trim()) {
+    if (!apellidosUsuario || typeof apellidosUsuario !== 'string' || !apellidosUsuario.trim()) {
         throw crearError('El apellido del usuario es obligatorio y no puede estar vacío', 400);
     }
 };

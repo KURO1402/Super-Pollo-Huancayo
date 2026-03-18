@@ -4,7 +4,7 @@ import { obtenerRolesUsuariosServicio } from '../../../servicios/usuariosServici
 import { FiSearch, FiX } from 'react-icons/fi';
 
 const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
-  const [busquedaLocal, setBusquedaLocal] = useState(filtros.busqueda ?? '');
+  const [busquedaLocal, setBusquedaLocal] = useState(filtros.valorBusqueda ?? '');
   const busquedaDebounced = useDebounce(busquedaLocal, 500);
   const [roles, setRoles] = useState([]);
 
@@ -21,27 +21,39 @@ const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
   }, []);
 
   useEffect(() => {
-    if (busquedaDebounced !== filtros.busqueda) {
-      onCambio({ busqueda: busquedaDebounced });
+    if (busquedaDebounced !== filtros.valorBusqueda) {
+      onCambio({ valorBusqueda: busquedaDebounced });
     }
   }, [busquedaDebounced]);
 
   useEffect(() => {
-    setBusquedaLocal(filtros.busqueda ?? '');
-  }, [filtros.busqueda]);
+    setBusquedaLocal(filtros.valorBusqueda ?? '');
+  }, [filtros.valorBusqueda]);
 
   const hayFiltros = busquedaLocal !== '' || filtros.rol !== '';
 
   return (
     <div className="flex flex-col sm:flex-row gap-2.5 mb-5">
+      <div className="relative flex-1">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+          <FiSearch />
+        </span>
+        <input
+          type="text"
+          value={busquedaLocal}
+          onChange={(e) => setBusquedaLocal(e.target.value)}
+          placeholder="Buscar por nombre, correo…"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 dark:text-white"
+        />
+      </div>
 
       <select
         value={filtros.rol ?? ''}
         onChange={(e) => onCambio({ rol: e.target.value })}
-        className="sm:w-48 px-3 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+        className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 dark:text-white"
       >
         <option value="">Todos los roles</option>
-        {roles.map((role) => (
+        {roles.length > 0 && roles.map((role) => (
           <option key={role.id_rol} value={role.id_rol}>
             {role.nombre_rol.charAt(0).toUpperCase() + role.nombre_rol.slice(1)}
           </option>

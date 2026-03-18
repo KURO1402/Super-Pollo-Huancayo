@@ -23,8 +23,8 @@ const navEnlaces = [
 
 const PiePagina = () => {
   return (
-    <footer className="w-full bg-azul-secundario ">
-      <div className="bg-amarillo py-8 px-12 rounded-2xl mx-20">
+    <footer className="w-full bg-azul-secundario pt-10">
+      <div className="bg-amarillo py-8 px-12 rounded-2xl mx-20 ">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           <div className="flex flex-col items-center md:items-start">
             <div className="flex items-center mb-3">

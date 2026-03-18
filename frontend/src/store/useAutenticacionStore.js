@@ -64,6 +64,7 @@ export const useAutenticacionStore = create(
 
             logout: () => {
                 set({ usuario: null, accessToken: null });
+                window.history.replaceState({}, '', '/inicio-sesion');
             },
 
             setAccessToken: (token) => {

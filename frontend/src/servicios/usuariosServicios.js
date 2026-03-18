@@ -1,22 +1,19 @@
 import API from './axiosConfiguracion';
 
-export const obtenerUsuariosServicio = async ({ limite = 10, offset = 0, filtros = {}} = {}) => {
+export const obtenerUsuariosServicio = async ({ limite = 10, offset = 0, filtros = {} } = {}) => {
   try {
     const parametros = new URLSearchParams();
-
     parametros.append('limit', limite);
     parametros.append('offset', offset);
-
-    if(filtros.busqueda)parametros.append('busqueda', filtros.busqueda);
-    if(filtros.rol)parametros.append('rol', filtros.rol);
+    if (filtros.valorBusqueda) parametros.append('valorBusqueda', filtros.valorBusqueda);
+    if (filtros.rol) parametros.append('rol', filtros.rol);
 
     const respuesta = await API.get(`/usuarios?${parametros.toString()}`);
-
     if (respuesta.data && respuesta.data.ok) {
       return {
         usuarios: respuesta.data.usuarios ?? [],
         total: respuesta.data.cantidad_filas ?? 0,
-      }
+      };
     } else {
       throw new Error(respuesta.data?.mensaje || 'Error al obtener usuarios');
     }
