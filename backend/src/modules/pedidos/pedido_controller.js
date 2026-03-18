@@ -1,7 +1,8 @@
 const {
   obtenerMesasPedidoService,
   insertarPedidoService,
-  listarPedidosService
+  listarPedidosService,
+  obtenerPedidoCompletoService
 } = require('./pedidos_service');
 
 const obtenerMesasPedidoController = async (req, res) => {
@@ -50,8 +51,24 @@ const listarPedidosController = async (req, res) => {
   }
 };
 
+const obtenerPedidoCompletoController = async (req, res) => {
+  try {
+    const {idPedido} = req.params;
+    const resultado = await obtenerPedidoCompletoService(idPedido);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    const statusCode = err.status || 500;
+
+    return res.status(statusCode).json({
+      ok: false,
+      mensaje: err.message || "Error interno del servidor",
+    });
+  }
+};
+
 module.exports = {
   obtenerMesasPedidoController,
   insertarPedidoController,
-  listarPedidosController
+  listarPedidosController,
+  obtenerPedidoCompletoController
 }

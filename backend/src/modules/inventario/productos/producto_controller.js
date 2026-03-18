@@ -313,12 +313,12 @@ const obtenerImagenesProductosController = async (req, res) => {
 const obtenerInsumosPorProductoController = async (req, res) => {
     try {
         const { idProducto } = req.params;
-
+        
         const resultado = await obtenerInsumosPorProductoService(idProducto);
-
         return res.status(200).json(resultado);
 
     } catch (err) {
+        console.log(err.message);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

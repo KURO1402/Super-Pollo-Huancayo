@@ -217,3 +217,21 @@ export const agregarImagenProductoServicio = async (idProducto, formData) => {
     throw new Error(mensaje);
   }
 };
+
+export const obtenerProductosDeshabilitadosServicio = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.offset !== undefined) queryParams.append('offset', params.offset);
+    if (params.nombre) queryParams.append('nombre', params.nombre);
+
+    const respuesta = await API.get(`/productos/deshabilitados?${queryParams.toString()}`);
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al obtener productos deshabilitados");
+    }
+  } catch (error) {
+    throw error;
+  }
+};

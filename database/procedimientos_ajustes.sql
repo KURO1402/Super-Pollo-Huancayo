@@ -571,8 +571,7 @@ CREATE PROCEDURE sp_contar_tipo_comprobante_por_nombre_serie (
 BEGIN
     SELECT COUNT(*) AS total
     FROM tipo_comprobante
-    WHERE nombre_tipo_comprobante = p_nombre
-      OR serie = p_serie
+    WHERE (nombre_tipo_comprobante = p_nombre OR serie = p_serie)
       AND estado_comprobante = 1;
 END //
 

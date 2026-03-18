@@ -22,16 +22,16 @@ const insertarMedioPagoService = async (datos) => {
         throw crearError('Se necesita el nombre del nuevo medio de pago', 400);
     }
 
-    const nombreCoincidente = await contarMedioPagoPorNombreModel(nombreMedioPago);
-    if (nombreCoincidente > 0) {
-        throw crearError('Ya existe un medio de pago con ese nombre', 409);
+    const nombreActivoCoincidente = await contarMedioPagoPorNombreModel(nombreMedioPago);
+    if (nombreActivoCoincidente > 0) {
+        throw crearError('Ya existe un medio de pago activo con ese nombre', 409);
     }
 
     const medio_pago = await insertarMedioPagoModel(nombreMedioPago);
 
     return {
         ok: true,
-        mensaje: 'Medio de pago insertado correctamente',
+        mensaje: 'Medio de pago registrado correctamente',
         medio_pago
     };
 };

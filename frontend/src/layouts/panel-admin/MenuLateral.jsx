@@ -33,6 +33,7 @@ const navItems = [
     subItems: [
       { name: "Gestión Productos", path: "/admin/gestion-productos" },
       { name: "Gestión Imagenes", path: "/admin/gestion-imagenes" },
+      {name: "Deshabilitados", path: "/admin/productos-deshabilitados"},
     ],
   },
   {
@@ -264,7 +265,7 @@ const MenuLateral = () => {
         </Link>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar min-h-0">
+      <div className="flex-1 flex flex-col overflow-y-auto duration-300 ease-linear min-h-0 scrollbar-thin">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>

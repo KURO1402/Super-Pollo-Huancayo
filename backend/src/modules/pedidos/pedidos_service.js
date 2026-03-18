@@ -1,5 +1,6 @@
 const crearError = require('../../utilidades/crear_error');
 const { obtenerProductoIdModel } = require('../inventario/productos/producto_model');
+const pusher = require('../../config/pusher');
 
 const {
   obtenerMesasPedidoModel,
@@ -7,7 +8,10 @@ const {
   listarPedidosModel,
   listarMesasPorPedidoModel,
   listarDetallePorPedidoModel,
-  validarMesaDisponibleModel
+  validarMesaDisponibleModel,
+  obtenerEstadoPedidoModel,
+  obtenerDetallePedidoModel,
+  obtenerMesasDeUnPedidoModel
 } = require('./pedidos_model')
 
 const obtenerMesasPedidoService = async (fecha, hora) => {
@@ -93,7 +97,46 @@ const insertarPedidoService = async (datos) => {
         cantidad: p.cantidad,
     }));
 
+    // Insertar pedido en BD
     const resultado = await insertarPedidoCompletoModel(precio_precuenta, idsMesas, detalles);
+
+    // ==========================================
+    // EMITIR EVENTO A PUSHER
+    // ==========================================
+    try {
+        // Generar texto de mesas (Ej: "mesa 1 y 7" o "mesas 6, 1 y 3")
+        const numerosDesMesas = idsMesas.map(id => id);
+        let textMesas = '';
+        
+        if (numerosDesMesas.length === 1) {
+            textMesas = `mesa ${numerosDesMesas[0]}`;
+        } else if (numerosDesMesas.length === 2) {
+            textMesas = `mesas ${numerosDesMesas[0]} y ${numerosDesMesas[1]}`;
+        } else {
+            const todasMenos = numerosDesMesas.slice(0, -1).join(', ');
+            textMesas = `mesas ${todasMenos} y ${numerosDesMesas[numerosDesMesas.length - 1]}`;
+        }
+
+        // Crear payload para Pusher
+        const payloadPusher = {
+            tipo: 'agregar',
+            id_pedido: resultado.id_pedido,
+            mesas: idsMesas,
+            titulo: `Se creó un pedido para la ${textMesas}`,
+            timestamp: new Date().toISOString()
+        };
+
+        // Enviar evento a Pusher (sin esperar respuesta - es async)
+        pusher.trigger('pedidos', 'pedido-creado', payloadPusher)
+            .catch(err => {
+                console.error('Error al emitir evento a Pusher:', err.message);
+                // No relanzamos el error para que el pedido se cree igual
+            });
+
+    } catch (err) {
+        console.error('Error en emisión de Pusher:', err.message);
+        // No relanzamos el error para que el pedido se cree igual
+    }
 
     return {
         ok: true,
@@ -143,8 +186,41 @@ const listarPedidosService = async (fecha, hora) => {
     };
 };
 
+const obtenerPedidoCompletoService = async (idPedido) => {
+
+    if (!idPedido || isNaN(idPedido)) {
+      throw crearError('Se necesita especificar un pedido válido.', 400);
+    }
+  
+    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+  
+    if (!estadoPedido || estadoPedido.length === 0) {
+      throw crearError('No se encontró el pedido.', 404);
+    }
+  
+    const detallePedido = await obtenerDetallePedidoModel(idPedido);
+    const mesasPedido = await obtenerMesasDeUnPedidoModel(idPedido);
+  
+    return {
+      ok: true,
+      id_pedido: estadoPedido.id_pedido,
+      estado_pedido: estadoPedido.estado_pedido,
+      detalle: detallePedido.map(item => ({
+        id_detalle_pedido: item.id_detalle_pedido,
+        id_producto: item.id_producto,
+        nombre_producto: item.nombre_producto,
+        cantidad_pedido: item.cantidad_pedido
+      })),
+      mesas: mesasPedido.map(item => ({
+        id_mesa: item.id_mesa,
+        numero_mesa: item.numero_mesa
+      }))
+    };
+  };
+
 module.exports = {
   obtenerMesasPedidoService,
   insertarPedidoService,
-  listarPedidosService
+  listarPedidosService,
+  obtenerPedidoCompletoService
 }

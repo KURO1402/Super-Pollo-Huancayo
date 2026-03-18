@@ -67,3 +67,18 @@
 .fc-day-today {
   @apply bg-gradient-to-br from-blue-100 to-blue-200 dark:text-white dark:from-blue-900/40 dark:to-blue-800/40 font-semibold shadow-inner animate-pulse border-2 border-blue-400 dark:border-blue-500;
 }
+
+/* Scrollbar personalizado */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 9999px;
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+}
