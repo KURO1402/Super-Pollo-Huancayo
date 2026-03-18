@@ -83,7 +83,7 @@ const Perfil = () => {
   const handleCorreoActualizado = (nuevoCorreo) => {
     setUsuarioPerfil(prev => ({
       ...prev,
-      correoUsuario: nuevoCorreo
+      correo_usuario: nuevoCorreo
     }));
   };
 

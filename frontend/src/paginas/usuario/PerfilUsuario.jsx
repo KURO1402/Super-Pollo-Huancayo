@@ -18,7 +18,6 @@ import mostrarAlerta from "../../utilidades/toastUtilidades";
 
 import {
   actualizarPerfilUsuarioServicio,
-  actualizarCorreoUsuarioServicio,
   actualizarClaveUsuarioServicio 
 } from "../../servicios/usuarioServicio"
 
@@ -115,24 +114,12 @@ const PerfilUsuario = () => {
     }
   };
 
-  const handleCorreoActualizado = async (datosCorreo) => {
-    try {
-      const respuesta = await actualizarCorreoUsuarioServicio(perfilUsuario.id_usuario, datosCorreo);
-      
-      if (respuesta.ok) {
-        setPerfilUsuario(prev => ({
-          ...prev,
-          correo_usuario: datosCorreo.nuevoCorreo || datosCorreo.correo
-        }));
-        cerrarCorreo();
-        mostrarAlerta.exito(respuesta.mensaje || "Correo actualizado exitosamente");
-      } else {
-        throw new Error(respuesta.mensaje || 'Error al actualizar el correo');
-      }
-    } catch (error) {
-      mostrarAlerta.error(error.message || "Error al actualizar el correo");
-      throw error;
-    }
+  const handleCorreoActualizado = (nuevoCorreo) => {
+    setPerfilUsuario(prev => ({
+      ...prev,
+      correo_usuario: nuevoCorreo
+    }));
+    cerrarCorreo();
   };
 
   const handleClaveActualizada = async (datosClave) => {
@@ -357,7 +344,6 @@ const PerfilUsuario = () => {
         </div>
       </div>
 
-      {/* Modal para editar perfil */}
       <Modal
         estaAbierto={modalEditarAbierto}
         onCerrar={cerrarEditar}
@@ -376,7 +362,6 @@ const PerfilUsuario = () => {
         )}
       </Modal>
 
-      {/* Modal para actualizar correo */}
       <Modal
         estaAbierto={modalCorreoAbierto}
         onCerrar={cerrarCorreo}
@@ -387,7 +372,6 @@ const PerfilUsuario = () => {
       >
         {perfilUsuario && (
           <ModalActualizarCorreo
-            idUsuario={perfilUsuario.id_usuario}
             correoActual={perfilUsuario.correo_usuario}
             onClose={cerrarCorreo}
             onCorreoActualizado={handleCorreoActualizado}

@@ -28,14 +28,13 @@ export const obtenerUsuarioActualServicio = async (idUsuario) => {
   }
 };
 
-export const actualizarCorreoUsuarioServicio = async (idUsuario, datos) => {
+export const actualizarCorreoUsuarioServicio = async (datos) => {
   try {
-    const respuesta = await API.patch(`/usuarios/actualizar-correo/${idUsuario}`, datos);
-    
+    const respuesta = await API.patch('/usuarios/actualizar-correo', datos);
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {
-      throw new Error(respuesta.data?.mensaje || "Error al actualizar correo");
+      throw new Error(respuesta.data?.mensaje || 'Error al actualizar correo');
     }
   } catch (error) {
     throw error;

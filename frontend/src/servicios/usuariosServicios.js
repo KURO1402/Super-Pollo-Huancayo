@@ -81,7 +81,6 @@ export const obtenerUsuarioPorIdServicio = async () => {
 };
 
 export const actualizarUsuarioServicio = async (idUsuario, datosActualizados) => {
-  console.log("Actualizando usuario con ID:", idUsuario, "Datos:", datosActualizados);
   try {
     const respuesta = await API.patch(`/usuarios/actualizar-usuario`, datosActualizados);
     
@@ -96,7 +95,6 @@ export const actualizarUsuarioServicio = async (idUsuario, datosActualizados) =>
 };
 
 export const actualizarCorreoUsuarioServicio = async (datos) => {
-  console.log("Actualizando correo con datos:", datos);
   try {
     const respuesta = await API.patch(`/usuarios/actualizar-correo`, datos);
     
