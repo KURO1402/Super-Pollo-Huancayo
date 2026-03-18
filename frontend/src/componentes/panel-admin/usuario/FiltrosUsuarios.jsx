@@ -4,7 +4,7 @@ import { obtenerRolesUsuariosServicio } from '../../../servicios/usuariosServici
 import { FiSearch } from 'react-icons/fi';
 
 const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
-  const [busquedaLocal, setBusquedaLocal] = useState(filtros.busqueda ?? '');
+  const [busquedaLocal, setBusquedaLocal] = useState(filtros.valorBusqueda ?? '');
   const busquedaDebounced = useDebounce(busquedaLocal, 500);
   const [roles, setRoles] = useState({});
 
@@ -21,14 +21,15 @@ const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
   }, []);
 
   useEffect(() => {
-    if (busquedaDebounced !== filtros.busqueda) {
-      onCambio({ busqueda: busquedaDebounced });
+    if (busquedaDebounced !== filtros.valorBusqueda) {
+      onCambio({ valorBusqueda: busquedaDebounced });
     }
   }, [busquedaDebounced]);
 
   useEffect(() => {
-    setBusquedaLocal(filtros.busqueda ?? '');
-  }, [filtros.busqueda]);
+    setBusquedaLocal(filtros.valorBusqueda ?? '');
+  }, [filtros.valorBusqueda]);
+
 
   const hayFiltros = busquedaLocal !== '' || filtros.rol !== '';
 
@@ -38,7 +39,7 @@ const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
 
         <div className="relative flex-1">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-            <FiSearch/>
+            <FiSearch />
           </span>
           <input
             type="text"

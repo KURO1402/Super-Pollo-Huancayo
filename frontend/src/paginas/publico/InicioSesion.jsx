@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAutenticacionStore } from '../../store/useAutenticacionStore';
 import FormularioInicioSesion from '../../componentes/ui/formularios/FormularioInicioSesion';
 import { mostrarAlerta } from '../../utilidades/toastUtilidades';
-import { obtenerRutaRedireccion } from '../../constantes/roles';
+import { obtenerRutaRedireccion, ROLES } from '../../constantes/roles';
 
 const InicioSesion = ()=> {
   const { login, carga, error, limpiarError, usuario } = useAutenticacionStore(); 
@@ -12,20 +12,23 @@ const InicioSesion = ()=> {
 
   const manejarEnvioInicioSesion = async (datosFormulario) => {
     const usuarioLogueado = await login(datosFormulario);
-    if (usuarioLogueado){
-      const rutaDestino = obtenerRutaRedireccion(usuarioLogueado.idRol);
-      
-      const from = location.state?.from?.pathname;
-      
-      mostrarAlerta.exito('¡Bienvenido de nuevo!');
-      
-      if (from && from !== '/inicio-sesion') {
-        navigate(from, { replace: true });
-      } else {
-        navigate(rutaDestino, { replace: true });
-      }
+    if (usuarioLogueado) {
+        const rutaDestino = obtenerRutaRedireccion(usuarioLogueado.id_rol);
+        const from = location.state?.from?.pathname;
+
+        mostrarAlerta.exito('¡Bienvenido de nuevo!');
+
+        const rutasAdmin = ['/admin/usuarios', '/admin/categorias-productos', '/admin/tipos-documento', '/admin/medios-pago', '/admin/tipos-comprobante'];
+        const esRutaRestringida = rutasAdmin.some(ruta => from?.startsWith(ruta));
+        const esAdmin = usuarioLogueado.id_rol === ROLES.ADMINISTRADOR;
+
+        if (from && from !== '/inicio-sesion' && (!esRutaRestringida || esAdmin)) {
+            navigate(from, { replace: true });
+        } else {
+            navigate(rutaDestino, { replace: true });
+        }
     }
-  };
+};
   useEffect(() => {
     if (error) {
       mostrarAlerta.error(error); 

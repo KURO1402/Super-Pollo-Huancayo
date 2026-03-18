@@ -7,17 +7,22 @@ import TablaUsuarios from '../../componentes/panel-admin/usuario/TablaUsuarios';
 import { Paginacion } from '../../componentes/ui/tabla/Paginacion';
 import Modal from '../../componentes/ui/modal/Modal';
 import ModalEditarUsuario from '../../componentes/panel-admin/usuario/ModalEditarUsuario';
-import {useConfirmacion} from '../../hooks/useConfirmacion';
-import {ModalConfirmacion} from '../../componentes/ui/modal/ModalConfirmacion';
+import { useConfirmacion } from '../../hooks/useConfirmacion';
+import { ModalConfirmacion } from '../../componentes/ui/modal/ModalConfirmacion';
 import mostrarAlerta from '../../utilidades/toastUtilidades';
+import { FiUsers } from 'react-icons/fi';
 
 const UsuariosPagina = () => {
   const {
-    usuarios, total, cargando, error, paginaActual, limite, filtros, cargarUsuarios, setPagina, setLimite, setFiltros, limpiarFiltros, limpiarError, eliminarUsuario,
+    usuarios, total, cargando, error,
+    paginaActual, limite, filtros,
+    cargarUsuarios, setPagina, setLimite,
+    setFiltros, limpiarFiltros, limpiarError, eliminarUsuario,
   } = useUsuariosStore();
 
   const { estaAbierto, abrir, cerrar } = useModal();
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  const [mostrarSpinner, setMostrarSpinner] = useState(false);
 
   const paginacion = usePaginacion({
     paginaActual,
@@ -28,15 +33,9 @@ const UsuariosPagina = () => {
   });
 
   const {
-    confirmacionVisible,
-    mensajeConfirmacion,
-    tituloConfirmacion,
-    tipoConfirmacion,
-    textoConfirmar,
-    textoCancelar,
-    solicitarConfirmacion,
-    ocultarConfirmacion,
-    confirmarAccion,
+    confirmacionVisible, mensajeConfirmacion, tituloConfirmacion,
+    tipoConfirmacion, textoConfirmar, textoCancelar,
+    solicitarConfirmacion, ocultarConfirmacion, confirmarAccion,
   } = useConfirmacion();
 
   useEffect(() => {
@@ -46,6 +45,17 @@ const UsuariosPagina = () => {
   useEffect(() => {
     if (error) limpiarError();
   }, [error]);
+
+  // Spinner con delay para evitar parpadeo
+  useEffect(() => {
+    let timer;
+    if (cargando) {
+      timer = setTimeout(() => setMostrarSpinner(true), 300);
+    } else {
+      setMostrarSpinner(false);
+    }
+    return () => clearTimeout(timer);
+  }, [cargando]);
 
   const handleEditarRol = (usuario) => {
     setUsuarioSeleccionado(usuario);
@@ -61,8 +71,12 @@ const UsuariosPagina = () => {
     solicitarConfirmacion(
       `¿Estás seguro de eliminar al usuario ${usuario.nombre_usuario} ${usuario.apellido_usuario}?`,
       async () => {
-        await eliminarUsuario(usuario.id_usuario);
-        mostrarAlerta.exito('Usuario eliminado correctamente');
+        try {
+          await eliminarUsuario(usuario.id_usuario);
+          mostrarAlerta.exito('Usuario eliminado correctamente');
+        } catch (err) {
+          mostrarAlerta.error(err.message || 'Error al eliminar usuario');
+        }
       },
       {
         titulo: 'Eliminar Usuario',
@@ -83,7 +97,7 @@ const UsuariosPagina = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {total > 0
               ? `${total} usuario${total !== 1 ? 's' : ''} registrado${total !== 1 ? 's' : ''}`
-              : 'Sin usuarios'}
+              : 'Sin usuarios registrados'}
           </p>
         </div>
 
@@ -93,17 +107,34 @@ const UsuariosPagina = () => {
           onLimpiar={limpiarFiltros}
         />
 
-        <TablaUsuarios
-          usuarios={usuarios}
-          cargando={cargando}
-          onEditarRol={handleEditarRol}
-          onEliminarUsuario={handleSolicitarEliminacion}
-        />
-
-        {total > 0 && (
-          <div className="mt-4">
-            <Paginacion {...paginacion} />
+        {mostrarSpinner ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">Cargando usuarios...</p>
           </div>
+        ) : usuarios.length === 0 ? (
+          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <FiUsers className="text-5xl text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400">
+              {filtros.valorBusqueda || filtros.rol
+                ? 'No se encontraron usuarios con esos filtros'
+                : 'No hay usuarios registrados'}
+            </p>
+          </div>
+        ) : (
+          <>
+            <TablaUsuarios
+              usuarios={usuarios}
+              cargando={false}
+              onEditarRol={handleEditarRol}
+              onEliminarUsuario={handleSolicitarEliminacion}
+            />
+            {total > 0 && (
+              <div className="mt-4">
+                <Paginacion {...paginacion} />
+              </div>
+            )}
+          </>
         )}
       </div>
 

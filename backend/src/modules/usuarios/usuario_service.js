@@ -123,7 +123,6 @@ const actualizarDatosUsuarioService = async (datos, idUsuario) => {
     }
 
     const totalUsuarios = await contarUsuarioPorIdModel(idUsuarioNumerico);
-
     if (totalUsuarios === 0) {
         throw crearError('El usuario especificado no existe', 404);
     }

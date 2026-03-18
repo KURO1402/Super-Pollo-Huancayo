@@ -115,16 +115,16 @@ const actualizarDatosUsuarioModel = async (datos, idUsuario) => {
         conexion = await pool.getConnection();
 
         const {
-            nombreUsuario,
-            apellidoUsuario,
+            nombresUsuario,
+            apellidosUsuario,
             telefonoUsuario
         } = datos;
         const [result] = await conexion.execute(
             'CALL sp_actualizar_datos_usuario(?, ?, ?, ?)',
             [
                 idUsuario,
-                nombreUsuario,
-                apellidoUsuario,
+                nombresUsuario,
+                apellidosUsuario,
                 telefonoUsuario
             ]
         );

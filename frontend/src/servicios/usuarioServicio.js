@@ -1,8 +1,8 @@
 import API from "./axiosConfiguracion";
 
-export const actualizarPerfilUsuarioServicio = async (idUsuario, datosActualizados) => {
+export const actualizarPerfilUsuarioServicio = async ( datosActualizados) => {
   try {
-    const respuesta = await API.put(`/usuarios/actualizar-usuario/${idUsuario}`, datosActualizados);
+    const respuesta = await API.patch(`/usuarios/actualizar-usuario`, datosActualizados);
     
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
@@ -14,10 +14,9 @@ export const actualizarPerfilUsuarioServicio = async (idUsuario, datosActualizad
   }
 };
 
-export const obtenerUsuarioActualServicio = async (idUsuario) => {
+export const obtenerUsuarioActualServicio = async () => {
   try {
-    const respuesta = await API.get(`/usuarios/${idUsuario}`);
-    
+    const respuesta = await API.get('/usuarios/usuario');
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {
@@ -28,10 +27,9 @@ export const obtenerUsuarioActualServicio = async (idUsuario) => {
   }
 };
 
-export const actualizarCorreoUsuarioServicio = async (idUsuario, datos) => {
+export const actualizarCorreoUsuarioServicio = async (datos) => {
   try {
-    const respuesta = await API.patch(`/usuarios/actualizar-correo/${idUsuario}`, datos);
-    
+    const respuesta = await API.patch('/usuarios/actualizar-correo', datos);
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {
@@ -42,10 +40,9 @@ export const actualizarCorreoUsuarioServicio = async (idUsuario, datos) => {
   }
 };
 
-export const actualizarClaveUsuarioServicio = async (idUsuario, datos) => {
+export const actualizarClaveUsuarioServicio = async (datos) => {
   try {
-    const respuesta = await API.patch(`/usuarios/actualizar-clave/${idUsuario}`, datos);
-    
+    const respuesta = await API.patch('/usuarios/actualizar-clave', datos);
     if (respuesta.data && respuesta.data.ok) {
       return respuesta.data;
     } else {
