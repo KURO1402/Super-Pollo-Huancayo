@@ -10,6 +10,8 @@ import ModalEditarUsuario from '../../componentes/panel-admin/usuario/ModalEdita
 import {useConfirmacion} from '../../hooks/useConfirmacion';
 import {ModalConfirmacion} from '../../componentes/ui/modal/ModalConfirmacion';
 import mostrarAlerta from '../../utilidades/toastUtilidades';
+import { useBusqueda } from '../../hooks/useBusqueda';
+import { FiSearch } from 'react-icons/fi';
 
 const UsuariosPagina = () => {
   const {
@@ -18,6 +20,7 @@ const UsuariosPagina = () => {
 
   const { estaAbierto, abrir, cerrar } = useModal();
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
 
   const paginacion = usePaginacion({
     paginaActual,
@@ -46,6 +49,12 @@ const UsuariosPagina = () => {
   useEffect(() => {
     if (error) limpiarError();
   }, [error]);
+
+  const usuariosFiltrados = filtrarPorBusqueda(usuarios, [
+    'nombre_usuario',
+    'correo_usuario',
+    'telefono_usuario',
+  ]);
 
   const handleEditarRol = (usuario) => {
     setUsuarioSeleccionado(usuario);
@@ -87,14 +96,32 @@ const UsuariosPagina = () => {
           </p>
         </div>
 
-        <FiltrosUsuarios
-          filtros={filtros}
-          onCambio={setFiltros}
-          onLimpiar={limpiarFiltros}
-        />
+        <div className="flex flex-col sm:flex-row gap-3 mb-0">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 pb-5 flex items-center pointer-events-none">
+              <FiSearch className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={terminoBusqueda}
+              onChange={(e) => setTerminoBusqueda(e.target.value)}
+              placeholder="Buscar por nombre, correo o teléfono..."
+              className="w-full h-10 pl-9 pr-4 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            />
+          </div>
+          
+          <div className="w-full sm:w-auto">
+            <FiltrosUsuarios
+              filtros={filtros}
+              onCambio={setFiltros}
+              onLimpiar={limpiarFiltros}
+            />
+          </div>
+        </div>
+
 
         <TablaUsuarios
-          usuarios={usuarios}
+          usuarios={usuariosFiltrados}
           cargando={cargando}
           onEditarRol={handleEditarRol}
           onEliminarUsuario={handleSolicitarEliminacion}
