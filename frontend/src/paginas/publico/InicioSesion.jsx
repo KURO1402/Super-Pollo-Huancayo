@@ -1,41 +1,42 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom'; 
-import { useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAutenticacionStore } from '../../store/useAutenticacionStore';
 import FormularioInicioSesion from '../../componentes/ui/formularios/FormularioInicioSesion';
-import { mostrarAlerta } from '../../utilidades/toastUtilidades';
+import mostrarAlerta from '../../utilidades/toastUtilidades';
 import { obtenerRutaRedireccion, ROLES } from '../../constantes/roles';
+import ModalSesionExpirada from '../../componentes/ui/modal/ModalSesionExpirada';
 
-const InicioSesion = ()=> {
-  const { login, carga, error, limpiarError, usuario } = useAutenticacionStore(); 
-  const navigate = useNavigate(); 
+
+const InicioSesion = () => {
+
+  const { login, carga, error } = useAutenticacionStore();
+  const navigate = useNavigate();
   const location = useLocation();
+  const [mostrarModalExpirada, setMostrarModalExpirada] = useState(
+    location.state?.sesionExpirada === true
+  );
 
   const manejarEnvioInicioSesion = async (datosFormulario) => {
     const usuarioLogueado = await login(datosFormulario);
     if (usuarioLogueado) {
-        const rutaDestino = obtenerRutaRedireccion(usuarioLogueado.id_rol);
-        const from = location.state?.from?.pathname;
+      const rutaDestino = obtenerRutaRedireccion(usuarioLogueado.id_rol);
+      const from = location.state?.from?.pathname;
 
-        mostrarAlerta.exito('¡Bienvenido de nuevo!');
+      mostrarAlerta.exito('¡Bienvenido de nuevo!');
 
-        const rutasAdmin = ['/admin/usuarios', '/admin/categorias-productos', '/admin/tipos-documento', '/admin/medios-pago', '/admin/tipos-comprobante'];
-        const esRutaRestringida = rutasAdmin.some(ruta => from?.startsWith(ruta));
-        const esAdmin = usuarioLogueado.id_rol === ROLES.ADMINISTRADOR;
+      const rutasAdmin = ['/admin/usuarios', '/admin/categorias-productos', '/admin/tipos-documento', '/admin/medios-pago', '/admin/tipos-comprobante'];
+      const esRutaRestringida = rutasAdmin.some(ruta => from?.startsWith(ruta));
+      const esAdmin = usuarioLogueado.id_rol === ROLES.ADMINISTRADOR;
 
-        if (from && from !== '/inicio-sesion' && (!esRutaRestringida || esAdmin)) {
-            navigate(from, { replace: true });
-        } else {
-            navigate(rutaDestino, { replace: true });
-        }
+      if (from && from !== '/inicio-sesion' && (!esRutaRestringida || esAdmin)) {
+        navigate(from, { replace: true });
+      } else {
+        navigate(rutaDestino, { replace: true });
+      }
+    } else {
+      throw new Error(error || 'Credenciales incorrectas');
     }
-};
-  useEffect(() => {
-    if (error) {
-      mostrarAlerta.error(error); 
-      const timer = setTimeout(() => limpiarError(), 200); 
-      return () => clearTimeout(timer);
-    }
-  }, [error, limpiarError]);
+  };
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -54,15 +55,15 @@ const InicioSesion = ()=> {
               </div>
             </div>
           </div>
-          
+
           <div className="w-full md:w-3/5 py-10 px-8">
             <div className="mb-8 text-center">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">Iniciar Sesión</h2>
               <p className="text-gray-600">Ingresa a tu cuenta</p>
             </div>
-            
-            <FormularioInicioSesion 
-              alEnviar={manejarEnvioInicioSesion} 
+
+            <FormularioInicioSesion
+              alEnviar={manejarEnvioInicioSesion}
               estaCargando={carga}
             />
             <p className="mt-6 text-center text-sm text-gray-600">
@@ -74,6 +75,11 @@ const InicioSesion = ()=> {
           </div>
         </div>
       </div>
+
+      <ModalSesionExpirada
+        visible={mostrarModalExpirada}
+        onCerrar={() => setMostrarModalExpirada(false)}
+      />
     </section>
   );
 };

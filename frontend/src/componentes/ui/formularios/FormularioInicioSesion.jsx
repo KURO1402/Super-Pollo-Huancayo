@@ -1,17 +1,16 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
-
 import CampoEntrada from '../inputs/CampoEntrada';
-
 import { InicioSesionValidacion } from '../../../utilidades/InicioSesionValidacion';
 
-const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {  
+const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    reset,
+    setValue,
+    setError,
   } = useForm({
     resolver: yupResolver(InicioSesionValidacion),
     mode: 'onChange'
@@ -20,8 +19,10 @@ const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
   const manejarEnvioFormulario = async (datos) => {
     try {
       await alEnviar(datos);
-      reset(); 
     } catch (error) {
+      setValue('clave', '');
+      setError('email', { message: ' ' }); 
+      setError('clave', { message: error.message || 'Correo o contraseña incorrectos' });
     }
   };
 
@@ -29,7 +30,7 @@ const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
     <form onSubmit={handleSubmit(manejarEnvioFormulario)} className="space-y-6">
       <CampoEntrada
         id="email"
-        nombre="email" 
+        nombre="email"
         tipo="email"
         etiqueta="Correo Electrónico"
         marcadorPosicion="Ingresa tu correo electrónico"
@@ -37,7 +38,7 @@ const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
         registro={register}
         error={errors.email}
       />
-      
+
       <CampoEntrada
         id="clave"
         nombre="clave"
@@ -48,15 +49,15 @@ const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
         registro={register}
         error={errors.clave}
       />
-      
+
       <div>
         <button
           type="submit"
-          disabled={!isValid || estaCargando} 
+          disabled={!isValid || estaCargando}
           className={`
             w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200
-            ${isValid && !estaCargando 
-              ? 'bg-azul-primario hover:bg-azul-secundario text-white cursor-pointer' 
+            ${isValid && !estaCargando
+              ? 'bg-azul-primario hover:bg-azul-secundario text-white cursor-pointer'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }
             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-azul-primario

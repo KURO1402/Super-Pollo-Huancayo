@@ -37,7 +37,8 @@ API.interceptors.response.use(
     if (
       (status === 401 || status === 403) &&
       !originalRequest._retry &&
-      !originalRequest.url.includes('/renovar-token')
+      !originalRequest.url.includes('/renovar-token') &&
+      !originalRequest.url.includes('/auth/login')
     ) {
 
       originalRequest._retry = true;

@@ -120,10 +120,24 @@ const renovarAccessTokenController = async (req, res) => {
   }
 };
 
+const cerrarSesionController = async (req, res) => {
+    try {
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+        });
+        return res.status(200).json({ ok: true, mensaje: 'Sesión cerrada correctamente' });
+    } catch (err) {
+        return res.status(500).json({ ok: false, mensaje: 'Error al cerrar sesión' });
+    }
+};
+
 module.exports = {
   registroUsuarioController,
   registrarVerificacionCorreoController,
   validarCodigoCorreoController,
   iniciarSesionUsuarioController,
-  renovarAccessTokenController
+  renovarAccessTokenController,
+  cerrarSesionController
 }

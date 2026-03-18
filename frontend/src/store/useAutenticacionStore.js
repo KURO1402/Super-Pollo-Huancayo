@@ -1,36 +1,36 @@
-import { create } from 'zustand'; 
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { loginUsuario, registrarUsuario, generarCodigoVerificacion, validarCodigoVerificacion } from '../servicios/autenticacionServicio';
+import { loginUsuario, registrarUsuario, generarCodigoVerificacion, validarCodigoVerificacion, logoutUsuario } from '../servicios/autenticacionServicio';
 
 export const useAutenticacionStore = create(
     persist(
         (set) => ({
-            usuario: null, 
+            usuario: null,
             accessToken: null,
-            error: null, 
-            carga: false, 
+            error: null,
+            carga: false,
 
             registrar: async (datos) => {
                 try {
-                    set({ carga: true, error: null }); 
-                    const respuesta = await registrarUsuario(datos); 
-                    set({ usuario: respuesta.usuario, accessToken: respuesta.accessToken, }); 
+                    set({ carga: true, error: null });
+                    const respuesta = await registrarUsuario(datos);
+                    set({ usuario: respuesta.usuario, accessToken: respuesta.accessToken, });
                     return respuesta.usuario;
                 } catch (err) {
                     set({ error: err.response?.data?.mensaje || 'Error al registrar usuario' });
                 } finally {
-                    set({ carga: false }); 
+                    set({ carga: false });
                 }
             },
 
             login: async (datos) => {
                 try {
-                    set({ carga: true, error: null }); 
-                    const respuesta = await loginUsuario(datos); 
-                    set({ usuario: respuesta.usuario, accessToken: respuesta.accessToken, }); 
+                    set({ carga: true, error: null });
+                    const respuesta = await loginUsuario(datos);
+                    set({ usuario: respuesta.usuario, accessToken: respuesta.accessToken, });
                     return respuesta.usuario;
                 } catch (err) {
-                    set({ error: err.response?.data?.mensaje || 'Error al iniciar sesión' });
+                    set({ error: err.message || 'Error al iniciar sesión' });
                 } finally {
                     set({ carga: false });
                 }
@@ -62,9 +62,15 @@ export const useAutenticacionStore = create(
                 }
             },
 
-            logout: () => {
-                set({ usuario: null, accessToken: null });
-                window.history.replaceState({}, '', '/inicio-sesion');
+            logout: async () => {
+                try {
+                    await logoutUsuario();
+                } catch (err) {
+                    console.error('Error al cerrar sesión en servidor:', err);
+                } finally {
+                    set({ usuario: null, accessToken: null });
+                    window.history.replaceState({}, '', '/inicio-sesion');
+                }
             },
 
             setAccessToken: (token) => {

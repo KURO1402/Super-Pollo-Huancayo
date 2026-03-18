@@ -7,7 +7,7 @@ export const registrarUsuario = async (datos) => {
     } catch (error) {
         throw error;
     }
-}
+};
 
 export const loginUsuario = async (datos) => {
     try {
@@ -16,7 +16,7 @@ export const loginUsuario = async (datos) => {
     } catch (error) {
         throw error;
     }
-}
+};
 
 export const generarCodigoVerificacion = async (correo) => {
     try {
@@ -25,7 +25,7 @@ export const generarCodigoVerificacion = async (correo) => {
     } catch (error) {
         throw error;
     }
-}
+};
 
 export const validarCodigoVerificacion = async (codigo) => {
     try {
@@ -34,4 +34,13 @@ export const validarCodigoVerificacion = async (codigo) => {
     } catch (error) {
         throw error;
     }
-}
+};
+
+export const logoutUsuario = async () => {
+    try {
+        const respuesta = await API.post('/auth/logout');
+        return respuesta.data;
+    } catch (error) {
+        throw error;
+    }
+};

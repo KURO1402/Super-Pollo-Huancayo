@@ -151,14 +151,14 @@ const iniciarSesionUsuarioService = async (datos) => {
   const resultado = await seleccionarUsuarioCorreoModel(email);
 
   if (resultado.length === 0) {
-    throw crearError('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
+    throw crearError('Correo o contraseña incorrecto', 401);
   }
 
   const usuario = resultado[0];
   const contraseñaValida = await bcrypt.compare(clave, usuario.clave_usuario);
 
   if (!contraseñaValida) {
-    throw crearError('Correo o contraseña incorrectos. Por favor, verifica e intenta de nuevo.', 401);
+    throw crearError('Correo o contraseña incorrecto', 401);
   }
   
   const payload = {
