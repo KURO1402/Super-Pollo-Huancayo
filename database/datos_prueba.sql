@@ -81,7 +81,7 @@ INSERT INTO cantidad_insumo_producto (id_producto, id_insumo, cantidad_uso) VALU
 (1, 1, 0.25),
 (1, 2, 0.40),
 (2, 1, 1.00),
-(3, 5, 1.00);
+(3, 5, 1.00),
 (4, 3, 0.10);
 
 -- MOVIMIENTOS_STOCK
