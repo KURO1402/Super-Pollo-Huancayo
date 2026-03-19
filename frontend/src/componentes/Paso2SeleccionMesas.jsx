@@ -20,6 +20,8 @@ const Paso2SeleccionMesas = () => {
     cargandoMesas,
     errorMesas,
     buscarMesasDisponibles,
+    iniciarPolling, 
+    detenerPolling,
   } = useReservacionStore();
 
   const [pisoActual, setPisoActual] = useState(1);
@@ -31,7 +33,9 @@ const Paso2SeleccionMesas = () => {
   useEffect(() => {
     if (datos.fecha && datos.hora) {
       buscarMesasDisponibles(datos.fecha, datos.hora);
+      iniciarPolling();
     }
+    return () => detenerPolling();
   }, [datos.fecha, datos.hora]);
 
   useEffect(() => {
@@ -54,7 +58,6 @@ const Paso2SeleccionMesas = () => {
 
   const getMesaInfo = (mesaId) => {
     const mesaBackend = mesasDisponibles.find(m => m.id === mesaId);
-    console.log(mesaBackend);
     return mesaBackend ?? { id: mesaId, numero: mesaId.toString(), capacidad: 4, disponible: false };
   };
 

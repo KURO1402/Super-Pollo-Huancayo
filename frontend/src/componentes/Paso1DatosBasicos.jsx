@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useFormContext } from "react-hook-form";
 import { FiClock, FiUsers, FiChevronLeft, FiChevronRight, FiCalendar, FiAlertCircle } from "react-icons/fi";
 import { horasDisponibles } from '../mocks/horaReserva';
+import { FaWhatsapp } from "react-icons/fa";
 
 const Paso1DatosBasicos = () => {
   const { register, formState: { errors }, watch, setValue, trigger, setError, clearErrors } = useFormContext();
@@ -169,6 +170,17 @@ const Paso1DatosBasicos = () => {
         </h2>
         <p className="text-gray-400 text-sm sm:text-base">
           Selecciona la fecha, hora y número de personas
+        </p>
+        <a href={`https://wa.me/51938896062?text=${encodeURIComponent("Hola, me gustaría hacer una reservación en el restaurante. ¿Podrían ayudarme?")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2.5 mt-5 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-500 active:scale-95 transition-all text-white font-semibold text-sm shadow-lg shadow-green-600/30"
+        >
+          <FaWhatsapp size={20} />
+            Reservar por WhatsApp
+        </a>
+        <p className="text-gray-500 text-xs mt-3">
+          ¿Prefieres hacerlo manualmente? Completa el formulario a continuación.
         </p>
         {!hoyDisponible && (
           <div className="mt-4 p-3 bg-blue-600/10 border border-blue-600/30 rounded-lg flex items-center gap-2 max-w-2xl mx-auto">

@@ -91,12 +91,12 @@ export const crearReservaUsuarioServicio = async (datos) => {
 
 export const obtenerReservacionesPorUsuario = async () => {
   try {
-    const respuesta = await API.get(`/reservaciones/reservas-usuario`);
+    const respuesta = await API.get("/reservaciones/mis-reservaciones");
     return respuesta.data;
   } catch (error) {
     throw error;
   }
-}
+};
 
 // PARA AMBOS
 
