@@ -103,10 +103,7 @@ const MisReservaciones = () => {
             {[
               { valor: "todas",      etiqueta: "Todas",        color: "bg-azul-primario" },
               { valor: "pendiente",  etiqueta: "Pendientes",   color: "bg-yellow-500" },
-              { valor: "confirmada", etiqueta: "Confirmadas",  color: "bg-green-500" },
               { valor: "completado", etiqueta: "Completadas",  color: "bg-blue-500" },
-              { valor: "pagado",     etiqueta: "Pagadas",      color: "bg-emerald-500" },
-              { valor: "cancelada",  etiqueta: "Canceladas",   color: "bg-red-500" },
             ].map(({ valor, etiqueta, color }) => (
               <button
                 key={valor}
