@@ -171,7 +171,7 @@ const Paso1DatosBasicos = () => {
         <p className="text-gray-400 text-sm sm:text-base">
           Selecciona la fecha, hora y número de personas
         </p>
-        <a href={`https://wa.me/51938896062?text=${encodeURIComponent("Hola, me gustaría hacer una reservación en el restaurante. ¿Podrían ayudarme?")}`}
+        <a href={`https://wa.me/51947932022?text=${encodeURIComponent("Hola, me gustaría hacer una reservación en el restaurante. ¿Podrían ayudarme?")}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2.5 mt-5 px-5 py-3 rounded-xl bg-green-600 hover:bg-green-500 active:scale-95 transition-all text-white font-semibold text-sm shadow-lg shadow-green-600/30"

@@ -191,10 +191,9 @@ const NuevaReservacion = () => {
                 Información importante
               </h4>
               <ul className="text-gray-400 text-xs md:text-sm space-y-1">
-                <li>• Cada mesa tiene un costo de S/ 15.00</li>
-                <li>• Se requiere un anticipo del 50% para confirmar la reserva</li>
-                <li>• El saldo restante se paga en el restaurante</li>
+                <li>• Cada mesa tiene un costo de S/ 10.00</li>
                 <li>• Las reservas para hoy requieren mínimo 2 horas de anticipación</li>
+                <li>• Para cancelar su reservación, comuníquese a través del número de WhatsApp 947932022</li>
               </ul>
             </div>
           </div>

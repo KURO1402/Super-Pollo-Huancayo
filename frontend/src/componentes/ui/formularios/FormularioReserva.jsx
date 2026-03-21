@@ -140,7 +140,7 @@ const FormularioReserva = () => {
                 ¿Prefieres reservar sin cuenta?
               </p>
               <a
-                href={`https://wa.me/51938896062?text=${encodeURIComponent("Hola, me gustaría hacer una reservación.")}`}
+                href={`https://wa.me/51947932022?text=${encodeURIComponent("Hola, me gustaría hacer una reservación.")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 py-2.5 rounded-xl text-sm font-medium transition-all"

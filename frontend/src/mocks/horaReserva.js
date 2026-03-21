@@ -14,5 +14,4 @@ export const horasDisponibles = [
     { value: "19:00", label: "7:00 PM" },
     { value: "19:30", label: "7:30 PM" },
     { value: "20:00", label: "8:00 PM" },
-    { value: "20:30", label: "8:30 PM" },
 ];

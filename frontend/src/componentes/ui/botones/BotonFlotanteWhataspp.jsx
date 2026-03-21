@@ -1,7 +1,7 @@
 import { FaWhatsapp } from "react-icons/fa6";
 
 const BotonFlotanteWhataspp = ({
-  numeroTelefono = "938896062",
+  numeroTelefono = "947932022",
   mensaje = 'Hola, me gustaría obtener más información sobre Super Pollo'
 }) => {
   const handleClick = () => {

@@ -56,6 +56,23 @@ const Paso2SeleccionMesas = () => {
     }
   }, [mesasSeleccionadas, personasForm]);
 
+  useEffect(() => {
+    if (mesasDisponibles.length === 0) return;
+
+    setMesasSeleccionadas(prev => {
+      const filtradas = prev.filter(mesa => {
+        const mesaActualizada = mesasDisponibles.find(m => m.id === mesa.id);
+        return mesaActualizada?.disponible;
+      });
+
+      if (filtradas.length !== prev.length) {
+        updateDatos({ mesas: filtradas });
+      }
+
+      return filtradas;
+    });
+  }, [mesasDisponibles]);
+
   const getMesaInfo = (mesaId) => {
     const mesaBackend = mesasDisponibles.find(m => m.id === mesaId);
     return mesaBackend ?? { id: mesaId, numero: mesaId.toString(), capacidad: 4, disponible: false };
@@ -63,9 +80,10 @@ const Paso2SeleccionMesas = () => {
 
   const handleSeleccionarMesa = (mesaId) => {
     const mesa = getMesaInfo(mesaId);
-    if (!mesa.disponible) return;
-
     const estaSeleccionada = mesasSeleccionadas.some(m => m.id === mesaId);
+
+    if (!mesa.disponible && !estaSeleccionada) return;
+
     const nuevaSeleccion = estaSeleccionada
       ? mesasSeleccionadas.filter(m => m.id !== mesaId)
       : [...mesasSeleccionadas, { ...mesa, piso: pisoActual }];
