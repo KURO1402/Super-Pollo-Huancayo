@@ -33,13 +33,13 @@ const IntroduccionSeccion = () => {
 
       <div className="relative z-30 max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-2 items-center gap-10 min-h-screen transform -translate-y-16">
         <div ref={textoReferencia} className="opacity-0 text-center lg:text-left">
-          <h2 id="hero-heading" className="text-3xl md:text-4xl font-semibold text-amarillo mb-4">
+          <h2 id="hero-heading" className="text-2xl md:text-3xl font-semibold text-amarillo mb-4">
             LOS MEJORES
           </h2>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white leading-tight mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
             POLLOS A LA <span className="text-rojo">BRASA</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-lg mx-auto lg:mx-0">
+          <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-lg mx-auto lg:mx-0">
             Disfruta del auténtico sabor de la cocina peruana con nuestro pollo a la brasa, preparado con las mejores especias y técnicas tradicionales.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

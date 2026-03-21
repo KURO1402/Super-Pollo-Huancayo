@@ -61,11 +61,23 @@ const MenuSeccion = () => {
     >
       <div className="max-w-7xl mx-auto">
 
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-rojo mb-4">
-            EXPLORA NUESTRA CARTA
+        <div className="text-center mb-12 opacity-0 animate-fade-up">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <span className="block w-8 h-px bg-amarillo" />
+            <span className="text-amarillo text-xs font-semibold uppercase tracking-[0.2em]">
+              Nuestra carta
+            </span>
+            <span className="block w-8 h-px bg-amarillo" />
+          </div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+            EXPLORA NUESTRA{" "}
+            <span className="text-rojo relative inline-block">
+              CARTA
+              <span className="absolute -bottom-1 left-0 w-full h-1 bg-rojo rounded-full opacity-50" />
+            </span>
           </h2>
-          <p className="text-lg text-gray-100">
+          <div className="w-16 h-0.5 bg-amarillo mx-auto mt-5 rounded-full" />
+          <p className="text-base text-gray-300 mt-5 max-w-md mx-auto">
             Productos exquisitos, deliciosos y hechos con calidad y cariño.
           </p>
         </div>

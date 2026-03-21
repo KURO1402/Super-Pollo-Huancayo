@@ -55,8 +55,12 @@ export const registroValidacion = yup.object().shape({
   
   telefonoUsuario: yup
     .string()
-    .required('El número de teléfono es obligatorio')
-    .matches(/^[+]?[\d\s\-()]{8,15}$/, 'Ingresa un número de teléfono válido'), 
+    .nullable()
+    .notRequired()
+    .matches(/^[+]?[\d\s\-()]{8,15}$/, { 
+      message: 'Ingresa un número de teléfono válido',
+      excludeEmptyString: true,
+    }), 
   
   aceptoTerminos: yup
     .boolean()
