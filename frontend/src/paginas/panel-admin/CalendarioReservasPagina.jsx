@@ -185,7 +185,7 @@ const CalendarioReservasPagina = () => {
   const fechaMinima = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="p-2">
+    <div className="p-4">
       <div className="mb-4">
         <div className="mb-4 flex items-center">
           <FiCalendar className="mr-3 text-2xl text-gray-900 dark:text-white" />
@@ -193,8 +193,8 @@ const CalendarioReservasPagina = () => {
         </div>
         <p className="text-gray-600 dark:text-gray-400">Visualiza y gestiona todas las reservas programadas</p>
         <div className="mb-4">
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Buscar reservación por código
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-4">
+            Buscar reservación por código:
           </p>
           <BuscadorReservacion onEncontrada={manejarReservaEncontrada} />
         </div>

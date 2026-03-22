@@ -89,7 +89,7 @@ const GestionProductosPagina = () => {
   }
 
   return (
-    <div className="p-2">
+    <div className="p-4">
       <div className="mb-4">
         <div className="mb-4 flex items-center">
           <BsBoxSeam className="mr-3 text-2xl text-gray-900 dark:text-white" />
@@ -99,7 +99,7 @@ const GestionProductosPagina = () => {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4 items-center">
+        <div className="flex flex-col lg:flex-row gap-4">
           <BarraBusqueda
             valor={busqueda}
             onChange={setBusqueda}

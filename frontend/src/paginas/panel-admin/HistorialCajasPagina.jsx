@@ -27,7 +27,6 @@ const HistorialCajasPagina = () => {
 
   const { estaAbierto, abrir, cerrar } = useModal();
 
-  // Filtros locales — solo se envían al hook al hacer click en "Aplicar"
   const [filtrosLocales, setFiltrosLocales] = useState({
     fechaInicio: "",
     fechaFin: "",
@@ -65,14 +64,13 @@ const HistorialCajasPagina = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+    <div className="w-full max-w-full p-4 space-y-6">
 
-      {/* ── Filtros ── */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border p-6">
+      <div className="bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-2xl p-6">
         <h1 className="text-2xl font-bold dark:text-white mb-6">Historial de Cajas</h1>
 
-        <div className="flex items-end gap-4 flex-wrap">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-w-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
                 Fecha inicio
@@ -81,7 +79,7 @@ const HistorialCajasPagina = () => {
                 type="date"
                 value={filtrosLocales.fechaInicio}
                 onChange={(e) => handleFiltroChange("fechaInicio", e.target.value)}
-                className="h-11 w-full rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                className="h-11 w-full rounded-lg border border-gray-300 px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
               />
             </div>
             <div className="space-y-1">
@@ -92,30 +90,29 @@ const HistorialCajasPagina = () => {
                 type="date"
                 value={filtrosLocales.fechaFin}
                 onChange={(e) => handleFiltroChange("fechaFin", e.target.value)}
-                className="h-11 w-full rounded-lg border px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                className="h-11 w-full rounded-lg border border-gray-300 px-4 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 pb-0.5">
+          <div className="flex gap-3">
             <button
               onClick={handleAplicarFiltros}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+              className="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
             >
               Aplicar filtros
             </button>
             <button
               onClick={handleLimpiarFiltros}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
+              className="flex-1 sm:flex-none bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
             >
-              <FiRefreshCw className="w-4 h-4" />
+              <FiRefreshCw className="w-4 h-4 shrink-0" />
               Limpiar
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── Tabla ── */}
       <TablasCajasCerradas
         cajasCerradas={cajasCerradas}
         formatCurrency={formatCurrency}

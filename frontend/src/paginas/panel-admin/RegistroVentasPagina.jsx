@@ -82,10 +82,8 @@ const RegistroVentasPagina = () => {
     const ENCABEZADOS = ["N° Venta / Comprobante", "Fecha", "Hora", "Total", "Método de Pago", "Estado SUNAT", "Acciones"];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-            <div className="max-w-7xl mx-auto px-4 py-8">
-
-                {/* Encabezado */}
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <div className="mx-w-full p-4">
                 <div className="mb-6 flex items-center gap-2">
                     <MdHistory className="text-3xl text-blue-500 dark:text-blue-400" />
                     <div>
@@ -102,49 +100,53 @@ const RegistroVentasPagina = () => {
 
                 {/* Filtro de fechas */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-5">
-                    <div className="flex flex-col sm:flex-row items-end gap-3">
-                        <div className="flex-1">
-                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                                Fecha inicio
-                            </label>
-                            <div className="relative">
-                                <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                                <input
-                                    type="date"
-                                    value={fechaInicio}
-                                    onChange={(e) => setFechaInicio(e.target.value)}
-                                    className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="flex-1">
+                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                                    Fecha inicio
+                                </label>
+                                <div className="relative">
+                                    <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                    <input
+                                        type="date"
+                                        value={fechaInicio}
+                                        onChange={(e) => setFechaInicio(e.target.value)}
+                                        className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                                    Fecha fin
+                                </label>
+                                <div className="relative">
+                                    <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                    <input
+                                        type="date"
+                                        value={fechaFin}
+                                        onChange={(e) => setFechaFin(e.target.value)}
+                                        className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <div className="flex-1">
-                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                                Fecha fin
-                            </label>
-                            <div className="relative">
-                                <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                                <input
-                                    type="date"
-                                    value={fechaFin}
-                                    onChange={(e) => setFechaFin(e.target.value)}
-                                    className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleFiltrar}
-                            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                        >
-                            Filtrar
-                        </button>
-                        {(fechaInicio || fechaFin) && (
+                        <div className="flex gap-3">
                             <button
-                                onClick={handleLimpiarFiltro}
-                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+                                onClick={handleFiltrar}
+                                className="flex-1 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                             >
-                                Limpiar
+                                Filtrar
                             </button>
-                        )}
+                            {(fechaInicio || fechaFin) && (
+                                <button
+                                    onClick={handleLimpiarFiltro}
+                                    className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+                                >
+                                    Limpiar
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 

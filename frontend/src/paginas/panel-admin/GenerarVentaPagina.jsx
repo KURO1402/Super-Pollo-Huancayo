@@ -274,8 +274,7 @@ const GenerarVentaPagina = () => {
     : "Clientes Varios";
 
   return (
-    <div className="p-2">
-      {/* Título */}
+    <div className="p-4">
       <div className="mb-4 flex items-center gap-2">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Punto de Venta
@@ -284,7 +283,6 @@ const GenerarVentaPagina = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Panel izquierdo: productos */}
         <div className="lg:col-span-1">
           <div className="mb-3">
             <BarraBusqueda
@@ -328,7 +326,7 @@ const GenerarVentaPagina = () => {
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-0">
+            <div className="flex flex-wrap items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-0">
               <div className="flex">
                 {tiposComprobante.map((tipo) => (
                   <button
@@ -349,7 +347,7 @@ const GenerarVentaPagina = () => {
               <input
                 readOnly
                 value={tipoSeleccionado?.serie || ""}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm w-28 cursor-default"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm w-full sm:w-28 cursor-default"
               />
             </div>
           )}

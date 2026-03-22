@@ -50,7 +50,6 @@ const StockInsumosSeccion = () => {
     cargarInsumos(terminoBusqueda, filtroNivelStock);
   }, [paginaActual, limit, terminoBusqueda, filtroNivelStock]);
 
-  // Sincronizar lista local con la del store
   useEffect(() => {
     setInsumosLocales(insumos);
   }, [insumos]);
@@ -79,7 +78,6 @@ const StockInsumosSeccion = () => {
   };
 
   const handleInsumoActualizado = (insumoActualizado) => {
-    // Reflejar el cambio inmediatamente en la tabla local
     setInsumosLocales(prev =>
       prev.map(i => i.id_insumo === insumoActualizado.id_insumo ? insumoActualizado : i)
     );
@@ -130,10 +128,8 @@ const StockInsumosSeccion = () => {
   ));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-
-        {/* Header */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-full p-4">
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -150,10 +146,8 @@ const StockInsumosSeccion = () => {
           </div>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Gestión de materia prima y bebidas</p>
         </div>
-
-        {/* Filtros */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
+          <div className="flex flex-col lg:flex-row gap-4">
             <BarraBusqueda
               valor={terminoBusqueda}
               onChange={setTerminoBusqueda}
@@ -174,8 +168,6 @@ const StockInsumosSeccion = () => {
               <option value="bajo">Stock Bajo</option>
               <option value="normal">Stock Normal</option>
             </select>
-
-            {/* Limpiar: solo visible cuando hay filtros activos */}
             {hayFiltrosActivos && (
               <button
                 onClick={handleLimpiarFiltros}
@@ -184,8 +176,6 @@ const StockInsumosSeccion = () => {
                 Limpiar
               </button>
             )}
-
-            {/* Nuevo Insumo primero, luego Entrada y Salida */}
             <button
               onClick={handleNuevoInsumo}
               className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer text-sm whitespace-nowrap"
@@ -204,15 +194,13 @@ const StockInsumosSeccion = () => {
 
             <button
               onClick={() => navigate('/admin/historial-salidas')}
-              className="px-3 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium transition-colors text-sm flex items-center gap-1 whitespace-nowrap"
+              className="px-3 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors text-sm flex items-center gap-1 whitespace-nowrap"
             >
               <FiArrowUp size={14} />
               Salidas
             </button>
           </div>
         </div>
-
-        {/* Contenido */}
         {mostrarSpinner ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>

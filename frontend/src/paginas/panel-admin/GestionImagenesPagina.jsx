@@ -81,11 +81,11 @@ const GestionImagenesPagina = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
-            <FiImage className="mr-3 text-2xl text-gray-900 dark:text-white" />
+            <FiImage className="mr-3 text-2xl text-gray-900 dark:text-white shrink-0" />
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Gestión de Imágenes de Productos
             </h1>
@@ -94,7 +94,7 @@ const GestionImagenesPagina = () => {
             onClick={handleAgregarImagen}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors cursor-pointer"
           >
-            <FiPlusCircle size={18} />
+            <FiPlusCircle size={18} className="shrink-0"/>
             Agregar Imagen
           </button>
         </div>
