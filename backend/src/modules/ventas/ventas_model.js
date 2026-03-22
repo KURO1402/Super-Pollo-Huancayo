@@ -23,7 +23,7 @@ const insertarVentaModel = async ({
         );
         return { idVenta: result[0][0].id_venta };
     } catch (error) {
-        throw new Error(error.message || 'Error al isnertar venta en la base de datos');
+        throw new Error(error.message || 'Error al insertar venta en la base de datos');
     } finally {
         if (conexion) conexion.release();
     }
@@ -157,7 +157,6 @@ const actualizarEstadoSunatModel = async (idComprobante, estado, urlComprobanteX
             [idComprobante, estado, urlComprobanteXml, publicIdXml, fechaEnvio]
         );
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al actualizar el estado SUNAT en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -198,6 +197,22 @@ const anularVentaModel = async (idVenta, idMovimientoCaja, montoRevertir, idUsua
     }
 };
 
+const reenvirarComprobanteModel = async (idComprobante) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        await conexion.execute(
+            'CALL sp_reenviar_comprobante(?)',
+            [idComprobante]
+        );
+    } catch (err) {
+        console.log(err.message);
+        throw new Error('Error al reenviar el comprobante en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
     insertarVentaModel,
     obtenerVentaPorIdModel,
@@ -210,5 +225,6 @@ module.exports = {
     obtenerComprobantePendientePorIdModel,
     actualizarEstadoSunatModel,
     obtenerVentaParaAnularModel,
-    anularVentaModel
+    anularVentaModel,
+    reenvirarComprobanteModel
 };

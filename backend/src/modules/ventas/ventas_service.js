@@ -1,15 +1,17 @@
 const crearError = require('../../utilidades/crear_error');
 const cache = require('../../config/node_cache');
-
 const {
     subirArchivoCloudinary,
     eliminarArchivoCloudinary,
     generarDatosComprobante,
-    generarPdfTermico,
     validarStockInsumos,
     descontarStockInsumos,
     revertirInsumosVenta,
+    reconstruirPayloadApisPeru,
+    enviarComprobanteApisPeru,
 } = require('./venta_helpers');
+
+const generarPdfTermico = require('../../utilidades/helpers/generar_pdf_termico');
 
 const { validarDatosVenta } = require('./ventas_validacion');
 const { contarMedioPagoPorIdModel } = require('../configuracion/medios_pago/medios_pago_model');
@@ -25,6 +27,8 @@ const {
     contarVentaPorIdModel,
     obtenerVentaParaAnularModel,
     anularVentaModel,
+    obtenerComprobantePendientePorIdModel,
+    actualizarEstadoSunatModel
 } = require('./ventas_model');
 
 const MINUTOS_VENTANA = 5;
@@ -59,6 +63,7 @@ const generarVentaService = async (datos, idUsuario) => {
         urlPdf = resultado.url;
         publicIdPdf = resultado.publicId;
     } catch (errorPdf) {
+        console.log(errorPdf);
         throw crearError('Error al generar o subir el PDF del comprobante', 500);
     }
 
@@ -215,10 +220,80 @@ const obtenerComprobantePorIdVentaService = async (idVenta) => {
     return { ok: true, comprobante };
 };
 
+const reenvirarComprobanteService = async (idComprobante) => {
+    try {
+        console.log(`Iniciando reenvío manual del comprobante ${idComprobante}...`);
+
+        const { comprobante, detalles } = await obtenerComprobantePendientePorIdModel(idComprobante);
+
+        if (!comprobante) {
+            throw crearError('Comprobante no encontrado', 404);
+        }
+
+        if (comprobante.estado_sunat === 'aceptado') {
+            throw crearError('Este comprobante ya fue aceptado por SUNAT, no se puede reenviar', 400);
+        }
+
+        if (comprobante.estado_sunat === 'pendiente') {
+            throw crearError('Este comprobante aun no ha cumplido los 5 minutos, espere a que el job automatico lo procese', 400);
+        }
+
+        await actualizarEstadoSunatModel(
+            idComprobante,
+            'enviado_sunat',
+            null,
+            null,
+            null
+        );
+
+        const payload = reconstruirPayloadApisPeru(comprobante, detalles);
+        console.log('Enviando payload a ApisPeru...');
+        const { xml, sunatResponse } = await enviarComprobanteApisPeru(payload);
+
+        const aceptado = sunatResponse?.cdrResponse?.code === '0';
+        const estado = aceptado ? 'aceptado' : 'rechazado';
+
+        let urlXml = comprobante.url_comprobante_xml;
+        let publicIdXml = comprobante.public_id_xml;
+
+        if (!urlXml) {
+            const nombreXml = `${comprobante.serie}-${comprobante.numero_correlativo}-xml`;
+            const resultado = await subirArchivoCloudinary(Buffer.from(xml), nombreXml, 'xml');
+            urlXml = resultado.url;
+            publicIdXml = resultado.publicId;
+            console.log('XML subido a Cloudinary');
+        }
+
+        await actualizarEstadoSunatModel(
+            idComprobante,
+            estado,
+            urlXml,
+            publicIdXml,
+            new Date()
+        );
+
+        console.log(`Reenvio completado. Estado: ${estado}`);
+        console.log(sunatResponse);
+        return {
+            ok: true,
+            mensaje: aceptado 
+                ? `Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} ACEPTADO por SUNAT`
+                : `Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} RECHAZADO: ${sunatResponse?.error?.message}`,
+            nuevoEstado: estado,
+            respuestaSunat: sunatResponse?.cdrResponse,
+        };
+
+    } catch (error) {
+        console.error(`Error en reenvio:`, error.message);
+        throw error;
+    }
+};
+
 module.exports = {
     generarVentaService,
     anularVentaService,
     obtenerVentasService,
     obtenerDetalleVentaPorIdVentaService,
     obtenerComprobantePorIdVentaService,
+    reenvirarComprobanteService
 };

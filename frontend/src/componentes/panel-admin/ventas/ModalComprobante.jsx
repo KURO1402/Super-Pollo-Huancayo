@@ -66,7 +66,7 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                             </p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Fecha emisión</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Fecha emision</p>
                             <p className="font-semibold text-gray-900 dark:text-white">{comprobante.fecha_emision || '—'}</p>
                         </div>
                         <div>
@@ -74,7 +74,7 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                             <BadgeSunat estado={comprobante.estado_sunat} />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Fecha envío</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Fecha envio</p>
                             <p className="text-sm text-gray-700 dark:text-gray-300">
                                 {comprobante.fecha_envio ? new Date(comprobante.fecha_envio).toLocaleString('es-PE') : '—'}
                             </p>
@@ -108,7 +108,7 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                     </div>
                 </div>
             ) : (
-                <p className="text-center text-gray-500 dark:text-gray-400 py-8">No se encontró información del comprobante.</p>
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">No se encontro informacion del comprobante.</p>
             )}
         </Modal>
     );

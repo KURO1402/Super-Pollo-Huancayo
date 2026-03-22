@@ -16,21 +16,27 @@ const procesarComprobante = async (idComprobante) => {
     const { comprobante, detalles } = await obtenerComprobantePendientePorIdModel(idComprobante);
 
     if (!comprobante) {
-      console.warn(`Comprobante ${idComprobante} no encontrado, saltando...`);
+      console.warn(`Comprobante ${idComprobante} no encontrado`);
       return;
     }
 
-    // 1. Reconstruir payload y enviar a SUNAT vía ApisPeru
+    // NUEVO: Marcar como "enviando_sunat" ANTES de intentar
+    await actualizarEstadoSunatModel(
+      idComprobante,
+      'enviado_sunat',
+      null,
+      null,
+      null
+    );
+
+    // Reconstruir y enviar
     const payload = reconstruirPayloadApisPeru(comprobante, detalles);
-    console.log(JSON.stringify(payload))
-    const { xml, sunatResponse } = await enviarComprobanteApisPeru(JSON.stringify(payload));
+    const { xml, sunatResponse } = await enviarComprobanteApisPeru(payload);
 
+    // CAMBIAR lógica de estado
     const aceptado = sunatResponse?.cdrResponse?.code === '0';
-    const estado = aceptado ? 'enviado' : 'rechazado';
-    const codigo = sunatResponse?.cdrResponse?.code;
-    const descripcion = sunatResponse?.cdrResponse?.description;
+    const estado = aceptado ? 'aceptado' : 'rechazado';
 
-    // 2. Subir XML a Cloudinary
     const nombreXml = `${comprobante.serie}-${comprobante.numero_correlativo}-xml`;
     const { url: urlXml, publicId: publicIdXml } = await subirArchivoCloudinary(
       Buffer.from(xml),
@@ -38,18 +44,21 @@ const procesarComprobante = async (idComprobante) => {
       'xml'
     );
 
-    // 3. Actualizar estado en BD
-    await actualizarEstadoSunatModel(idComprobante, estado, urlXml, publicIdXml, new Date());
+    await actualizarEstadoSunatModel(
+      idComprobante,
+      estado,
+      urlXml,
+      publicIdXml,
+      new Date()
+    );
 
     if (aceptado) {
-      console.log(`Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} aceptado por SUNAT`);
+      console.log(`Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} ACEPTADO por SUNAT`);
     } else {
-      console.error(`Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} rechazado por SUNAT: [${codigo}] ${descripcion}`);
-      // Aquí puedes agregar notificación al admin (correo, slack, etc.)
+      console.error(`Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} RECHAZADO: ${sunatResponse?.cdrResponse?.description}`);
     }
 
   } catch (error) {
-    // Error controlado por comprobante — no detiene el job
     console.error(`Error procesando comprobante ${idComprobante}:`, error.message);
   }
 };

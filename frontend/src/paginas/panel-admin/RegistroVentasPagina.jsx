@@ -9,7 +9,6 @@ import { ModalDetalleVenta } from '../../componentes/panel-admin/ventas/ModalDet
 import { ModalComprobante } from '../../componentes/panel-admin/ventas/ModalComprobante';
 import { useModal } from "../../hooks/useModal";
 import { anularVentaServicio } from '../../servicios/ventasServicio';
-import { obtenerTiposComprobanteServicio } from '../../servicios/tipoComprobanteServicio';
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
 const RegistroVentasPagina = () => {
@@ -18,6 +17,7 @@ const RegistroVentasPagina = () => {
         paginaActual, limit,
         cargarVentas, setPagina, setLimite, limpiarError,
         detalleVenta, cargandoDetalle, obtenerDetalleVenta,
+        comprobante, cargandoComprobante, obtenerComprobante,
     } = useVentaStore();
 
     const modalDetalle = useModal();
@@ -25,8 +25,6 @@ const RegistroVentasPagina = () => {
 
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
-    const [comprobante, setComprobante] = useState(null);
-    const [cargandoComprobante, setCargandoComprobante] = useState(false);
 
     const paginacion = usePaginacion({
         paginaActual,
@@ -55,16 +53,11 @@ const RegistroVentasPagina = () => {
     };
 
     const handleVerComprobante = async (idVenta) => {
-        setCargandoComprobante(true);
-        modalComprobante.abrir();
         try {
-            const data = await obtenerTiposComprobanteServicio(idVenta);
-            setComprobante(data);
+            await obtenerComprobante(idVenta);
+            modalComprobante.abrir();
         } catch (err) {
             mostrarAlerta.error(err.message || "Error al obtener el comprobante");
-            modalComprobante.cerrar();
-        } finally {
-            setCargandoComprobante(false);
         }
     };
 
@@ -79,7 +72,7 @@ const RegistroVentasPagina = () => {
         }
     }, [cargarVentas, fechaInicio, fechaFin]);
 
-    const ENCABEZADOS = ["N° Venta / Comprobante", "Fecha", "Hora", "Total", "Método de Pago", "Estado SUNAT", "Acciones"];
+    const ENCABEZADOS = ["N° Venta / Comprobante", "Fecha", "Hora", "Total", "Metodo de Pago", "Estado SUNAT", "Acciones"];
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -188,7 +181,7 @@ const RegistroVentasPagina = () => {
                                     <p className="text-sm">
                                         {(fechaInicio || fechaFin)
                                             ? "No se encontraron ventas en ese rango de fechas"
-                                            : "No hay ventas registradas aún"}
+                                            : "No hay ventas registradas aun"}
                                     </p>
                                 </div>
                             )}
@@ -212,7 +205,7 @@ const RegistroVentasPagina = () => {
 
             <ModalComprobante
                 estaAbierto={modalComprobante.estaAbierto}
-                onCerrar={() => { modalComprobante.cerrar(); setComprobante(null); }}
+                onCerrar={() => { modalComprobante.cerrar(); }}
                 comprobante={comprobante}
                 cargando={cargandoComprobante}
             />

@@ -12,6 +12,7 @@ DROP PROCEDURE IF EXISTS sp_obtener_comprobante_pendiente_por_id;
 DROP PROCEDURE IF EXISTS sp_actualizar_estado_sunat;
 DROP PROCEDURE IF EXISTS sp_anular_venta;
 DROP PROCEDURE IF EXISTS sp_obtener_venta_para_anular;
+DROP PROCEDURE IF EXISTS sp_reenviar_comprobante;
 
 DELIMITER //
 -- ─── SP: Insertar Venta ───────────────────────────────────────────────────────
@@ -33,7 +34,7 @@ CREATE PROCEDURE sp_generar_venta(
     IN p_sunat_transaccion TINYINT(4),
     IN p_url_comprobante_pdf VARCHAR(150),
     IN p_public_id_pdf VARCHAR(150),
-    IN p_estado_sunat ENUM('pendiente','enviado','rechazado'),
+    IN p_estado_sunat ENUM('pendiente','enviado_sunat','aceptado','rechazado'),
     IN p_fecha_limite_correccion DATETIME,
     -- Caja y usuario
     IN p_id_usuario INT,
@@ -317,21 +318,23 @@ END //
 -- ─── SP: Actualizar Estado SUNAT (usado por el job) ──────────────────────────
 CREATE PROCEDURE sp_actualizar_estado_sunat (
     IN p_id_comprobante INT,
-    IN p_estado ENUM ('pendiente', 'enviado', 'rechazado'),
+    IN p_estado ENUM ('pendiente', 'enviado_sunat', 'aceptado', 'rechazado'),
     IN p_url_comprobante_xml VARCHAR(150),
     IN p_public_id_xml VARCHAR(150),
     IN p_fecha_envio DATETIME
-) BEGIN
-UPDATE comprobantes
-SET
-    estado_sunat = p_estado,
-    url_comprobante_xml = p_url_comprobante_xml,
-    public_id_xml = p_public_id_xml,
-    fecha_envio = p_fecha_envio
-WHERE
-    id_comprobante = p_id_comprobante;
-
+)
+BEGIN
+    UPDATE comprobantes
+    SET
+        estado_sunat = p_estado,
+        url_comprobante_xml = p_url_comprobante_xml,
+        public_id_xml = p_public_id_xml,
+        fecha_envio = p_fecha_envio,
+        intentos_reenvio = intentos_reenvio + 1,
+        fecha_ultimo_reintento = NOW()
+    WHERE id_comprobante = p_id_comprobante;
 END //
+
 -- ─── SP: Obtener datos completos de venta para anular ────────────────────────
 CREATE PROCEDURE sp_obtener_venta_para_anular (IN p_id_venta INT) BEGIN
 -- 1. Datos de la venta y comprobante
@@ -429,7 +432,18 @@ WHERE
     id_venta = p_id_venta;
 
 COMMIT;
-
 END // 
+
+CREATE PROCEDURE sp_reenviar_comprobante(
+    IN p_id_comprobante INT
+)
+BEGIN
+    UPDATE comprobantes
+    SET estado_sunat = 'enviado_sunat'
+    WHERE id_comprobante = p_id_comprobante
+    AND estado_sunat = 'rechazado';
+    
+    SELECT ROW_COUNT() AS filas_actualizadas;
+END //
 
 DELIMITER ;

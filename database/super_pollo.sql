@@ -297,7 +297,7 @@ CREATE TABLE comprobantes (
     fecha_emision DATE,
     fecha_vencimiento DATE,
     sunat_transaccion TINYINT(4) NOT NULL,
-    estado_sunat ENUM('pendiente', 'enviado', 'rechazado') NOT NULL DEFAULT 'pendiente',
+    estado_sunat ENUM('pendiente', 'enviado_sunat', 'aceptado', 'rechazado') NOT NULL DEFAULT 'pendiente',
     url_comprobante_pdf VARCHAR(150),
     public_id_pdf VARCHAR(150) NULL,
     url_comprobante_xml VARCHAR(150),

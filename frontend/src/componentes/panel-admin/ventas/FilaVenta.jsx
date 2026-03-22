@@ -10,6 +10,8 @@ export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) =
         && venta.fecha_limite_correccion
         && new Date() < new Date(venta.fecha_limite_correccion);
 
+    const puedeVerComprobante = venta.estado_sunat === 'aceptado' || venta.estado_sunat === 'rechazado' || venta.estado_sunat === 'enviado_sunat';
+
     const numeroComprobante = venta.serie && venta.numero_correlativo
         ? `${venta.serie}-${String(venta.numero_correlativo).padStart(8, '0')}`
         : null;
@@ -118,7 +120,7 @@ export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) =
                         >
                             <FiList size={15} />
                         </button>
-                        {venta.estado_sunat === 'enviado' && (
+                        {puedeVerComprobante && (
                             <button
                                 onClick={() => onVerComprobante(venta.id_venta)}
                                 className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800/50 transition-colors"

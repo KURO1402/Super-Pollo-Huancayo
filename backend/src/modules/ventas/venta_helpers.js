@@ -1,7 +1,6 @@
-const PDFDocument = require('pdfkit');
-const path = require('path');
 const axios = require('axios');
 const cloudinaryPdf = require('../../config/cloudinary_pdf_config');
+const generarPdfTermico = require('../../utilidades/helpers/generar_pdf_termico');
 
 const { obtenerTipoComprobantePorIdModel } = require('../configuracion/tipos_comprobante/tipos_comprobante_model');
 const { obtenerTipoDocumentoPorIdModel } = require('../configuracion/tipos_documento/tipos_documento_model');
@@ -11,11 +10,6 @@ const crearError = require('../../utilidades/crear_error');
 const obtenerFechaActual = require('../../utilidades/obtener_fecha_actual');
 const { company, IGV, TIPO_COMPROBANTE_CODIGO, TIPO_DOCUMENTO_CODIGO } = require('../../utilidades/helpers/constantes_venta');
 const numeroALetras = require('../../utilidades/numero_letras');
-
-// ─── Configuración impresora térmica 80mm ─────────────────────────────────────
-const ANCHO_PAGINA = 226.77;
-const MARGEN = 8;
-const ANCHO_UTIL = ANCHO_PAGINA - MARGEN * 2;
 
 // ─── Subir archivo a Cloudinary retornando { url, publicId } ─────────────────
 const subirArchivoCloudinary = (buffer, nombreArchivo, formato) => {
@@ -145,7 +139,6 @@ const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
         mtoImpVenta,
         details: productosDetalle,
         legends: [{ value: numeroALetras(mtoImpVenta) }],
-        // expuestos para el service
         nombreComprobante,
         nombreDoc,
         productosConData,
@@ -164,18 +157,35 @@ const reconstruirPayloadApisPeru = (comprobante, detalles) => {
         return `${yyyy}-${mm}-${dd}T00:00:00-05:00`;
     };
 
-    const details = detalles.map((d, i) => ({
+    const details = detalles.map((d, i) => {
+    const baseImponible = parseFloat(d.valor_unitario) * d.cantidad_producto;
+    const igvTotal = parseFloat(d.igv);
+    
+    return {
         id: String(i + 1),
         codProducto: `P${String(d.id_producto).padStart(3, '0')}`,
-        unidad: 'NIU',
+        unidad: '03',
         descripcion: d.nombre_producto,
         cantidad: d.cantidad_producto,
         mtoValorUnitario: parseFloat(d.valor_unitario),
         mtoPrecioUnitario: parseFloat(d.precio_unitario),
-        igv: parseFloat(d.igv),
-        mtoValorVenta: parseFloat(d.subtotal),
-        totalImpuestos: parseFloat(d.igv),
-    }));
+        porcentajeIgv: 18,
+        igv: igvTotal,
+        mtoValorVenta: baseImponible,
+        totalImpuestos: igvTotal,
+        tributos: [
+            {
+                tipoTributo: '1000',
+                codigoTributo: '1000',
+                nombre: 'IGV',
+                porcentaje: 18,
+                baseImponible: baseImponible,
+                monto: igvTotal,
+                afectacionIGV: '10',
+            }
+        ],
+    };
+});
 
     return {
         ublVersion: '2.1',
@@ -256,155 +266,6 @@ const obtenerPdfApisPeru = async (payload) => {
     }
 };
 
-// ─── Generar PDF térmico 80mm ─────────────────────────────────────────────────
-const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloComprobante) => {
-    return new Promise((resolve, reject) => {
-        try {
-            const {
-                serie, correlativo, fechaEmision, fecVencimiento,
-                mtoOperGravadas, totalIgv, mtoImpVenta, details,
-            } = datosComprobante;
-
-            const ALTO_BASE = 420;
-            const ALTO_POR_PRODUCTO = 16;
-            const altoEstimado = ALTO_BASE + (details.length * ALTO_POR_PRODUCTO);
-
-            const doc = new PDFDocument({
-                size: [ANCHO_PAGINA, altoEstimado],
-                margins: { top: MARGEN, bottom: MARGEN, left: MARGEN, right: MARGEN },
-                autoFirstPage: true,
-                bufferPages: false,
-            });
-
-            const chunks = [];
-            doc.on('data', chunk => chunks.push(chunk));
-            doc.on('end', () => resolve(Buffer.concat(chunks)));
-            doc.on('error', reject);
-
-            const x = MARGEN;
-            const xDer = ANCHO_PAGINA - MARGEN;
-            const centrar = (texto, y, opts = {}) =>
-                doc.text(texto, x, y, { width: ANCHO_UTIL, align: 'center', ...opts });
-            const linea = (y) =>
-                doc.moveTo(x, y).lineTo(xDer, y).lineWidth(0.5).stroke();
-
-            const formatearFecha = (iso) => {
-                const d = new Date(iso);
-                return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-            };
-            const formatearFechaHora = (iso) => {
-                const d = new Date(iso);
-                return `${formatearFecha(iso)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-            };
-
-            let y = MARGEN;
-
-            // Logo
-            const logoPath = path.join(__dirname, '../../../public/super_pollo_logo.png');
-            doc.image(logoPath, (ANCHO_PAGINA - 60) / 2, y, { width: 60, height: 60 });
-            y += 64;
-
-            // Cabecera empresa
-            doc.fontSize(9).font('Helvetica-Bold');
-            centrar(company.nombreComercial, y); y += 12;
-            doc.fontSize(7).font('Helvetica');
-            centrar(`RUC: ${company.ruc.toString()}`, y); y += 10;
-            centrar(company.address?.direccion || '', y); y += 10;
-            if (company.address?.provincia) {
-                centrar(`${company.address.provincia} - ${company.address.departamento || ''}`, y); y += 10;
-            }
-            if (company.telephone) {
-                centrar(`Tel: ${company.telephone}`, y); y += 10;
-            }
-            y += 3; linea(y); y += 5;
-
-            // Título comprobante
-            doc.fontSize(8).font('Helvetica-Bold');
-            centrar(tituloComprobante.toUpperCase(), y); y += 11;
-            centrar(`${serie}-${String(correlativo).padStart(8, '0')}`, y); y += 11;
-            linea(y); y += 5;
-
-            // Datos cliente
-            doc.fontSize(7);
-            const filaCliente = (label, valor) => {
-                const labelWidth = 90;
-                const valorWidth = ANCHO_UTIL - labelWidth;
-
-                const alturaLabel = doc.heightOfString(label, { width: labelWidth });
-                const alturaValor = doc.heightOfString(valor, { width: valorWidth });
-                const altura = Math.max(alturaLabel, alturaValor);
-
-                doc.font('Helvetica-Bold').text(label, x, y, { width: labelWidth, lineBreak: false });
-                doc.font('Helvetica').text(valor, x + labelWidth, y, { width: valorWidth });
-                y += altura + 2;
-            };
-
-            filaCliente('Fecha emisión :', formatearFechaHora(fechaEmision));
-            filaCliente('Fecha venc.   :', formatearFecha(fecVencimiento));
-            filaCliente(`${nombreTipoDoc.toUpperCase().padEnd(14, ' ')}:`, cliente.numDoc);
-            filaCliente('Cliente       :', cliente.denominacionCliente);
-            if (cliente.direccionCliente) filaCliente('Dirección     :', cliente.direccionCliente);
-            y += 2; linea(y); y += 5;
-
-            // Encabezado tabla
-            const COL = {
-                desc: { x: x, w: 80 },
-                cant: { x: x + 80, w: 22 },
-                pu: { x: x + 102, w: 36 },
-                total: { x: x + 138, w: 64 },
-            };
-            doc.fontSize(6.5).font('Helvetica-Bold');
-            doc.text('Descripción', COL.desc.x, y, { width: COL.desc.w });
-            doc.text('Cant.', COL.cant.x, y, { width: COL.cant.w, align: 'center' });
-            doc.text('P.Unit', COL.pu.x, y, { width: COL.pu.w, align: 'right' });
-            doc.text('Total', COL.total.x, y, { width: COL.total.w, align: 'right' });
-            y += 10; linea(y); y += 4;
-
-            // Filas productos
-            doc.fontSize(6.5).font('Helvetica');
-            for (const d of details) {
-                const alturaFila = Math.max(doc.heightOfString(d.descripcion, { width: COL.desc.w }), 9);
-                doc.text(d.descripcion, COL.desc.x, y, { width: COL.desc.w });
-                doc.text(String(d.cantidad), COL.cant.x, y, { width: COL.cant.w, align: 'center' });
-                doc.text(`S/ ${d.mtoPrecioUnitario.toFixed(2)}`, COL.pu.x, y, { width: COL.pu.w, align: 'right' });
-                doc.text(`S/ ${(d.mtoValorVenta + d.igv).toFixed(2)}`, COL.total.x, y, { width: COL.total.w, align: 'right' });
-                y += alturaFila + 3;
-            }
-            y += 2; linea(y); y += 5;
-
-            // Totales
-            const filaTotales = (label, valor, negrita = false) => {
-                doc.fontSize(7).font(negrita ? 'Helvetica-Bold' : 'Helvetica')
-                    .text(label, x, y, { width: ANCHO_UTIL - 60 })
-                    .font(negrita ? 'Helvetica-Bold' : 'Helvetica')
-                    .text(`S/ ${valor}`, x, y, { width: ANCHO_UTIL, align: 'right' });
-                y += 10;
-            };
-            filaTotales('Op. Gravadas:', mtoOperGravadas.toFixed(2));
-            filaTotales(`IGV (${(IGV * 100).toFixed(0)}%):`, totalIgv.toFixed(2));
-            filaTotales('TOTAL:', mtoImpVenta.toFixed(2), true);
-            y += 3; linea(y); y += 6;
-
-            // Importe en letras
-            const enLetras = `SON: ${numeroALetras(mtoImpVenta)}`;
-            doc.fontSize(6.5).font('Helvetica-BoldOblique');
-            centrar(enLetras, y, { lineBreak: true });
-            y += doc.heightOfString(enLetras, { width: ANCHO_UTIL }) + 4;
-            linea(y); y += 8;
-
-            // Pie
-            doc.fontSize(6).font('Helvetica');
-            if (tituloComprobante.toLowerCase() === 'nota de venta') {
-                centrar('Documento no válido para crédito fiscal', y); y += 9;
-            }
-            centrar('¡Gracias por su preferencia!', y);
-
-            doc.end();
-        } catch (err) {
-            reject(err);
-        }
-    });
-};
 
 // Alias para compatibilidad
 const generarPdfNotaVenta = (datosComprobante, cliente, nombreTipoDoc) =>
