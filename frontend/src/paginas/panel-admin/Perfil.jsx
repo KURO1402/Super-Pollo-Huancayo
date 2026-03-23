@@ -93,13 +93,12 @@ const Perfil = () => {
   }
 
   return (
-    <div className="w-full mx-auto p-6">
+    <div className="w-full mx-auto p-4">
       <div className="flex items-center space-x-2">
         <h1 className="text-2xl text-gray-800 dark:text-gray-100 font-bold mt-0 mb-1 leading-tight">Perfil</h1>
         <FaRegUser className="text-2xl mb-2 text-gray-800 dark:text-gray-100" />
       </div>
 
-      {/* Header card */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="px-8 py-8 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-6">
@@ -127,24 +126,26 @@ const Perfil = () => {
           </div>
         </div>
 
-        <div className="px-8 py-6">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+        <div className="px-4 sm:px-8 py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                 <FiMail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                <p className="font-medium text-gray-900 dark:text-white">{usuarioPerfil.correo_usuario}</p>
+                <p className="font-medium text-gray-900 dark:text-white truncate">
+                  {usuarioPerfil.correo_usuario}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shrink-0">
                 <FiPhone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Teléfono</p>
-                <p className="font-medium text-gray-900 dark:text-white">
+                <p className="font-medium text-gray-900 dark:text-white truncate">
                   {usuarioPerfil.telefono_usuario || 'No especificado'}
                 </p>
               </div>
@@ -153,7 +154,6 @@ const Perfil = () => {
         </div>
       </div>
 
-      {/* Info personal */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Información personal</h2>
@@ -168,12 +168,12 @@ const Perfil = () => {
                 <CampoInfo icono={FiUser} etiqueta="Apellidos" valor={usuarioPerfil.apellido_usuario} />
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-3">
-                  <FiMail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  <div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FiMail className="w-5 h-5 text-gray-600 dark:text-gray-400 shrink-0"/>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Correo electrónico</p>
-                    <p className="text-gray-900 dark:text-white">{usuarioPerfil.correo_usuario}</p>
+                    <p className="text-gray-900 dark:text-white truncate">{usuarioPerfil.correo_usuario}</p>
                   </div>
                 </div>
                 <BotonSimple funcion={abrirCorreo} etiqueta="Cambiar" variante="secundario" tamaño="sm" />

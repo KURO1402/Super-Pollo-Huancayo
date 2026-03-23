@@ -13,15 +13,15 @@ import { BalanceGeneralCard } from "../../componentes/panel-admin/BalanceGeneral
 const PanelControlPagina = () => {
   const { ventas, cargando } = useVentasHoyComparacion();
   const { reservas, cargando: cargandoReservas } = useReservasMesComparacion();
-  const [anioMediosPago, setAnioMediosPago] = useState(null);  // 👈 agregar
+  const [anioMediosPago, setAnioMediosPago] = useState(null); 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
 
       <div className="mb-8">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold dark:text-white bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold dark:text-white text-blue-500 bg-clip-text ">
               Panel de Control
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">

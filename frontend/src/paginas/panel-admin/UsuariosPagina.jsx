@@ -46,7 +46,6 @@ const UsuariosPagina = () => {
     if (error) limpiarError();
   }, [error]);
 
-  // Spinner con delay para evitar parpadeo
   useEffect(() => {
     let timer;
     if (cargando) {
@@ -88,8 +87,8 @@ const UsuariosPagina = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-full p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             Gestión de Usuarios

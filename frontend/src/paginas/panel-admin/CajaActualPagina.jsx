@@ -18,7 +18,7 @@ const CajaActualPagina = () => {
     movimientos,
     totalMovimientos,
     cargando,
-    rehidratando, // ✅ NUEVO
+    rehidratando,
     error,
     cargarMovimientos,
     abrirCaja,
@@ -158,7 +158,6 @@ const CajaActualPagina = () => {
     limpiarFiltros();
   };
 
-  // ✅ Bloquea la UI mientras se verifica el estado real con el backend
   if (rehidratando) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -168,7 +167,7 @@ const CajaActualPagina = () => {
   }
 
   return (
-    <div className="w-full mx-auto p-2 space-y-6">
+    <div className="w-full mx-auto p-4 space-y-6">
       <ResumenCaja
         caja={cajaActual}
         formatCurrency={formatCurrency}

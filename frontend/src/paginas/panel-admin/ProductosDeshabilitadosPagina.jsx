@@ -136,8 +136,7 @@ const ProductosDeshabilitadosPagina = () => {
     ));
 
     return (
-        <div className="p-2">
-            {/* Header */}
+        <div className="p-4">
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
@@ -156,7 +155,7 @@ const ProductosDeshabilitadosPagina = () => {
 
             {/* Filtros */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-                <div className="flex flex-col lg:flex-row gap-4 items-center">
+                <div className="flex flex-col lg:flex-row gap-4">
                     <BarraBusqueda
                         valor={terminoBusqueda}
                         onChange={setTerminoBusqueda}

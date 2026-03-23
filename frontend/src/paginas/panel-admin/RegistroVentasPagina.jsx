@@ -95,10 +95,8 @@ const RegistroVentasPagina = () => {
     const mostrarCargando = cargandoInicial || (cargando && ventas.length === 0);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-            <div className="max-w-7xl mx-auto px-4 py-8">
-
-                {/* Encabezado */}
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <div className="mx-w-full p-4">
                 <div className="mb-6 flex items-center gap-2">
                     <MdHistory className="text-3xl text-blue-500 dark:text-blue-400" />
                     <div>

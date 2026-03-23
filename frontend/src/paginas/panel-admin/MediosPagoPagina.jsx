@@ -72,14 +72,14 @@ const MediosPagoPagina = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-full px-8 py-8">
+      <div className="max-w-full p-4">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
                 Medios de Pago
               </h1>
-              <FiCreditCard size={32} className="text-gray-700 dark:text-gray-300"/>
+              <FiCreditCard size={32} className="text-gray-700 dark:text-gray-300 shrink-0"/>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {mediosPago.length > 0

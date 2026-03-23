@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { loginUsuario, registrarUsuario, generarCodigoVerificacion, validarCodigoVerificacion, logoutUsuario } from '../servicios/autenticacionServicio';
+import { useVentaStore } from './useVentaStore';
 
 export const useAutenticacionStore = create(
     persist(
@@ -69,6 +70,7 @@ export const useAutenticacionStore = create(
                     console.error('Error al cerrar sesión en servidor:', err);
                 } finally {
                     set({ usuario: null, accessToken: null });
+                    useVentaStore.getState().limpiarVenta();
                     window.history.replaceState({}, '', '/inicio-sesion');
                 }
             },

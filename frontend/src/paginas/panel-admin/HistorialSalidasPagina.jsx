@@ -67,13 +67,13 @@ const HistorialSalidasPagina = () => {
   ));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-full p-4">
 
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <MdHistory className="text-3xl text-red-500 dark:text-red-400 mr-2" />
+              <MdHistory className="text-3xl text-red-500 dark:text-red-400 mr-2 shrink-0" />
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
                 Historial de Salidas
               </h1>
