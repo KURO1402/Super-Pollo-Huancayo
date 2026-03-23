@@ -32,7 +32,6 @@ export const PERMISOS = {
     cajaActual: true,
     historialCajas: true,
     
-    reservas: true,
     calendarioReservas: true,
     historialReservas: true,
     
@@ -59,7 +58,6 @@ export const PERMISOS = {
     cajaActual: true,
     historialCajas: true,
     
-    reservas: true,
     calendarioReservas: true,
     historialReservas: true,
     
@@ -111,4 +109,25 @@ export const puedeAccederPanelAdmin = (id_rol) => {
 
 export const puedeAccederAreaUsuario = (id_rol) => {
   return tienePermiso(id_rol, 'accesoAreaUsuario');
+};
+
+export const RUTA_A_PERMISO = {
+  '/admin':                      'dashboard',
+  '/admin/usuarios':             'usuarios',
+  '/admin/categorias-productos': 'configuracion',
+  '/admin/tipos-documento':      'configuracion',
+  '/admin/medios-pago':          'configuracion',
+  '/admin/tipos-comprobante':    'configuracion',
+  '/admin/generar-venta':        'generarVenta',
+  '/admin/registro-ventas':      'historialVentas',
+  '/admin/stock-insumos':        'stockInsumos',
+  '/admin/historial-entradas':   'historialEntradas',
+  '/admin/historial-salidas':    'historialSalidas',
+  '/admin/gestion-productos':    'gestionProductos',
+  '/admin/gestion-imagenes':     'gestionProductos',
+  '/admin/productos-deshabilitados': 'gestionProductos',
+  '/admin/calendario-reservas':  'calendarioReservas',
+  '/admin/caja-actual':          'cajaActual',
+  '/admin/historial-cajas':      'historialCajas',
+  '/admin/perfil':               'perfil',
 };

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { obtenerRutaRedireccion } from '../constantes/roles';
+
 import {
   FaUserShield,
   FaSignOutAlt,
@@ -38,7 +40,7 @@ const DropdownAdmin = ({ usuario, mobile = false }) => {
       icono: <FaTachometerAlt className="w-4 h-4" />,
       texto: 'Ir al Panel',
       onClick: () => {
-        navigate('/admin');
+        navigate(obtenerRutaRedireccion(usuario.id_rol));
         setDropdownAbierto(false);
       },
     },
