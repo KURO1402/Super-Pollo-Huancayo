@@ -163,58 +163,6 @@ INSERT INTO pago_reservacion (monto_pagado, id_transaccion, fecha_pago, estado_p
 (35.00, 'TXN-006-2026', '2026-02-09 16:25:00', 'pendiente',  6),
 (14.00, 'TXN-007-2026', '2026-02-14 10:15:00', 'pendiente',  7);
 
--- VENTAS
-INSERT INTO ventas (numero_documento_cliente, id_tipo_documento, porcentaje_igv, total_gravada, total_igv, total_venta, id_medio_pago, fecha_registro) VALUES
-('12345678',    1, 18.00,  33.90,  6.10,  40.00, 1, '2026-01-05 12:00:00'),
-('87654321',    1, 18.00,  47.46,  8.54,  56.00, 2, '2026-01-05 14:30:00'),
-('20512345678', 2, 18.00,  84.75, 15.25, 100.00, 2, '2026-01-15 13:00:00'),
-('11223344',    1, 18.00,  20.34,  3.66,  24.00, 1, '2026-01-15 19:00:00'),
-('44332211',    1, 18.00,  55.93, 10.07,  66.00, 1, '2026-01-25 12:30:00'),
-('55667788',    1, 18.00,  38.14,  6.86,  45.00, 2, '2026-01-25 20:00:00'),
-('99887766',    1, 18.00,  30.51,  5.49,  36.00, 1, '2026-02-05 13:00:00'),
-('33445566',    1, 18.00,  16.95,  3.05,  20.00, 1, '2026-02-10 11:30:00');
-
--- COMPROBANTES
--- Nota: se eliminó la columna inexistente 'aceptado_por_sunat' y se usa 'estado_sunat'
---       con los valores del ENUM: 'pendiente', 'enviado', 'rechazado'
-INSERT INTO comprobantes (id_venta, id_tipo_comprobante, serie, numero_correlativo, fecha_emision, fecha_vencimiento, sunat_transaccion, estado_sunat, url_comprobante_pdf, url_comprobante_xml, fecha_envio) VALUES
-(1, 1, 'B001', 1, '2026-01-05', '2026-02-05', 1, 'enviado',    'https://storage.sunat.pe/pdf/B001-1.pdf', 'https://storage.sunat.pe/xml/B001-1.xml', '2026-01-05 12:05:00'),
-(2, 1, 'B001', 2, '2026-01-05', '2026-02-05', 1, 'enviado',    'https://storage.sunat.pe/pdf/B001-2.pdf', 'https://storage.sunat.pe/xml/B001-2.xml', '2026-01-05 14:35:00'),
-(3, 2, 'F001', 1, '2026-01-15', '2026-02-15', 1, 'enviado',    'https://storage.sunat.pe/pdf/F001-1.pdf', 'https://storage.sunat.pe/xml/F001-1.xml', '2026-01-15 13:05:00'),
-(4, 1, 'B001', 3, '2026-01-15', '2026-02-15', 1, 'enviado',    'https://storage.sunat.pe/pdf/B001-3.pdf', 'https://storage.sunat.pe/xml/B001-3.xml', '2026-01-15 19:05:00'),
-(5, 1, 'B001', 4, '2026-01-25', '2026-02-25', 1, 'enviado',    'https://storage.sunat.pe/pdf/B001-4.pdf', 'https://storage.sunat.pe/xml/B001-4.xml', '2026-01-25 12:35:00'),
-(6, 1, 'B001', 5, '2026-01-25', '2026-02-25', 1, 'rechazado',  'https://storage.sunat.pe/pdf/B001-5.pdf', 'https://storage.sunat.pe/xml/B001-5.xml', '2026-01-25 20:05:00'),
-(7, 1, 'B001', 6, '2026-02-05', '2026-03-05', 1, 'enviado',    'https://storage.sunat.pe/pdf/B001-6.pdf', 'https://storage.sunat.pe/xml/B001-6.xml', '2026-02-05 13:05:00'),
-(8, 1, 'B001', 7, '2026-02-10', '2026-03-10', 1, 'enviado',    'https://storage.sunat.pe/pdf/B001-7.pdf', 'https://storage.sunat.pe/xml/B001-7.xml', '2026-02-10 11:35:00');
-
--- DETALLE_VENTAS
-INSERT INTO detalle_ventas (cantidad_producto, valor_unitario, precio_unitario, subtotal, igv, total_producto, id_venta, id_producto) VALUES
--- Venta 1: 2x 1/4 pollo + 1x gaseosa
-(2, 11.86, 14.00, 23.73, 4.27, 28.00, 1, 1),
-(1, 10.17, 12.00, 10.17, 1.83, 12.00, 1, 3),
--- Venta 2: 1x pollo entero
-(1, 47.46, 56.00, 47.46, 8.54, 56.00, 2, 2),
--- Venta 3: 1x pollo entero + 2x gaseosa + 1x porción de papa
-(1, 47.46, 56.00, 47.46, 8.54, 56.00, 3, 2),
-(2, 10.17, 12.00, 20.34, 3.66, 24.00, 3, 3),
-(1,  5.93,  7.00,  5.93, 1.07,  7.00, 3, 4),
--- Venta 4: 2x 1/8 pollo + 1x gaseosa
-(2,  7.20,  8.50, 14.41, 2.59, 17.00, 4, 5),
-(1, 10.17, 12.00,  5.93, 1.07,  7.00, 4, 3),
--- Venta 5: 1x pollo entero + 1x 1/4 pollo
-(1, 47.46, 56.00, 47.46, 8.54, 56.00, 5, 2),
-(1, 11.86, 14.00,  8.47, 1.53, 10.00, 5, 1),
--- Venta 6: 3x 1/4 pollo + 1x porción papa
-(3, 11.86, 14.00, 35.59, 6.41, 42.00, 6, 1),
-(1,  5.93,  7.00,  2.54, 0.46,  3.00, 6, 4),
--- Venta 7: 2x 1/4 pollo + 1x gaseosa
-(2, 11.86, 14.00, 23.73, 4.27, 28.00, 7, 1),
-(1, 10.17, 12.00, 10.17, 1.83, 12.00, 7, 3),
--- Venta 8: 1x 1/8 pollo + 1x porción papa + 1x gaseosa
-(1,  7.20,  8.50,  7.20, 1.30,  8.50, 8, 5),
-(1,  5.93,  7.00,  5.93, 1.07,  7.00, 8, 4),
-(1,  3.81,  4.50,  3.81, 0.69,  4.50, 8, 3);
-
 -- PEDIDO_MESA
 INSERT INTO pedido_mesa (fecha_pedido, estado_pedido, fecha_actualizacion_estado, precio_precuenta) VALUES
 ('2026-01-05 12:05:00', 'completado', '2026-01-05 13:10:00', 40.00),

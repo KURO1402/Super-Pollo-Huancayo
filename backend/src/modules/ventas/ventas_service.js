@@ -28,10 +28,11 @@ const {
     obtenerVentaParaAnularModel,
     anularVentaModel,
     obtenerComprobantePendientePorIdModel,
-    actualizarEstadoSunatModel
+    actualizarEstadoSunatModel,
+    reenviarComprobanteModel
 } = require('./ventas_model');
 
-const MINUTOS_VENTANA = 5;
+const MINUTOS_VENTANA = 1;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -121,7 +122,7 @@ const generarVentaService = async (datos, idUsuario) => {
         ok: true,
         mensaje: esNotaVenta
             ? 'Nota de venta generada exitosamente'
-            : `Venta registrada. Tienes ${MINUTOS_VENTANA} minutos para corregir o anular antes de enviarse a SUNAT`,
+            : `Venta registrada. Tienes ${MINUTOS_VENTANA} minuto para anular la venta antes de enviarse a SUNAT`,
         venta,
         urlPdf,
     };
@@ -220,7 +221,7 @@ const obtenerComprobantePorIdVentaService = async (idVenta) => {
     return { ok: true, comprobante };
 };
 
-const reenvirarComprobanteService = async (idComprobante) => {
+const reenviarComprobanteService = async (idComprobante) => {
     try {
         console.log(`Iniciando reenvío manual del comprobante ${idComprobante}...`);
 
@@ -295,5 +296,5 @@ module.exports = {
     obtenerVentasService,
     obtenerDetalleVentaPorIdVentaService,
     obtenerComprobantePorIdVentaService,
-    reenvirarComprobanteService
+    reenviarComprobanteService
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { MdHistory } from "react-icons/md";
 import { FiCalendar } from "react-icons/fi";
 import { useVentaStore } from '../../store/useVentaStore';
@@ -25,6 +25,8 @@ const RegistroVentasPagina = () => {
 
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
+    const [cargandoInicial, setCargandoInicial] = useState(true);
+    const cargaInicialRef = useRef(true);
 
     const paginacion = usePaginacion({
         paginaActual,
@@ -34,11 +36,26 @@ const RegistroVentasPagina = () => {
         onLimite: setLimite,
     });
 
-    useEffect(() => { cargarVentas(); }, []);
+    // Cargar ventas solo la primera vez
+    useEffect(() => {
+        if (cargaInicialRef.current) {
+            cargarVentas();
+            cargaInicialRef.current = false;
+        }
+        const timer = setTimeout(() => setCargandoInicial(false), 100);
+        return () => clearTimeout(timer);
+    }, []);
+
     useEffect(() => { if (error) limpiarError(); }, [error]);
 
+    const puedeFiltrar = fechaInicio && fechaFin;
+
     const handleFiltrar = () => {
-        cargarVentas({ fechaInicio: fechaInicio || undefined, fechaFin: fechaFin || undefined });
+        if (!puedeFiltrar) {
+            mostrarAlerta.advertencia("Selecciona ambas fechas para filtrar");
+            return;
+        }
+        cargarVentas({ fechaInicio, fechaFin });
     };
 
     const handleLimpiarFiltro = () => {
@@ -73,6 +90,9 @@ const RegistroVentasPagina = () => {
     }, [cargarVentas, fechaInicio, fechaFin]);
 
     const ENCABEZADOS = ["N° Venta / Comprobante", "Fecha", "Hora", "Total", "Metodo de Pago", "Estado SUNAT", "Acciones"];
+
+    // Mostrar cargando solo en la carga inicial o si hay cambio de página
+    const mostrarCargando = cargandoInicial || (cargando && ventas.length === 0);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -126,7 +146,8 @@ const RegistroVentasPagina = () => {
                         </div>
                         <button
                             onClick={handleFiltrar}
-                            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                            disabled={!puedeFiltrar}
+                            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
                         >
                             Filtrar
                         </button>
@@ -142,7 +163,7 @@ const RegistroVentasPagina = () => {
                 </div>
 
                 {/* Tabla */}
-                {cargando ? (
+                {mostrarCargando ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-3">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
                         <p className="text-gray-500 dark:text-gray-400 text-sm">Cargando ventas...</p>
@@ -175,7 +196,7 @@ const RegistroVentasPagina = () => {
                                 </table>
                             </div>
 
-                            {ventas.length === 0 && (
+                            {ventas.length === 0 && !cargando && (
                                 <div className="flex flex-col items-center justify-center py-16 gap-2 text-gray-400 dark:text-gray-600">
                                     <MdHistory className="text-5xl" />
                                     <p className="text-sm">
@@ -193,6 +214,14 @@ const RegistroVentasPagina = () => {
                             </div>
                         )}
                     </>
+                )}
+
+                {/* Indicador de cargando en background (sin parpadeo) */}
+                {cargando && ventas.length > 0 && (
+                    <div className="fixed bottom-4 right-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg shadow-lg">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        <span>Actualizando...</span>
+                    </div>
                 )}
             </div>
 

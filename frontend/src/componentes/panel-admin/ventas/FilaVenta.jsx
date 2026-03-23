@@ -1,16 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiList, FiFileText, FiX, FiShoppingBag } from "react-icons/fi";
 import { BadgeSunat } from "./BadgeSunat";
 
 export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) => {
     const [anulando, setAnulando] = useState(false);
     const [confirmar, setConfirmar] = useState(false);
+    const [puedeAnular, setPuedeAnular] = useState(false);
 
-    const puedeAnular = venta.estado_sunat === 'pendiente'
-        && venta.fecha_limite_correccion
-        && new Date() < new Date(venta.fecha_limite_correccion);
+    // Actualizar puedeAnular cada segundo para detectar expiración en tiempo real
+    useEffect(() => {
+        const verificarVentana = () => {
+            const puede = venta.estado_sunat === 'pendiente'
+                && venta.fecha_limite_correccion
+                && new Date() < new Date(venta.fecha_limite_correccion);
+            setPuedeAnular(puede);
+        };
 
-    const puedeVerComprobante = venta.estado_sunat === 'aceptado' || venta.estado_sunat === 'rechazado' || venta.estado_sunat === 'enviado_sunat';
+        verificarVentana();
+        const intervalo = setInterval(verificarVentana, 1000);
+        return () => clearInterval(intervalo);
+    }, [venta]);
+
+    const esNotaVenta = venta.nombre_tipo_comprobante?.toLowerCase().includes('nota');
+
+    const puedeVerComprobante =
+        esNotaVenta ||
+        venta.estado_sunat === 'aceptado' ||
+        venta.estado_sunat === 'rechazado' ||
+        venta.estado_sunat === 'enviado_sunat' ||
+        venta.estado_sunat === 'enviado';
 
     const numeroComprobante = venta.serie && venta.numero_correlativo
         ? `${venta.serie}-${String(venta.numero_correlativo).padStart(8, '0')}`
@@ -18,9 +36,9 @@ export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) =
 
     const colorPago = () => {
         const m = (venta.nombre_medio_pago || '').toLowerCase();
-        if (m.includes('efectivo'))        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-        if (m.includes('tarjeta'))         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-        if (m.includes('transferencia'))   return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
+        if (m.includes('efectivo')) return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+        if (m.includes('tarjeta')) return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+        if (m.includes('transferencia')) return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
         if (m.includes('yape') || m.includes('plin')) return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400";
         return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
     };
@@ -83,7 +101,7 @@ export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) =
 
             {/* Estado SUNAT */}
             <td className="px-4 py-3 whitespace-nowrap">
-                <BadgeSunat estado={venta.estado_sunat} />
+                <BadgeSunat estado={venta.estado_sunat} tipoComprobante={venta.nombre_tipo_comprobante} />
             </td>
 
             {/* Acciones */}

@@ -4,7 +4,7 @@ import Modal from "../../ui/modal/Modal";
 import { anularVentaServicio } from "../../../servicios/ventasServicio";
 import mostrarAlerta from "../../../utilidades/toastUtilidades";
 
-const VENTANA_SEGUNDOS = 5 * 60;
+const VENTANA_SEGUNDOS = 1 * 60;
 
 export const ModalComprobanteGenerado = ({
   estaAbierto,
@@ -12,11 +12,11 @@ export const ModalComprobanteGenerado = ({
   datosComprobante,
   onDescargarPDF,
 }) => {
-  const [mostrarPDF, setMostrarPDF]               = useState(false);
+  const [mostrarPDF, setMostrarPDF] = useState(false);
   const [segundosRestantes, setSegundosRestantes] = useState(VENTANA_SEGUNDOS);
-  const [anulando, setAnulando]                   = useState(false);
-  const [anulada, setAnulada]                     = useState(false);
-  const [confirmarAnular, setConfirmarAnular]     = useState(false);
+  const [anulando, setAnulando] = useState(false);
+  const [anulada, setAnulada] = useState(false);
+  const [confirmarAnular, setConfirmarAnular] = useState(false);
 
   useEffect(() => {
     if (!estaAbierto || !datosComprobante) return;
@@ -40,16 +40,16 @@ export const ModalComprobanteGenerado = ({
     return `${m}:${s}`;
   };
 
-  const puedeAnular     = segundosRestantes > 0 && !anulada;
+  const puedeAnular = segundosRestantes > 0 && !anulada;
   const porcentajeTiempo = (segundosRestantes / VENTANA_SEGUNDOS) * 100;
   const colorTiempo =
-    segundosRestantes > 120 ? "text-green-600 dark:text-green-400" :
-    segundosRestantes > 30  ? "text-amber-500 dark:text-amber-400" :
-                              "text-red-500 dark:text-red-400";
+    segundosRestantes > 30 ? "text-green-600 dark:text-green-400" :
+      segundosRestantes > 10 ? "text-amber-500 dark:text-amber-400" :
+        "text-red-500 dark:text-red-400";
   const colorBarra =
-    segundosRestantes > 120 ? "bg-green-500" :
-    segundosRestantes > 30  ? "bg-amber-500" :
-                              "bg-red-500";
+    segundosRestantes > 30 ? "bg-green-500" :
+      segundosRestantes > 10 ? "bg-amber-500" :
+        "bg-red-500";
 
   const handleAnular = useCallback(async () => {
     if (!datosComprobante?.venta?.id_venta) return;
@@ -74,10 +74,10 @@ export const ModalComprobanteGenerado = ({
 
   if (!datosComprobante) return null;
 
-  const { tipoComprobanteTexto, venta, urlPdf, mensaje } = datosComprobante;
-  const esNotaVenta  = datosComprobante.tipoComprobante === 3;
-  const totalVenta   = parseFloat(venta?.total_venta   || 0).toFixed(2);
-  const totalIgv     = parseFloat(venta?.total_igv     || 0).toFixed(2);
+  const { tipoComprobanteTexto, venta, urlPdf, mensaje, comprobante } = datosComprobante;
+  const esNotaVenta = datosComprobante.tipoComprobante === 3 ;
+  const totalVenta = parseFloat(venta?.total_venta || 0).toFixed(2);
+  const totalIgv = parseFloat(venta?.total_igv || 0).toFixed(2);
   const totalGravada = parseFloat(venta?.total_gravada || 0).toFixed(2);
 
   // ── Vista previa PDF ──────────────────────────────────────────────────────
@@ -199,7 +199,7 @@ export const ModalComprobanteGenerado = ({
           </div>
         )}
 
-        {/* Resumen de la venta */}
+        {/* Resumen de la venta con info de comprobante para notas */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <div className="px-4 py-3 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -207,6 +207,28 @@ export const ModalComprobanteGenerado = ({
             </p>
           </div>
           <div className="p-4 space-y-3">
+            {/* Info de comprobante solo para notas de venta */}
+            {esNotaVenta && comprobante && (
+              <div className="grid grid-cols-3 gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Comprobante</p>
+                  <p className="font-bold text-gray-900 dark:text-white">
+                    {comprobante.serie}-{String(comprobante.numero_correlativo).padStart(8, '0')}
+                  </p>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-900/30 p-3 rounded-lg text-center">
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mb-0.5">Estado</p>
+                  <p className="font-bold text-purple-700 dark:text-purple-300">Nota Local</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Fecha Emisión</p>
+                  <p className="font-bold text-gray-900 dark:text-white text-sm">
+                    {comprobante.fecha_emision ? new Date(comprobante.fecha_emision).toLocaleDateString('es-PE') : '—'}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-center">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Base Imponible</p>

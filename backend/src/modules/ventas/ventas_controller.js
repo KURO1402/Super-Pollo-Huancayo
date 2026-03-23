@@ -4,7 +4,7 @@ const {
     obtenerVentasService,
     obtenerDetalleVentaPorIdVentaService,
     obtenerComprobantePorIdVentaService,
-    reenvirarComprobanteService
+    reenviarComprobanteService
 } = require('./ventas_service');
 
 const generarVentaController = async (req, res) => {
@@ -67,7 +67,7 @@ const obtenerComprobantePorIdVentaController = async (req, res) => {
     }
 };
 
-const reenvirarComprobanteController = async (req, res) => {
+const reenviarComprobanteController = async (req, res) => {
   try {
     const { idComprobante } = req.params;
 
@@ -78,7 +78,7 @@ const reenvirarComprobanteController = async (req, res) => {
       });
     }
 
-    const resultado = await reenvirarComprobanteService(Number(idComprobante));
+    const resultado = await reenviarComprobanteService(Number(idComprobante));
     return res.status(200).json(resultado);
 
   } catch (err) {
@@ -96,5 +96,5 @@ module.exports = {
     obtenerVentasController,
     obtenerDetalleVentaPorIdVentaController,
     obtenerComprobantePorIdVentaController,
-    reenvirarComprobanteController
+    reenviarComprobanteController
 };

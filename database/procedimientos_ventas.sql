@@ -153,12 +153,13 @@ WHERE
     v.id_venta = p_id_venta;
 
 END //
+
 -- ─── SP: Obtener Comprobante por ID Venta ─────────────────────────────────────
 CREATE PROCEDURE sp_obtener_comprobante_por_id_venta (IN p_id_venta INT) BEGIN
 SELECT
     c.id_comprobante,
     c.id_tipo_comprobante,
-
+    tc.nombre_tipo_comprobante,
     c.serie,
     c.numero_correlativo,
     DATE_FORMAT(c.fecha_emision, '%d-%m-%Y') AS fecha_emision,
@@ -167,14 +168,17 @@ SELECT
     c.estado_sunat,
     c.url_comprobante_pdf,
     c.url_comprobante_xml,
+    c.url_cdr,
+    c.hash_comprobante,
     c.fecha_envio,
     c.fecha_limite_correccion
 FROM
     comprobantes c
+    LEFT JOIN tipo_comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante
 WHERE
     c.id_venta = p_id_venta;
-
 END //
+
 -- ─── SP: Obtener Detalle Venta por ID Venta ───────────────────────────────────
 CREATE PROCEDURE sp_obtener_detalle_venta_por_id_venta (IN p_id_venta INT) BEGIN
 SELECT
@@ -212,11 +216,13 @@ SELECT
     c.estado_sunat,
     c.fecha_limite_correccion,
     c.serie,
-    c.numero_correlativo
+    c.numero_correlativo,
+    tc.nombre_tipo_comprobante
 FROM
     ventas v
     LEFT JOIN medio_pago mp ON v.id_medio_pago = mp.id_medio_pago
     LEFT JOIN comprobantes c ON c.id_venta = v.id_venta
+    LEFT JOIN tipo_comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante
 WHERE
     (p_fecha_inicio IS NULL OR DATE(v.fecha_registro) >= p_fecha_inicio)
     AND (p_fecha_fin IS NULL OR DATE(v.fecha_registro) <= p_fecha_fin)
@@ -321,7 +327,10 @@ CREATE PROCEDURE sp_actualizar_estado_sunat (
     IN p_estado ENUM ('pendiente', 'enviado_sunat', 'aceptado', 'rechazado'),
     IN p_url_comprobante_xml VARCHAR(150),
     IN p_public_id_xml VARCHAR(150),
-    IN p_fecha_envio DATETIME
+    IN p_fecha_envio DATETIME,
+    IN p_url_cdr VARCHAR(150),
+    IN p_public_id_cdr VARCHAR(150),
+    IN p_hash_comprobante VARCHAR(100)
 )
 BEGIN
     UPDATE comprobantes
@@ -330,6 +339,9 @@ BEGIN
         url_comprobante_xml = p_url_comprobante_xml,
         public_id_xml = p_public_id_xml,
         fecha_envio = p_fecha_envio,
+        url_cdr = p_url_cdr,
+        public_id_cdr = p_public_id_cdr,
+        hash_comprobante = p_hash_comprobante,
         intentos_reenvio = intentos_reenvio + 1,
         fecha_ultimo_reintento = NOW()
     WHERE id_comprobante = p_id_comprobante;

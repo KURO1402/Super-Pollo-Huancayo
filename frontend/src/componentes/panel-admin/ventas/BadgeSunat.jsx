@@ -1,5 +1,15 @@
-export const BadgeSunat = ({ estado }) => {
-    const getEstiloEstado = (estado) => {
+export const BadgeSunat = ({ estado, tipoComprobante }) => {
+    const esNotaVenta = tipoComprobante?.toLowerCase().includes('nota de venta');
+    
+    const getEstiloEstado = (estado, esNotaVenta) => {
+        if (esNotaVenta) {
+            return {
+                bg: 'bg-purple-100 dark:bg-purple-900/30',
+                text: 'text-purple-800 dark:text-purple-400',
+                etiqueta: 'Nota Local'
+            };
+        }
+
         switch (estado) {
             case 'pendiente':
                 return {
@@ -40,7 +50,7 @@ export const BadgeSunat = ({ estado }) => {
         }
     };
 
-    const estilo = getEstiloEstado(estado);
+    const estilo = getEstiloEstado(estado, esNotaVenta);
 
     return (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${estilo.bg} ${estilo.text}`}>

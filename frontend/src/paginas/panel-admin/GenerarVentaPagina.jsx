@@ -1,6 +1,7 @@
 import { FiShoppingCart, FiUser, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa6";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   generarVentaServicio,
   obtenerMetodosPagoServicio,
@@ -21,14 +22,13 @@ import { FormularioCliente } from "../../componentes/panel-admin/ventas/Formular
 import { ModalComprobanteGenerado } from "../../componentes/panel-admin/ventas/ModalComprobanteGenerado";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
-// id_tipo_comprobante: 1=Boleta, 2=Factura, 3=Nota de Venta (según tu BD)
-// soloRuc y requiereCliente se derivan del id
-const esFactura = (id) => id === 2;
-const esNotaVenta = (id) => id === 3;
+// Helper para identificar por nombre
+const esFactura = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('factura');
+const esNotaVenta = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('nota de venta');
 
 const GenerarVentaPagina = () => {
-  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } =
-    useBusqueda();
+  const location = useLocation();
+  const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
   const { detalle, limpiarVenta } = useVentaStore();
   const { estaAbierto, abrir, cerrar } = useModal();
   const {
@@ -52,6 +52,15 @@ const GenerarVentaPagina = () => {
   const [datosComprobante, setDatosComprobante] = useState(null);
   const [productos, setProductos] = useState([]);
   const [cargandoProductos, setCargandoProductos] = useState(true);
+
+  // Limpiar estado cuando cambias de página
+  useEffect(() => {
+    limpiarVenta();
+    setDatosCliente(null);
+    setMetodoPagoSeleccionado("");
+    setMostrarModalComprobante(false);
+    setDatosComprobante(null);
+  }, [location.pathname]);
 
   // ── Cargar tipos de comprobante ───────────────────────────────────────────
   useEffect(() => {
@@ -107,7 +116,7 @@ const GenerarVentaPagina = () => {
     setTipoSeleccionado(tipo);
     // Si cambia a factura y el cliente no tiene RUC, limpiarlo
     if (
-      esFactura(tipo.id_tipo_comprobante) &&
+      esFactura(tipo) &&
       datosCliente &&
       datosCliente.tipoDocumento !== "2"
     ) {
@@ -115,15 +124,14 @@ const GenerarVentaPagina = () => {
       mostrarAlerta.advertencia("Para factura se requiere cliente con RUC");
     }
     // Si cambia desde factura, limpiar cliente
-    if (!esFactura(tipo.id_tipo_comprobante) && datosCliente) {
+    if (!esFactura(tipo) && datosCliente) {
       setDatosCliente(null);
     }
   };
 
   // ── Guardar cliente desde modal ───────────────────────────────────────────
   const handleClienteGuardado = (cliente) => {
-    const idTipo = tipoSeleccionado?.id_tipo_comprobante;
-    if (esFactura(idTipo)) {
+    if (esFactura(tipoSeleccionado)) {
       if (cliente.tipoDocumento !== "2") {
         mostrarAlerta.error("Para factura solo se acepta RUC");
         return;
@@ -184,8 +192,7 @@ const GenerarVentaPagina = () => {
       mostrarAlerta.advertencia("Debe agregar al menos un producto");
       return;
     }
-    const idTipo = tipoSeleccionado?.id_tipo_comprobante;
-    if (esFactura(idTipo) && !datosCliente) {
+    if (esFactura(tipoSeleccionado) && !datosCliente) {
       mostrarAlerta.advertencia(
         "Para factura debe seleccionar un cliente con RUC",
       );
@@ -199,7 +206,7 @@ const GenerarVentaPagina = () => {
     setCargando(true);
     try {
       let clientePayload;
-      if (esFactura(idTipo) && datosCliente) {
+      if (esFactura(tipoSeleccionado) && datosCliente) {
         clientePayload = {
           idTipoDoc: 2,
           numDoc: Number(datosCliente.numeroDocumento),
@@ -221,7 +228,7 @@ const GenerarVentaPagina = () => {
       }
 
       const ventaData = {
-        tipoComprobante: Number(idTipo),
+        tipoComprobante: Number(tipoSeleccionado.id_tipo_comprobante),
         medioPago: Number(metodoPagoSeleccionado),
         cliente: clientePayload,
         productos: detalle.map((item) => ({
@@ -235,9 +242,8 @@ const GenerarVentaPagina = () => {
       if (respuesta?.ok) {
         setDatosComprobante({
           ...respuesta,
-          tipoComprobante: idTipo,
-          tipoComprobanteTexto:
-            tipoSeleccionado?.nombre_tipo_comprobante || "Comprobante",
+          tipoComprobante: tipoSeleccionado.id_tipo_comprobante,
+          tipoComprobanteTexto: tipoSeleccionado?.nombre_tipo_comprobante || "Comprobante",
         });
         setMostrarModalComprobante(true);
         limpiarVenta();
@@ -261,15 +267,14 @@ const GenerarVentaPagina = () => {
   };
 
   // ── Helpers UI ────────────────────────────────────────────────────────────
-  const idTipoActual = tipoSeleccionado?.id_tipo_comprobante;
   const filtrados = filtrarPorBusqueda(productos, [
     "nombre_producto",
     "descripcion_producto",
   ]);
-  const labelCliente = esFactura(idTipoActual)
+  const labelCliente = esFactura(tipoSeleccionado)
     ? "Cliente (RUC requerido)"
     : "Cliente (opcional)";
-  const placeholderCliente = esFactura(idTipoActual)
+  const placeholderCliente = esFactura(tipoSeleccionado)
     ? "Seleccione un cliente con RUC"
     : "Clientes Varios";
 
@@ -355,7 +360,7 @@ const GenerarVentaPagina = () => {
           )}
 
           {/* Nota Factura */}
-          {esFactura(idTipoActual) && (
+          {esFactura(tipoSeleccionado) && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-sm text-amber-800 dark:text-amber-300">
               <span className="shrink-0 mt-0.5">⚠️</span>
               <span>
@@ -366,7 +371,7 @@ const GenerarVentaPagina = () => {
           )}
 
           {/* Nota Nota de Venta */}
-          {esNotaVenta(idTipoActual) && (
+          {esNotaVenta(tipoSeleccionado) && (
             <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg text-sm text-blue-800 dark:text-blue-300">
               <span className="shrink-0 mt-0.5">ℹ️</span>
               <span>
@@ -380,7 +385,7 @@ const GenerarVentaPagina = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {labelCliente}
-              {esFactura(idTipoActual) && (
+              {esFactura(tipoSeleccionado) && (
                 <span className="text-red-500 ml-1">*</span>
               )}
             </label>
@@ -479,7 +484,7 @@ const GenerarVentaPagina = () => {
               disabled={
                 detalle.length === 0 ||
                 cargando ||
-                (esFactura(idTipoActual) && !datosCliente) ||
+                (esFactura(tipoSeleccionado) && !datosCliente) ||
                 !metodoPagoSeleccionado
               }
               className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
@@ -525,8 +530,8 @@ const GenerarVentaPagina = () => {
           <FormularioCliente
             onSubmit={handleClienteGuardado}
             onCancelar={cerrar}
-            tipoComprobante={idTipoActual}
-            soloRuc={esFactura(idTipoActual)}
+            tipoComprobante={tipoSeleccionado?.nombre_tipo_comprobante}
+            soloRuc={esFactura(tipoSeleccionado)}
           />
         </Modal>
       )}

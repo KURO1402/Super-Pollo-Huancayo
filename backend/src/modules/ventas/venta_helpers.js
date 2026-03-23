@@ -36,7 +36,7 @@ const eliminarArchivoCloudinary = async (publicId) => {
     try {
         await cloudinaryPdf.uploader.destroy(publicId, { resource_type: 'raw' });
     } catch (err) {
-        console.error(`❌ Error eliminando archivo Cloudinary (${publicId}):`, err.message);
+        console.error(`Error eliminando archivo Cloudinary (${publicId}):`, err.message);
     }
 };
 
@@ -147,8 +147,6 @@ const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
 
 // ─── Reconstruir payload ApisPeru desde datos de BD (usado por el job) ────────
 const reconstruirPayloadApisPeru = (comprobante, detalles) => {
-    const { TIPO_COMPROBANTE_CODIGO, TIPO_DOCUMENTO_CODIGO } = require('../../utilidades/helpers/constantes_venta');
-
     const formatearFecha = (fecha) => {
         const d = new Date(fecha);
         const yyyy = d.getUTCFullYear();
@@ -158,41 +156,32 @@ const reconstruirPayloadApisPeru = (comprobante, detalles) => {
     };
 
     const details = detalles.map((d, i) => {
-    const baseImponible = parseFloat(d.valor_unitario) * d.cantidad_producto;
-    const igvTotal = parseFloat(d.igv);
-    
-    return {
-        id: String(i + 1),
-        codProducto: `P${String(d.id_producto).padStart(3, '0')}`,
-        unidad: '03',
-        descripcion: d.nombre_producto,
-        cantidad: d.cantidad_producto,
-        mtoValorUnitario: parseFloat(d.valor_unitario),
-        mtoPrecioUnitario: parseFloat(d.precio_unitario),
-        porcentajeIgv: 18,
-        igv: igvTotal,
-        mtoValorVenta: baseImponible,
-        totalImpuestos: igvTotal,
-        tributos: [
-            {
-                tipoTributo: '1000',
-                codigoTributo: '1000',
-                nombre: 'IGV',
-                porcentaje: 18,
-                baseImponible: baseImponible,
-                monto: igvTotal,
-                afectacionIGV: '10',
-            }
-        ],
-    };
-});
+        const baseImponible = parseFloat(d.valor_unitario) * d.cantidad_producto;
+        const igvTotal = parseFloat(d.igv);
+
+        return {
+            id: String(i + 1),
+            codProducto: `P${String(d.id_producto).padStart(3, '0')}`,
+            unidad: 'NIU',
+            descripcion: d.nombre_producto,
+            cantidad: d.cantidad_producto,
+            mtoValorUnitario: parseFloat(d.valor_unitario),
+            mtoValorVenta: baseImponible,
+            mtoBaseIgv: baseImponible,
+            mtoPrecioUnitario: parseFloat(d.precio_unitario),
+            porcentajeIgv: 18,
+            igv: igvTotal,
+            tipAfeIgv: 10,
+            totalImpuestos: igvTotal,
+        };
+    });
 
     return {
         ublVersion: '2.1',
         tipoOperacion: String(comprobante.sunat_transaccion).padStart(4, '0'),
         tipoDoc: TIPO_COMPROBANTE_CODIGO[comprobante.nombre_tipo_comprobante?.toLowerCase()],
         serie: comprobante.serie,
-        correlativo: String(comprobante.numero_correlativo),  // ← string
+        correlativo: String(comprobante.numero_correlativo),
         fechaEmision: formatearFecha(comprobante.fecha_emision),
         fecVencimiento: formatearFecha(comprobante.fecha_vencimiento),
         formaPago: { moneda: 'PEN', tipo: 'Contado' },
@@ -205,13 +194,14 @@ const reconstruirPayloadApisPeru = (comprobante, detalles) => {
         },
         company,
         mtoOperGravadas: parseFloat(comprobante.total_gravada),
+        mtoIGV: parseFloat(comprobante.total_igv),           // ← renombrar totalIgv
+        totalImpuestos: parseFloat(comprobante.total_igv),    // ← agregar
+        valorVenta: parseFloat(comprobante.total_gravada),    // ← agregar
+        subTotal: parseFloat(comprobante.total_venta), 
         totalIgv: parseFloat(comprobante.total_igv),
         mtoImpVenta: parseFloat(comprobante.total_venta),
         details,
-        legends: [{
-            code: "1000",
-            value: numeroALetras(parseFloat(comprobante.total_venta))
-        }],
+        legends: [{ code: '1000', value: numeroALetras(parseFloat(comprobante.total_venta)) }],
     };
 };
 
@@ -224,7 +214,7 @@ const enviarComprobanteApisPeru = async (payload) => {
             payload,
             { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
         );
-        return respuesta.data; // { xml, hash, sunatResponse }
+        return respuesta.data;
     } catch (error) {
         if (error.response) {
             const { status, data } = error.response;
@@ -266,7 +256,6 @@ const obtenerPdfApisPeru = async (payload) => {
     }
 };
 
-
 // Alias para compatibilidad
 const generarPdfNotaVenta = (datosComprobante, cliente, nombreTipoDoc) =>
     generarPdfTermico(datosComprobante, cliente, nombreTipoDoc, 'Nota de Venta');
@@ -275,9 +264,16 @@ const generarPdfNotaVenta = (datosComprobante, cliente, nombreTipoDoc) =>
 const validarStockInsumos = async (productosConData) => {
     const insumosNecesarios = new Map();
 
-    for (const { productoExiste, cantidad } of productosConData) {
-        if (!productoExiste.usa_insumos) continue;
-        const insumos = await obtenerInsumosPorProductoModel(productoExiste.id_producto);
+    // ─── Cargar insumos de todos los productos en paralelo ────────────────────
+    const resultadosInsumos = await Promise.all(
+        productosConData.map(({ productoExiste, cantidad }) => {
+            if (!productoExiste.usa_insumos) return { insumos: [], cantidad };
+            return obtenerInsumosPorProductoModel(productoExiste.id_producto)
+                .then(insumos => ({ insumos, cantidad }));
+        })
+    );
+
+    for (const { insumos, cantidad } of resultadosInsumos) {
         for (const insumo of insumos) {
             const cantidadExacta = insumo.cantidad_uso * cantidad;
             const cantidadValidacion = Math.ceil(cantidadExacta);
@@ -289,22 +285,24 @@ const validarStockInsumos = async (productosConData) => {
                 insumosNecesarios.set(idInsumo, {
                     nombreInsumo: insumo.nombre_insumo,
                     cantidadExacta,
-                    cantidadValidacion
+                    cantidadValidacion,
                 });
             }
         }
     }
 
-    // Retorna el Map para reutilizarlo en el descuento
-    for (const [idInsumo, { nombreInsumo, cantidadValidacion }] of insumosNecesarios) {
-        const stockActual = await obtenerStockActualModel(idInsumo);
-        if (cantidadValidacion > stockActual) {
-            throw crearError(
-                `Stock insuficiente del insumo: ${nombreInsumo}. Necesario: ${cantidadValidacion}, disponible: ${stockActual}`,
-                409
-            );
-        }
-    }
+    // ─── Verificar stock de todos los insumos en paralelo ─────────────────────
+    await Promise.all(
+        Array.from(insumosNecesarios.entries()).map(async ([idInsumo, { nombreInsumo, cantidadValidacion }]) => {
+            const stockActual = await obtenerStockActualModel(idInsumo);
+            if (cantidadValidacion > stockActual) {
+                throw crearError(
+                    `Stock insuficiente del insumo: ${nombreInsumo}. Necesario: ${cantidadValidacion}, disponible: ${stockActual}`,
+                    409
+                );
+            }
+        })
+    );
 
     return insumosNecesarios;
 };
@@ -319,14 +317,20 @@ const descontarStockInsumos = async (insumosNecesarios, registrarSalidaStockServ
     }
 };
 
-
 // ─── Revertir insumos al anular una venta ─────────────────────────────────────
 const revertirInsumosVenta = async (detalles, registrarEntradaStockService, idUsuario) => {
     const insumosARevertir = new Map();
 
-    for (const { id_producto, cantidad_producto, usa_insumos } of detalles) {
-        if (!usa_insumos) continue;
-        const insumos = await obtenerInsumosPorProductoModel(id_producto);
+    // ─── Cargar insumos de todos los productos en paralelo ────────────────────
+    const resultadosInsumos = await Promise.all(
+        detalles.map(({ id_producto, cantidad_producto, usa_insumos }) => {
+            if (!usa_insumos) return { insumos: [], cantidad_producto };
+            return obtenerInsumosPorProductoModel(id_producto)
+                .then(insumos => ({ insumos, cantidad_producto }));
+        })
+    );
+
+    for (const { insumos, cantidad_producto } of resultadosInsumos) {
         for (const insumo of insumos) {
             const cantidad = insumo.cantidad_uso * cantidad_producto;
             const idInsumo = insumo.id_insumo;

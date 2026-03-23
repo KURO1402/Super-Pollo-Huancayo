@@ -72,7 +72,6 @@ const obtenerDetalleVentaPorIdVentaModel = async (idVenta) => {
 };
 
 const obtenerVentasModel = async (fechaInicio = null, fechaFin = null, limit, offset) => {
-    console.log(fechaInicio, fechaFin)
     let conexion;
     try {
         conexion = await pool.getConnection();
@@ -148,15 +147,25 @@ const obtenerComprobantePendientePorIdModel = async (idComprobante) => {
     }
 };
 
-const actualizarEstadoSunatModel = async (idComprobante, estado, urlComprobanteXml, publicIdXml, fechaEnvio) => {
+const actualizarEstadoSunatModel = async (
+    idComprobante,
+    estado,
+    urlComprobanteXml,
+    publicIdXml,
+    fechaEnvio,
+    urlCdr,
+    publicIdCdr,
+    hashComprobante
+) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
         await conexion.execute(
-            'CALL sp_actualizar_estado_sunat(?, ?, ?, ?, ?)',
-            [idComprobante, estado, urlComprobanteXml, publicIdXml, fechaEnvio]
+            'CALL sp_actualizar_estado_sunat(?, ?, ?, ?, ?, ?, ?, ?)',
+            [idComprobante, estado, urlComprobanteXml, publicIdXml, fechaEnvio, urlCdr, publicIdCdr, hashComprobante]
         );
     } catch (err) {
+        console.log(err.message);
         throw new Error('Error al actualizar el estado SUNAT en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -197,7 +206,7 @@ const anularVentaModel = async (idVenta, idMovimientoCaja, montoRevertir, idUsua
     }
 };
 
-const reenvirarComprobanteModel = async (idComprobante) => {
+const reenviarComprobanteModel = async (idComprobante) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
@@ -226,5 +235,5 @@ module.exports = {
     actualizarEstadoSunatModel,
     obtenerVentaParaAnularModel,
     anularVentaModel,
-    reenvirarComprobanteModel
+    reenviarComprobanteModel
 };

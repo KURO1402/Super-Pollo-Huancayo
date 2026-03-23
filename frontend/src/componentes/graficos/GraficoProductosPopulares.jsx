@@ -60,13 +60,15 @@ const GraficoProductosPopulares = () => {
   };
 
   const aplicarFiltros = () => {
-    if (filtros.fechaInicio && filtros.fechaFin) {
-      if (filtros.fechaInicio > filtros.fechaFin) {
-        mostrarAlerta.advertencia("La fecha de inicio no puede ser mayor a la fecha fin");
-        return;
-      }
-      cargarDatos(filtros.fechaInicio, filtros.fechaFin);
+    if (!filtros.fechaInicio || !filtros.fechaFin) {
+      mostrarAlerta.advertencia("Selecciona ambas fechas para filtrar");
+      return;
     }
+    if (filtros.fechaInicio > filtros.fechaFin) {
+      mostrarAlerta.advertencia("La fecha de inicio no puede ser mayor a la fecha fin");
+      return;
+    }
+    cargarDatos(filtros.fechaInicio, filtros.fechaFin);
   };
 
   const limpiarFiltros = () => {
@@ -111,7 +113,7 @@ const GraficoProductosPopulares = () => {
         <div className="flex flex-row sm:flex-col md:flex-row flex-wrap items-end gap-2">
           <button
             onClick={aplicarFiltros}
-            disabled={cargando}
+            disabled={cargando || !filtros.fechaInicio || !filtros.fechaFin}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md transition-colors duration-200 text-sm font-medium w-full sm:w-auto"
           >
             {cargando ? "Cargando..." : "Aplicar"}

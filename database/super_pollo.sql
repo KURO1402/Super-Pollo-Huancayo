@@ -101,8 +101,6 @@ CREATE TABLE eventos_caja (
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-
-
 -- Registra los arqueos de caja realizados para verificar el saldo físico vs el esperado
 CREATE TABLE arqueos_caja (
     id_arqueo INT AUTO_INCREMENT PRIMARY KEY,
@@ -302,7 +300,12 @@ CREATE TABLE comprobantes (
     public_id_pdf VARCHAR(150) NULL,
     url_comprobante_xml VARCHAR(150),
     public_id_xml VARCHAR(150) NULL,
+    url_cdr VARCHAR(150) NULL,
+    public_id_cdr VARCHAR(150) NULL,
+    hash_comprobante VARCHAR(100) NULL,
     fecha_envio DATETIME NULL,
+    fecha_ultimo_reintento DATETIME NULL,
+    intentos_reenvio INT DEFAULT 0,
     fecha_limite_correccion DATETIME NULL,
     FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
     FOREIGN KEY (id_tipo_comprobante) REFERENCES tipo_comprobante(id_tipo_comprobante) ON DELETE CASCADE
