@@ -315,6 +315,7 @@ const obtenerProductosCatalogoModel = async (idCategoria = null) => {
         return result[0]; 
 
     } catch (err) {
+        console.log(err.message);
         throw new Error('Error al obtener los productos de la base de datos');
     } finally {
         if (conexion) conexion.release();
