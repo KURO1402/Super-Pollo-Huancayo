@@ -11,7 +11,6 @@ const TarjetaCompacta = ({ titulo, descripcion }) => {
       hover:shadow-[0_4px_20px_rgba(230,57,70,0.15)]
       hover:-translate-y-0.5
     ">
-      {/* Acento superior */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-rojo rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <div className="text-2xl md:text-3xl font-extrabold text-rojo leading-none mb-1">

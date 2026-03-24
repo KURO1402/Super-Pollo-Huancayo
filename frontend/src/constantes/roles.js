@@ -1,7 +1,7 @@
 export const ROLES = {
-  USUARIO: 1, // anterior era superdaministrador 
-  COLABORADOR: 2, // antes era administrador
-  ADMINISTRADOR: 3, // antes era usuario
+  USUARIO: 1,
+  COLABORADOR: 2,
+  ADMINISTRADOR: 3,
 };
 
 export const NOMBRES_ROLES = {

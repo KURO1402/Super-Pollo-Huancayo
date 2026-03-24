@@ -1,6 +1,5 @@
 import API from "./axiosConfiguracion";
 
-// PARA EL ADMIN
 export const listarReservacionesPorRangoServicio = async (fechaInicio, fechaFin) => {
   try {
     const respuesta = await API.get('/reservaciones/calendario', {

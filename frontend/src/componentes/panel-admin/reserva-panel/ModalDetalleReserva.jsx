@@ -108,7 +108,6 @@ const ModalDetalleReserva = ({ reserva }) => {
   );
 };
 
-// Componente InfoCard para mostrar información en formato tarjeta
 const InfoCard = ({ icono, titulo, contenido }) => (
   <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 transition-all hover:shadow-md">
     <div className="flex items-center gap-3">

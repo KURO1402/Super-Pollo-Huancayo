@@ -29,7 +29,6 @@ export const listarInsumoServicio = async (params = {}) => {
     }
     return respuesta.data;
   } catch (error) {
-    // Preservar el error de axios con su response intacto
     throw error;
   }
 };

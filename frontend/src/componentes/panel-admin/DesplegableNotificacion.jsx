@@ -78,7 +78,6 @@ export default function DesplegableNotificacion() {
           </button>
         </div>
         <ul className="flex flex-col h-auto overflow-y-auto custom-scrollbar">
-          {/* Example notification items */}
           <li>
             <DesplegableItem
               onItemClick={cerrarDesplegable}

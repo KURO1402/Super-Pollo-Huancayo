@@ -88,7 +88,6 @@ export const ModalEditarInsumo = ({ insumo, onClose, onGuardar }) => {
 
   const mcd = (a, b) => (b === 0 ? a : mcd(b, a % b));
 
-  // Fracción como texto simple: "1/2", "3/4", etc.
   const formatearCantidad = (valor) => {
     const num = parseFloat(valor) || 0;
     const entero = Math.floor(num);

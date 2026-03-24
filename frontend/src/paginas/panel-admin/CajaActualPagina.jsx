@@ -93,7 +93,6 @@ const CajaActualPagina = () => {
           await cerrarCaja();
           mostrarAlerta.exito("Caja cerrada con éxito");
         } catch (error) {
-          console.error("Error al cerrar caja:", error);
           mostrarAlerta.error("Primero debe hacer al menos un arqueo de caja");
         }
       },

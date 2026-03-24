@@ -37,7 +37,6 @@ const FilaMovimientos = ({ movimiento, formatCurrency }) => {
         {formatCurrency(Number(movimiento.monto_movimiento))}
       </td>
 
-      {/* FECHA */}
       <td className="px-6 py-4">
         <div className="flex flex-col gap-1">
           <span className="text-sm text-gray-900 dark:text-white">
@@ -49,7 +48,6 @@ const FilaMovimientos = ({ movimiento, formatCurrency }) => {
         </div>
       </td>
 
-      {/* USUARIO */}
       <td className="px-6 py-4">
         <div className="flex items-center gap-2">
           <FiUser className="w-4 h-4 text-gray-400 dark:text-gray-500" />

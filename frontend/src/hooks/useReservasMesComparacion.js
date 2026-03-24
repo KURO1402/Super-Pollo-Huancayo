@@ -15,7 +15,11 @@ export const useReservasMesComparacion = () => {
         const resultado = await obtenerReservasMesComparacionServicio();
         setReservas(resultado);
       } catch (error) {
-        console.error("Error al cargar reservas del mes:", error);
+        setReservas({
+          total_reservas_mes: 0,
+          total_reservas_mes_anterior: 0,
+          porcentaje_comparacion: 0,
+        });
       } finally {
         setCargando(false);
       }

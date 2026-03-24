@@ -40,10 +40,9 @@ export const useCajaStore = create(
       filtros: {},
 
       cargando: false,
-      rehidratando: false, // ✅ NUEVO FLAG
+      rehidratando: false,
       error: null,
 
-      // ABRIR CAJA
       abrirCaja: async (datos) => {
         set({ cargando: true, error: null });
 
@@ -77,7 +76,6 @@ export const useCajaStore = create(
         }
       },
 
-      // CERRAR CAJA
       cerrarCaja: async () => {
         set({ cargando: true, error: null });
 
@@ -107,7 +105,6 @@ export const useCajaStore = create(
         }
       },
 
-      // REGISTRAR INGRESO
       registrarIngreso: async (datos) => {
         set({ cargando: true, error: null });
 
@@ -139,7 +136,6 @@ export const useCajaStore = create(
         }
       },
 
-      // REGISTRAR EGRESO
       registrarEgreso: async (datos) => {
         set({ cargando: true, error: null });
 
@@ -171,7 +167,6 @@ export const useCajaStore = create(
         }
       },
 
-      // REGISTRAR ARQUEO
       registrarArqueo: async (datos) => {
         set({ cargando: true, error: null });
 
@@ -197,7 +192,6 @@ export const useCajaStore = create(
         }
       },
 
-      // CARGAR MOVIMIENTOS
       cargarMovimientos: async () => {
         const { paginaActual, limite, cajaActual } = get();
         if (!cajaActual.id_caja) return;
@@ -222,7 +216,6 @@ export const useCajaStore = create(
         }
       },
 
-      // CARGAR CAJAS CERRADAS
       cargarCajasCerradas: async () => {
         const { paginaActual, limite } = get();
         const offset = (paginaActual - 1) * limite;
@@ -242,14 +235,11 @@ export const useCajaStore = create(
         }
       },
 
-      // reconstruir saldos reales al refrescar la página
       rehidratarCaja: async () => {
         const { cajaActual } = get();
 
-        // ✅ Siempre activar rehidratando para bloquear la UI
         set({ rehidratando: true });
 
-        // Si no hay caja que verificar, liberar inmediatamente
         if (!cajaActual.id_caja || cajaActual.estado !== 'abierta') {
           set({ rehidratando: false });
           return;
@@ -272,7 +262,7 @@ export const useCajaStore = create(
               usuarioApertura: caja.usuario || null
             },
             cargando: false,
-            rehidratando: false //
+            rehidratando: false
           });
 
           get().cargarMovimientos();
@@ -292,13 +282,12 @@ export const useCajaStore = create(
             movimientos: [],
             totalMovimientos: 0,
             cargando: false,
-            rehidratando: false, //
+            rehidratando: false,
             error: null
           });
         }
       },
 
-      // FILTROS
       setFiltros: (nuevosFiltros) => {
         set({ filtros: nuevosFiltros, paginaActual: 1 });
         get().cargarMovimientos();
@@ -309,7 +298,6 @@ export const useCajaStore = create(
         get().cargarMovimientos();
       },
 
-      // PAGINACIÓN
       setPagina: (pagina) => {
         set({ paginaActual: pagina });
         get().cargarMovimientos();
@@ -320,7 +308,6 @@ export const useCajaStore = create(
         get().cargarMovimientos();
       },
 
-      // UTILIDADES
       limpiarError: () => set({ error: null }),
 
       reset: () =>

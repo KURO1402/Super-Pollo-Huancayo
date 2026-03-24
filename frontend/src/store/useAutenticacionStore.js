@@ -67,7 +67,6 @@ export const useAutenticacionStore = create(
                 try {
                     await logoutUsuario();
                 } catch (err) {
-                    console.error('Error al cerrar sesión en servidor:', err);
                 } finally {
                     set({ usuario: null, accessToken: null });
                     useVentaStore.getState().limpiarVenta();

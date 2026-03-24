@@ -98,7 +98,6 @@ export const ModalAgregarImagen = ({ onClose, onGuardar }) => {
     <div className="space-y-6">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {mostrarSelector ? (
-          // Selector de productos
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

@@ -125,7 +125,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
       setInsumosSeleccionados([]);
 
     } catch (error) {
-      // Mostrar mensaje del backend
       mostrarAlerta.error(error.message || 'Error al crear el producto');
     }
   };
@@ -133,8 +132,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-        {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Nombre del Producto *
@@ -155,7 +152,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
           )}
         </div>
 
-        {/* Categoría */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Categoría del Producto *
@@ -182,7 +178,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
           )}
         </div>
 
-        {/* Precio */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Precio de Venta (S/) *
@@ -205,7 +200,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
           )}
         </div>
 
-        {/* Toggle usa insumos */}
         <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -221,7 +215,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
           </label>
         </div>
 
-        {/* Insumos */}
         {usaInsumo && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
@@ -288,7 +281,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
           </div>
         )}
 
-        {/* Descripción */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Descripción del Producto
@@ -301,7 +293,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
           />
         </div>
 
-        {/* Imagen */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Imagen del Producto *
@@ -333,7 +324,6 @@ export const ModalNuevoProducto = ({ onClose, onGuardar }) => {
           )}
         </div>
 
-        {/* Botones */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"

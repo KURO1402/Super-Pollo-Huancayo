@@ -65,7 +65,6 @@ const ModalArqueo = ({ estaAbierto, onCerrar, onRegistrarArqueo, saldoActual }) 
       mostrarFooter={false}
     >
       {confirmarDiferencia ? (
-        /* ── PASO CONFIRMACIÓN ── */
         <div className="p-6 space-y-6">
           <div className={`p-5 rounded-lg border text-center ${
             estadoArqueo === 'sobra'
@@ -110,7 +109,6 @@ const ModalArqueo = ({ estaAbierto, onCerrar, onRegistrarArqueo, saldoActual }) 
           </div>
         </div>
       ) : (
-        /* ── FORMULARIO ── */
         <form onSubmit={handleSubmit(onSubmit)} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="space-y-2">
@@ -182,7 +180,6 @@ const ModalArqueo = ({ estaAbierto, onCerrar, onRegistrarArqueo, saldoActual }) 
             </div>
           </div>
 
-          {/* ── RESUMEN ── */}
           <div className={`p-4 rounded-lg border mb-4 ${
             estadoArqueo === 'cuadra' ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' :
             estadoArqueo === 'sobra' ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' :
@@ -220,7 +217,6 @@ const ModalArqueo = ({ estaAbierto, onCerrar, onRegistrarArqueo, saldoActual }) 
             </div>
           </div>
 
-          {/* ── DESCRIPCIÓN (siempre opcional) ── */}
           <div className="space-y-2 mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Descripción

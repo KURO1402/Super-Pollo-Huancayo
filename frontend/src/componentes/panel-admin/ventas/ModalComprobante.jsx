@@ -71,7 +71,6 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                 </div>
             ) : comprobante ? (
                 <div className="space-y-4">
-                    {/* ─── Datos principales ─────────────────────────────────── */}
                     <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                         <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Serie - Correlativo</p>
@@ -99,7 +98,6 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                         </div>
                     </div>
 
-                    {/* ─── Botones de acción ─────────────────────────────────── */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         {comprobante.url_comprobante_pdf && (
                             <button onClick={() => setVerPDF(true)}
@@ -127,7 +125,6 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                         )}
                     </div>
 
-                    {/* ─── Ver más detalles — solo admin (CDR + Hash) ────────── */}
                     {esAdmin && (comprobante.url_cdr || comprobante.hash_comprobante) && (
                         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                             <button
@@ -140,7 +137,6 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
 
                             {verDetalles && (
                                 <div className="px-4 pb-4 pt-1 space-y-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                                    {/* CDR */}
                                     {comprobante.url_cdr && (
                                         <div className="flex items-center justify-between">
                                             <div>
@@ -157,8 +153,6 @@ export const ModalComprobante = ({ estaAbierto, onCerrar, comprobante, cargando 
                                             </a>
                                         </div>
                                     )}
-
-                                    {/* Hash */}
                                     {comprobante.hash_comprobante && (
                                         <div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Hash del comprobante</p>

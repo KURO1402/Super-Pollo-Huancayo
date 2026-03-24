@@ -36,7 +36,6 @@ const RegistroVentasPagina = () => {
         onLimite: setLimite,
     });
 
-    // Cargar ventas solo la primera vez
     useEffect(() => {
         if (cargaInicialRef.current) {
             cargarVentas();
@@ -91,7 +90,6 @@ const RegistroVentasPagina = () => {
 
     const ENCABEZADOS = ["N° Venta / Comprobante", "Fecha", "Hora", "Total", "Metodo de Pago", "Estado SUNAT", "Acciones"];
 
-    // Mostrar cargando solo en la carga inicial o si hay cambio de página
     const mostrarCargando = cargandoInicial || (cargando && ventas.length === 0);
 
     return (
@@ -111,7 +109,6 @@ const RegistroVentasPagina = () => {
                     </div>
                 </div>
 
-                {/* Filtro de fechas */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-5">
                     <div className="flex flex-col sm:flex-row items-end gap-3">
                         <div className="flex-1">
@@ -160,7 +157,6 @@ const RegistroVentasPagina = () => {
                     </div>
                 </div>
 
-                {/* Tabla */}
                 {mostrarCargando ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-3">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
@@ -214,7 +210,6 @@ const RegistroVentasPagina = () => {
                     </>
                 )}
 
-                {/* Indicador de cargando en background (sin parpadeo) */}
                 {cargando && ventas.length > 0 && (
                     <div className="fixed bottom-4 right-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg shadow-lg">
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />

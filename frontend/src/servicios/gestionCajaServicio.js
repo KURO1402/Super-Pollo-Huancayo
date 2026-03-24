@@ -1,7 +1,6 @@
 import API from "./axiosConfiguracion";
 
 export const abrirCajaServicio = async (data) => {
-  console.log("Datos recibidos en abrirCajaServicio:", data);
   try {
     const respuesta = await API.post('/caja/abrir-caja', {
       montoInicial: Number(data.montoInicial)
@@ -72,7 +71,6 @@ export const registrarEgresoServicio = async (data) => {
 };
 
 export const registrarArqueoServicio = async (data) => {
-  console.log("Datos recibidos en registrarArqueoServicio:", data);
   try {
     const datosParaBackend = {
       montoFisico: Number(data.montoFisico) || 0,       
@@ -120,7 +118,6 @@ export const obtenerArqueosPorCajaServicio = async (idCaja) => {
     if (!Array.isArray(data)) {
       throw new Error("Formato de respuesta inválido: se esperaba un array");
     }
-    console.log(data);
 
     return data;
   } catch (error) {

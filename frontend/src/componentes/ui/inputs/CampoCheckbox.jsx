@@ -1,5 +1,4 @@
-// componente funcional para renderizar un campo tipo checkbox
-const CampoCheckbox = ({ id, nombre, etiqueta, registro, error, className = '' }) => { // se envian los props
+const CampoCheckbox = ({ id, nombre, etiqueta, registro, error, className = '' }) => {
   return (
     <div className={`flex items-start ${className}`}>
       <div className="flex items-center h-5">

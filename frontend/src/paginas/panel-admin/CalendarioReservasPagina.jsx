@@ -138,7 +138,6 @@ const CalendarioReservasPagina = () => {
       }
     } catch (error) {
       mostrarAlerta.error(error.message || "Error al guardar la reserva");
-      console.log(error.message)
     }
   };
 
@@ -235,12 +234,6 @@ const CalendarioReservasPagina = () => {
                 click: abrirNuevaReserva,
               },
             }}
-            /* selectAllow={(selectInfo) => {
-              const fechaSeleccionada = new Date(selectInfo.startStr);
-              const hoy = new Date();
-              hoy.setHours(0, 0, 0, 0);
-              return fechaSeleccionada >= hoy;
-            }} */
             buttonText={{ today: "Hoy", month: "Mes", week: "Semana", day: "Día" }}
             height="auto"
             dayMaxEvents={3}

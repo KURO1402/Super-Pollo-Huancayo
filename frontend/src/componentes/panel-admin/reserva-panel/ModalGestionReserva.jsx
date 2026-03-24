@@ -90,7 +90,6 @@ const ModalGestionReserva = ({ onCerrar, onAccion }) => {
           </div>
         </div>
 
-        {/* Botones */}
         <div className="flex justify-end gap-3 pt-2">
 
           {!yaCancelada && !yaConfirmada && (

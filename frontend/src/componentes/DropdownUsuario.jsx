@@ -115,7 +115,6 @@ const DropdownUsuario = ({ usuario, mobile = false }) => {
 
       {dropdownAbierto && (
         <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
-          {/* Header del dropdown */}
           <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <p className="font-semibold text-gray-900 dark:text-white truncate">
               {usuario.nombresUsuario} {usuario.apellidosUsuario}

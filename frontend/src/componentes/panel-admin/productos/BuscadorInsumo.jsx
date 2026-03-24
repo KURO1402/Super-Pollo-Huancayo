@@ -19,7 +19,6 @@ const BuscadorInsumo = ({ value, onChange, placeholder = "Buscar insumo..." }) =
     const listaRef = useRef(null);
     const esPrimeraBusqueda = useRef(true);
 
-    // Cerrar al hacer click fuera
     useEffect(() => {
         const handleClickFuera = (e) => {
             if (contenedorRef.current && !contenedorRef.current.contains(e.target)) {
@@ -52,13 +51,11 @@ const BuscadorInsumo = ({ value, onChange, placeholder = "Buscar insumo..." }) =
         }
     }, []);
 
-    // Cuando cambia la búsqueda con debounce — resetear lista
     useEffect(() => {
         if (!abierto) return;
         cargarInsumos(busquedaDebounced, 0, true);
     }, [busquedaDebounced, abierto]);
 
-    // Scroll infinito
     const handleScroll = () => {
         if (!listaRef.current || cargando || !hayMas) return;
         const { scrollTop, scrollHeight, clientHeight } = listaRef.current;
@@ -87,7 +84,6 @@ const BuscadorInsumo = ({ value, onChange, placeholder = "Buscar insumo..." }) =
 
     return (
         <div ref={contenedorRef} className="relative w-full">
-            {/* Trigger */}
             <div
                 onClick={handleAbrir}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm cursor-pointer flex items-center justify-between gap-2 focus:ring-2 focus:ring-blue-500"
@@ -105,10 +101,8 @@ const BuscadorInsumo = ({ value, onChange, placeholder = "Buscar insumo..." }) =
                 </div>
             </div>
 
-            {/* Dropdown */}
             {abierto && (
                 <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg">
-                    {/* Input búsqueda */}
                     <div className="p-2 border-b border-gray-200 dark:border-gray-600">
                         <div className="relative">
                             <FiSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
@@ -123,7 +117,6 @@ const BuscadorInsumo = ({ value, onChange, placeholder = "Buscar insumo..." }) =
                         </div>
                     </div>
 
-                    {/* Lista */}
                     <ul
                         ref={listaRef}
                         onScroll={handleScroll}

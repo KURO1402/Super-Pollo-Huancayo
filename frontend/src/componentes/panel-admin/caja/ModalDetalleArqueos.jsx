@@ -35,7 +35,6 @@ const ArqueoItem = ({ arqueo, index, formatCurrency, formatHora }) => {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
 
-      {/* Cabecera */}
       <div className="bg-gray-50 dark:bg-gray-700/50 px-4 py-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3 flex-wrap">
@@ -70,7 +69,6 @@ const ArqueoItem = ({ arqueo, index, formatCurrency, formatHora }) => {
         </div>
       </div>
 
-      {/* Botón desglose */}
       <button
         type="button"
         onClick={() => setDesgloseAbierto(!desgloseAbierto)}
@@ -83,7 +81,6 @@ const ArqueoItem = ({ arqueo, index, formatCurrency, formatHora }) => {
         }
       </button>
 
-      {/* Desglose colapsable */}
       {desgloseAbierto && (
         <div className="border-t border-gray-200 dark:border-gray-700">
           <table className="w-full text-sm">
@@ -150,7 +147,6 @@ const ModalDetalleArqueos = ({
           </div>
         ) : (
           <>
-            {/* ══ ARQUEOS ══ */}
             <section>
               <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">
                 Arqueos{" "}
@@ -181,7 +177,6 @@ const ModalDetalleArqueos = ({
               )}
             </section>
 
-            {/* ══ MOVIMIENTOS ══ */}
             <section>
               <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">
                 Movimientos{" "}

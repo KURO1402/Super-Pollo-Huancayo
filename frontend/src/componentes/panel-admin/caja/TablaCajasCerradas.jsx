@@ -16,11 +16,10 @@ const TablasCajasCerradas = ({
   onCambiarItemsPorPagina,
   onVerDetalle,
   loading,
-  totalRegistros // Asegúrate de recibir esto desde el hook useHistorialCajas
+  totalRegistros
 }) => {
   const encabezados = ["Fecha", "Hora cierre", "Saldo Inicial", "Saldo Actual", "Saldo Final", "Estado", "Acciones"];
 
-  // CORRECCIÓN: Usar totalRegistros en lugar de totalPaginas * itemsPorPagina
   const paginacion = usePaginacion({
     paginaActual,
     limite: itemsPorPagina,

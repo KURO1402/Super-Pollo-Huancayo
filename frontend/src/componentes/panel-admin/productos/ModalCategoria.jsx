@@ -1,4 +1,3 @@
-// componentes/categorias/ModalCategoria.jsx
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FiSave } from "react-icons/fi";

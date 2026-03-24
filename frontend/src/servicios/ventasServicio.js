@@ -1,6 +1,5 @@
 import API from "./axiosConfiguracion";
 
-// ── Generar venta ─────────────────────────────────────────────────────────────
 export const generarVentaServicio = async (ventaData) => {
   try {
     const respuesta = await API.post("/ventas/generar-venta", ventaData);
@@ -11,7 +10,6 @@ export const generarVentaServicio = async (ventaData) => {
   }
 };
 
-// ── Anular venta ──────────────────────────────────────────────────────────────
 export const anularVentaServicio = async (idVenta) => {
   try {
     const respuesta = await API.delete(`/ventas/anular-venta/${idVenta}`);
@@ -25,7 +23,6 @@ export const anularVentaServicio = async (idVenta) => {
   }
 };
 
-// ── Obtener comprobante por ID venta ──────────────────────────────────────────
 export const obtenerComprobanteServicio = async (idVenta) => {
   try {
     const respuesta = await API.get(`/ventas/comprobante-venta/${idVenta}`);
@@ -39,7 +36,6 @@ export const obtenerComprobanteServicio = async (idVenta) => {
   }
 };
 
-// ── Obtener tipos de comprobante ──────────────────────────────────────────────
 export const obtenerTiposComprobanteServicio = async () => {
   try {
     const respuesta = await API.get("/tipos-comprobante");
@@ -53,7 +49,6 @@ export const obtenerTiposComprobanteServicio = async () => {
   }
 };
 
-// ── Obtener métodos de pago ───────────────────────────────────────────────────
 export const obtenerMetodosPagoServicio = async () => {
   try {
     const respuesta = await API.get("/medios-pago");
@@ -67,7 +62,6 @@ export const obtenerMetodosPagoServicio = async () => {
   }
 };
 
-// ── Listar ventas (paginado + filtro fechas) ──────────────────────────────────
 export const obtenerVentasServicio = async ({ limit, offset, fechaInicio, fechaFin } = {}) => {
   try {
     const params = new URLSearchParams();
@@ -90,7 +84,6 @@ export const obtenerVentasServicio = async ({ limit, offset, fechaInicio, fechaF
   }
 };
 
-// ── Detalle de venta ──────────────────────────────────────────────────────────
 export const obtenerDetalleVentaServicio = async (idVenta) => {
   try {
     const respuesta = await API.get(`/ventas/detalle-venta/${idVenta}`);

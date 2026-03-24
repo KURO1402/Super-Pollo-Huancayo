@@ -1,4 +1,3 @@
-// hooks/useHistorialCajas.js
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { obtenerCajasCerradasServicio, obtenerArqueosPorCajaServicio, obtenerMovimientosPorCajaServicio } from '../servicios/gestionCajaServicio';
 

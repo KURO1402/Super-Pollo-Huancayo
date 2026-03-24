@@ -104,7 +104,6 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
       const insumosRestantes = insumosProducto.filter(i => i.id_insumo !== idInsumo);
 
       if (insumosRestantes.length === 0) {
-        // Era el último — no consultar al backend, limpiar directo
         setInsumosProducto([]);
       } else {
         await cargarInsumosProducto();
@@ -129,7 +128,6 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
         Gestiona los insumos necesarios para preparar "{producto.nombre_producto}"
       </p>
 
-      {/* Formulario agregar */}
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Agregar Insumo
@@ -171,7 +169,6 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
         </div>
       </div>
 
-      {/* Lista de insumos */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
         <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">
           Insumos del Producto ({insumosProducto.length})

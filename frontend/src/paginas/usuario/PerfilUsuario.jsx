@@ -122,7 +122,6 @@ const PerfilUsuario = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Card lateral */}
           <div className="lg:col-span-1">
             <div className="bg-gray-800 rounded-3xl shadow-2xl border border-gray-700 overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
               <div className="bg-linear-to-r from-azul-secundario to-azul-primario py-8 px-6 text-center">
@@ -175,7 +174,6 @@ const PerfilUsuario = () => {
             </div>
           </div>
 
-          {/* Info principal */}
           <div className="lg:col-span-2">
             <div className="bg-gray-800 rounded-3xl shadow-2xl border border-gray-700 overflow-hidden">
               <div className="bg-linear-to-r from-gray-700 to-gray-600 px-8 py-6 border-b border-gray-600">

@@ -17,17 +17,13 @@ const Cabecera = () => {
 
   const inputRef = useRef(null);
 
-  // Detectar cambios en el tamaño de la pantalla
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
     };
-
-    // Verificar tamaño inicial
     checkScreenSize();
 
-    // Agregar listener para cambios de tamaño
     window.addEventListener('resize', checkScreenSize);
 
     return () => {

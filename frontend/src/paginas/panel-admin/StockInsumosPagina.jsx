@@ -30,8 +30,6 @@ const StockInsumosSeccion = () => {
   const [insumoSeleccionado, setInsumoSeleccionado] = useState(null);
   const [filtroNivelStock, setFiltroNivelStock] = useState('');
   const [mostrarSpinner, setMostrarSpinner] = useState(false);
-
-  // Lista local de insumos para reflejar cambios sin esperar al servidor
   const [insumosLocales, setInsumosLocales] = useState([]);
 
   const modalNuevoInsumo = useModal(false);
@@ -239,7 +237,6 @@ const StockInsumosSeccion = () => {
         )}
       </div>
 
-      {/* Modales */}
       <Modal
         estaAbierto={modalNuevoInsumo.estaAbierto}
         onCerrar={modalNuevoInsumo.cerrar}

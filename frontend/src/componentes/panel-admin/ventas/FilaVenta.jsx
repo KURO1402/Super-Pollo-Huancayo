@@ -7,7 +7,6 @@ export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) =
     const [confirmar, setConfirmar] = useState(false);
     const [puedeAnular, setPuedeAnular] = useState(false);
 
-    // Actualizar puedeAnular cada segundo para detectar expiración en tiempo real
     useEffect(() => {
         const verificarVentana = () => {
             const puede = venta.estado_sunat === 'pendiente'
@@ -56,7 +55,6 @@ export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) =
     return (
         <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
 
-            {/* N° Venta + Comprobante */}
             <td className="px-4 py-3 whitespace-nowrap">
                 <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shrink-0">
@@ -75,36 +73,30 @@ export const FilaVenta = ({ venta, onVerDetalle, onVerComprobante, onAnular }) =
                 </div>
             </td>
 
-            {/* Fecha */}
             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                 {venta.fecha || '—'}
             </td>
 
-            {/* Hora */}
             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                 {venta.hora || '—'}
             </td>
 
-            {/* Total */}
             <td className="px-4 py-3 whitespace-nowrap">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">
                     S/ {parseFloat(venta.total_venta || 0).toFixed(2)}
                 </span>
             </td>
 
-            {/* Método de pago */}
             <td className="px-4 py-3 whitespace-nowrap">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorPago()}`}>
                     {venta.nombre_medio_pago || '—'}
                 </span>
             </td>
 
-            {/* Estado SUNAT */}
             <td className="px-4 py-3 whitespace-nowrap">
                 <BadgeSunat estado={venta.estado_sunat} tipoComprobante={venta.nombre_tipo_comprobante} />
             </td>
 
-            {/* Acciones */}
             <td className="px-4 py-3 whitespace-nowrap">
                 {confirmar ? (
                     <div className="flex items-center gap-1.5">

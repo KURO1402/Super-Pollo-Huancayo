@@ -22,7 +22,6 @@ import { FormularioCliente } from "../../componentes/panel-admin/ventas/Formular
 import { ModalComprobanteGenerado } from "../../componentes/panel-admin/ventas/ModalComprobanteGenerado";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 
-// Helper para identificar por nombre
 const esFactura = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('factura');
 const esNotaVenta = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('nota de venta');
 
@@ -53,7 +52,6 @@ const GenerarVentaPagina = () => {
   const [productos, setProductos] = useState([]);
   const [cargandoProductos, setCargandoProductos] = useState(true);
 
-  // Limpiar estado cuando cambias de página
   useEffect(() => {
     limpiarVenta();
     setDatosCliente(null);
@@ -62,7 +60,6 @@ const GenerarVentaPagina = () => {
     setDatosComprobante(null);
   }, [location.pathname]);
 
-  // ── Cargar tipos de comprobante ───────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -78,7 +75,6 @@ const GenerarVentaPagina = () => {
     })();
   }, []);
 
-  // ── Cargar productos ──────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -93,7 +89,6 @@ const GenerarVentaPagina = () => {
     })();
   }, []);
 
-  // ── Cargar métodos de pago ────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -111,10 +106,8 @@ const GenerarVentaPagina = () => {
     })();
   }, []);
 
-  // ── Cambio de tipo de comprobante ─────────────────────────────────────────
   const handleTipoComprobante = (tipo) => {
     setTipoSeleccionado(tipo);
-    // Si cambia a factura y el cliente no tiene RUC, limpiarlo
     if (
       esFactura(tipo) &&
       datosCliente &&
@@ -123,13 +116,11 @@ const GenerarVentaPagina = () => {
       setDatosCliente(null);
       mostrarAlerta.advertencia("Para factura se requiere cliente con RUC");
     }
-    // Si cambia desde factura, limpiar cliente
     if (!esFactura(tipo) && datosCliente) {
       setDatosCliente(null);
     }
   };
 
-  // ── Guardar cliente desde modal ───────────────────────────────────────────
   const handleClienteGuardado = (cliente) => {
     if (esFactura(tipoSeleccionado)) {
       if (cliente.tipoDocumento !== "2") {
@@ -159,7 +150,6 @@ const GenerarVentaPagina = () => {
     mostrarAlerta.exito("Cliente agregado");
   };
 
-  // ── Quitar cliente ────────────────────────────────────────────────────────
   const handleEliminarCliente = () => {
     solicitarConfirmacion(
       "¿Desea quitar el cliente de esta venta?",
@@ -171,7 +161,6 @@ const GenerarVentaPagina = () => {
     );
   };
 
-  // ── Limpiar venta ─────────────────────────────────────────────────────────
   const handleLimpiarVenta = () => {
     if (detalle.length > 0 || datosCliente) {
       solicitarConfirmacion(
@@ -186,7 +175,6 @@ const GenerarVentaPagina = () => {
     }
   };
 
-  // ── Generar comprobante ───────────────────────────────────────────────────
   const handleGenerarComprobante = async () => {
     if (detalle.length === 0) {
       mostrarAlerta.advertencia("Debe agregar al menos un producto");
@@ -266,7 +254,6 @@ const GenerarVentaPagina = () => {
       window.open(datosComprobante.urlPdf, "_blank");
   };
 
-  // ── Helpers UI ────────────────────────────────────────────────────────────
   const filtrados = filtrarPorBusqueda(productos, [
     "nombre_producto",
     "descripcion_producto",
@@ -318,9 +305,7 @@ const GenerarVentaPagina = () => {
           )}
         </div>
 
-        {/* Panel derecho: formulario */}
         <div className="col-span-3 space-y-4">
-          {/* Tabs tipo comprobante */}
           {cargandoTipos ? (
             <div className="flex gap-2">
               {[1, 2, 3].map((i) => (
@@ -348,7 +333,6 @@ const GenerarVentaPagina = () => {
                   </button>
                 ))}
               </div>
-              {/* Serie solo lectura */}
               <input
                 readOnly
                 value={tipoSeleccionado?.serie || ""}
@@ -357,7 +341,6 @@ const GenerarVentaPagina = () => {
             </div>
           )}
 
-          {/* Nota Factura */}
           {esFactura(tipoSeleccionado) && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-sm text-amber-800 dark:text-amber-300">
               <span className="shrink-0 mt-0.5">⚠️</span>
@@ -368,7 +351,6 @@ const GenerarVentaPagina = () => {
             </div>
           )}
 
-          {/* Nota Nota de Venta */}
           {esNotaVenta(tipoSeleccionado) && (
             <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg text-sm text-blue-800 dark:text-blue-300">
               <span className="shrink-0 mt-0.5">ℹ️</span>
@@ -379,7 +361,6 @@ const GenerarVentaPagina = () => {
             </div>
           )}
 
-          {/* Cliente */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {labelCliente}
@@ -437,7 +418,6 @@ const GenerarVentaPagina = () => {
             )}
           </div>
 
-          {/* Método de pago */}
           <div className="w-full sm:w-1/2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Método de Pago <span className="text-red-500">*</span>
@@ -464,11 +444,9 @@ const GenerarVentaPagina = () => {
             )}
           </div>
 
-          {/* Detalle y resumen */}
           <DetalleVenta />
           <ResumenVenta />
 
-          {/* Botones acción */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               onClick={handleLimpiarVenta}
@@ -515,7 +493,6 @@ const GenerarVentaPagina = () => {
         </div>
       </div>
 
-      {/* Modal agregar/editar cliente */}
       {estaAbierto && (
         <Modal
           estaAbierto={estaAbierto}
@@ -534,7 +511,6 @@ const GenerarVentaPagina = () => {
         </Modal>
       )}
 
-      {/* Modal comprobante generado */}
       <ModalComprobanteGenerado
         estaAbierto={mostrarModalComprobante}
         onCerrar={handleCerrarModalComprobante}
@@ -542,7 +518,6 @@ const GenerarVentaPagina = () => {
         onDescargarPDF={handleDescargarPDF}
       />
 
-      {/* Modal confirmación genérico */}
       <ModalConfirmacion
         visible={confirmacionVisible}
         onCerrar={ocultarConfirmacion}

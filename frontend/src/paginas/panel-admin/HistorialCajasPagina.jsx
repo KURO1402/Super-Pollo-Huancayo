@@ -128,7 +128,6 @@ const HistorialCajasPagina = () => {
         totalRegistros={totalRegistros}
       />
 
-      {/* ── Modal detalle ── */}
       <ModalDetalleArqueos
         estaAbierto={estaAbierto}
         onCerrar={cerrar}

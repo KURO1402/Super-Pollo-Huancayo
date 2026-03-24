@@ -61,7 +61,6 @@ const ProductosDeshabilitadosPagina = () => {
         cargarProductos();
     }, [paginaActual, limit, terminoBusqueda]);
 
-    // Spinner con delay
     useEffect(() => {
         let timer;
         if (cargando) {
@@ -153,7 +152,6 @@ const ProductosDeshabilitadosPagina = () => {
                 </p>
             </div>
 
-            {/* Filtros */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
                 <div className="flex flex-col lg:flex-row gap-4">
                     <BarraBusqueda
@@ -164,7 +162,6 @@ const ProductosDeshabilitadosPagina = () => {
                 </div>
             </div>
 
-            {/* Contenido */}
             {mostrarSpinner ? (
                 <div className="flex justify-center items-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>

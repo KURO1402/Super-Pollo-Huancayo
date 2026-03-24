@@ -80,7 +80,6 @@ export const ModalComprobanteGenerado = ({
   const totalIgv = parseFloat(venta?.total_igv || 0).toFixed(2);
   const totalGravada = parseFloat(venta?.total_gravada || 0).toFixed(2);
 
-  // ── Vista previa PDF ──────────────────────────────────────────────────────
   if (mostrarPDF && urlPdf) {
     return (
       <Modal
@@ -92,7 +91,6 @@ export const ModalComprobanteGenerado = ({
         mostrarFooter={false}
       >
         <div className="flex flex-col gap-3 h-[80vh]">
-          {/* Barra de acciones sobre el PDF */}
           <div className="flex items-center justify-between px-1">
             <button
               onClick={() => setMostrarPDF(false)}
@@ -119,7 +117,6 @@ export const ModalComprobanteGenerado = ({
             </div>
           </div>
 
-          {/* iframe con sombra y bordes */}
           <div className="flex-1 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-inner bg-gray-100 dark:bg-gray-900">
             <iframe
               src={urlPdf}
@@ -132,7 +129,6 @@ export const ModalComprobanteGenerado = ({
     );
   }
 
-  // ── Modal principal ───────────────────────────────────────────────────────
   return (
     <Modal
       estaAbierto={estaAbierto}
@@ -144,7 +140,6 @@ export const ModalComprobanteGenerado = ({
     >
       <div className="space-y-5">
 
-        {/* Estado comprobante */}
         {anulada ? (
           <div className="flex items-start gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <FiX className="text-red-600 dark:text-red-400 shrink-0 mt-0.5 text-xl" />
@@ -171,7 +166,6 @@ export const ModalComprobanteGenerado = ({
           </div>
         )}
 
-        {/* Ventana de anulación */}
         {!esNotaVenta && !anulada && (
           <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60">
             <div className="flex items-center justify-between mb-2">
@@ -199,7 +193,6 @@ export const ModalComprobanteGenerado = ({
           </div>
         )}
 
-        {/* Resumen de la venta con info de comprobante para notas */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <div className="px-4 py-3 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -207,7 +200,6 @@ export const ModalComprobanteGenerado = ({
             </p>
           </div>
           <div className="p-4 space-y-3">
-            {/* Info de comprobante solo para notas de venta */}
             {esNotaVenta && comprobante && (
               <div className="grid grid-cols-3 gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-center">
@@ -273,7 +265,6 @@ export const ModalComprobanteGenerado = ({
           </div>
         </div>
 
-        {/* Confirmación anular */}
         {confirmarAnular && (
           <div className="p-4 border border-red-200 dark:border-red-700 rounded-lg bg-red-50 dark:bg-red-900/20 space-y-3">
             <div className="flex items-start gap-2">
@@ -312,7 +303,6 @@ export const ModalComprobanteGenerado = ({
           </div>
         )}
 
-        {/* Botones principales */}
         <div className="flex flex-wrap gap-2 pt-1">
           {urlPdf && !anulada && (
             <button

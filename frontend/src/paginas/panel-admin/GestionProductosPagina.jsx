@@ -128,7 +128,6 @@ const GestionProductosPagina = () => {
         />
       )}
 
-      {/* Modal receta */}
       <Modal
         estaAbierto={modalReceta.estaAbierto}
         onCerrar={() => { modalReceta.cerrar(); refetch(); }}
@@ -145,7 +144,6 @@ const GestionProductosPagina = () => {
         )}
       </Modal>
 
-      {/* Modal nuevo producto */}
       <Modal
         estaAbierto={modalNuevoProducto.estaAbierto}
         onCerrar={modalNuevoProducto.cerrar}
@@ -160,7 +158,6 @@ const GestionProductosPagina = () => {
         />
       </Modal>
 
-      {/* Modal editar producto */}
       <Modal
         estaAbierto={modalEditarProducto.estaAbierto}
         onCerrar={modalEditarProducto.cerrar}
@@ -178,7 +175,6 @@ const GestionProductosPagina = () => {
         )}
       </Modal>
 
-      {/* Confirmación deshabilitar */}
       <ModalConfirmacion
         visible={confirmacionDeshabilitar.confirmacionVisible}
         onCerrar={confirmacionDeshabilitar.ocultarConfirmacion}

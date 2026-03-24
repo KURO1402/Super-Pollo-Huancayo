@@ -14,7 +14,7 @@ const FiltrosUsuarios = ({ filtros, onCambio, onLimpiar }) => {
         const data = await obtenerRolesUsuariosServicio();
         setRoles(data.roles ?? []);
       } catch (error) {
-        console.error('Error al obtener roles:', error);
+        setRoles([]);
       }
     };
     cargarRoles();
