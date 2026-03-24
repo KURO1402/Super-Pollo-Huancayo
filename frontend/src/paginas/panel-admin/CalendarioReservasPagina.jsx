@@ -73,6 +73,7 @@ const CalendarioReservasPagina = () => {
     const colores = {
       pendiente: '#f59e0b',
       completado: '#3b82f6',
+      cancelado:  '#ef4444',
     };
     return colores[estado] || '#f59e0b';
   };
@@ -178,9 +179,7 @@ const CalendarioReservasPagina = () => {
     );
   };
 
-  const eventosCalendario = reservaciones
-    .filter(r => r.estado_reservacion !== 'cancelado')
-    .map(convertirReservaAEvento);
+  const eventosCalendario = reservaciones.map(convertirReservaAEvento);
 
   const fechaMinima = new Date().toISOString().split("T")[0];
 
@@ -202,6 +201,7 @@ const CalendarioReservasPagina = () => {
           {[
             { color: 'bg-yellow-500', label: 'Pendiente' },
             { color: 'bg-blue-500',   label: 'Completado'},
+            { color: 'bg-red-500',    label: 'Cancelado' },
           ].map(({ color, label }) => (
             <div key={label} className="flex items-center gap-2">
               <div className={`w-3 h-3 ${color} rounded`}></div>
@@ -235,13 +235,12 @@ const CalendarioReservasPagina = () => {
                 click: abrirNuevaReserva,
               },
             }}
-            validRange={{ start: fechaMinima }}
-            selectAllow={(selectInfo) => {
+            /* selectAllow={(selectInfo) => {
               const fechaSeleccionada = new Date(selectInfo.startStr);
               const hoy = new Date();
               hoy.setHours(0, 0, 0, 0);
               return fechaSeleccionada >= hoy;
-            }}
+            }} */
             buttonText={{ today: "Hoy", month: "Mes", week: "Semana", day: "Día" }}
             height="auto"
             dayMaxEvents={3}
