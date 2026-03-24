@@ -36,6 +36,7 @@ export const PERMISOS = {
     historialReservas: true,
     
     perfil: true,
+    configuracion: true,
   },
 
   [ROLES.COLABORADOR]: {
