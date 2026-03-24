@@ -10,7 +10,7 @@ const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:50794'],
   credentials: true,
 };
-app.use(cors(corsOptions));
+app.use(cors("*"));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -41,8 +41,8 @@ app.use('/api/ventas', ventasRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/fuente-datos', fuenteDatosRoutes);
 
-const iniciarJobSunat = require('./src/jobs/sunat_job');
-iniciarJobSunat();
+/*const iniciarJobSunat = require('./src/jobs/sunat_job');
+iniciarJobSunat();*/
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

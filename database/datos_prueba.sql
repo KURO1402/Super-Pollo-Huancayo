@@ -1,5 +1,7 @@
 USE super_pollo_hyo;
 
+INSERT INTO rol_usuario(nombre_rol) VALUES ('usuario'), ('colaborador'), ('administrador');
+
 -- USUARIOS
 INSERT INTO usuarios (nombre_usuario, apellido_usuario, correo_usuario, clave_usuario, telefono_usuario, estado_usuario) VALUES
 ('Juan',    'Perez',   'juan.perez@mail.com',     '$2b$10$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '999111111', 1),
