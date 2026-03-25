@@ -19,7 +19,7 @@ const contarCategoriasPorIdModel = async (idCategoria) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_contar_categoria_por_id(?)', [idCategoria]);
+        const [result] = await conexion.execute('CALL sp_contar_categoria_por_id_2(?)', [idCategoria]);
 
         return result[0][0]?.total_categorias;
     } catch (err) {
