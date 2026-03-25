@@ -318,7 +318,6 @@ const obtenerInsumosPorProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
-        console.log(err.message);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

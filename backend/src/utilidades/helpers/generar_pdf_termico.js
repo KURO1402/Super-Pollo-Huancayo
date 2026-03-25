@@ -51,7 +51,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
 
             let y = MARGEN;
 
-            // Logo y empresa
             const logoPath = path.join(__dirname, '../../../public/super_pollo_logo.png');
             doc.image(logoPath, (ANCHO_PAGINA - 50) / 2, y, { width: 50, height: 50 });
             y += 55;
@@ -74,7 +73,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
             linea(y, 1);
             y += 5;
 
-            // Tipo y numero de comprobante
             doc.fontSize(8).font('Helvetica-Bold').fillColor('#000000');
             centrar(tituloComprobante.toUpperCase(), y);
             y += 10;
@@ -90,7 +88,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
             linea(y, 1);
             y += 6;
 
-            // Datos cliente
             doc.fontSize(7).font('Helvetica').fillColor('#000000');
             const filaCliente = (label, valor) => {
                 const labelWidth = 90;
@@ -112,7 +109,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
             linea(y);
             y += 5;
 
-            // Encabezado tabla de productos
             const COL = {
                 desc: { x: x, w: 80 },
                 cant: { x: x + 80, w: 22 },
@@ -132,7 +128,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
             linea(y, 0.5);
             y += 4;
 
-            // Filas productos
             doc.fontSize(6.5).font('Helvetica').fillColor('#000000');
             let filaAlternada = false;
             for (const d of details) {
@@ -153,7 +148,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
             linea(y, 1);
             y += 6;
 
-            // Totales
             doc.fontSize(7).font('Helvetica').fillColor('#000000');
             const filaTotales = (label, valor, negrita = false) => {
                 const ancho = ANCHO_UTIL - 60;
@@ -176,7 +170,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
             linea(y, 1);
             y += 6;
 
-            // Importe en letras
             const enLetras = `SON: ${numeroALetras(mtoImpVenta)}`;
             doc.fontSize(6.5).font('Helvetica-BoldOblique').fillColor('#333333');
             centrar(enLetras, y, { lineBreak: true });
@@ -185,7 +178,6 @@ const generarPdfTermico = (datosComprobante, cliente, nombreTipoDoc, tituloCompr
             linea(y, 0.5);
             y += 8;
 
-            // Pie
             doc.fontSize(6).font('Helvetica').fillColor('#666666');
             if (tituloComprobante.toLowerCase() === 'nota de venta') {
                 centrar('Documento no valido para credito fiscal', y);

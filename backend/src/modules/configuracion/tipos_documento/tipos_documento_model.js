@@ -9,7 +9,6 @@ const insertarTipoDocumentoModel = async (nombreTipoDocumento) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al insertar tipo de documento en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -24,7 +23,6 @@ const contarTipoDocumentoPorNombreModel = async (nombre) => {
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar tipos de documento en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -39,7 +37,6 @@ const actualizarTipoDocumentoModel = async (idTipoDocumento, nombreTipoDocumento
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al actualizar tipo de documento en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -54,7 +51,6 @@ const contarTipoDocumentoPorIdModel = async (idTipoDocumento) => {
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar tipo de documento por ID en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -70,7 +66,6 @@ const contarTipoDocumentoNombreExcluyendoIdModel = async (nombreTipoDocumento, i
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar tipo de documento por nombre excluyendo ID en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -85,7 +80,6 @@ const eliminarTipoDocumentoModel = async (idTipoDoc) => {
 
         return result[0][0]?.mensaje;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al eliminar tipo de documento en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -101,7 +95,6 @@ const listarTiposDocumentoModel = async () => {
 
         return result[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al listar tipos de documento');
     } finally {
         if (conexion) conexion.release();
@@ -117,7 +110,6 @@ const obtenerTipoDocumentoPorIdModel = async (idTipoDocumento) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener el tipo de documento por id');
     } finally {
         if (conexion) conexion.release();

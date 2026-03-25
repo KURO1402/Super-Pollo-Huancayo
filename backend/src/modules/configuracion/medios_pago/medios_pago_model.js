@@ -8,7 +8,6 @@ const insertarMedioPagoModel = async (nombreMedioPago) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al insertar medio de pago en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -23,7 +22,6 @@ const contarMedioPagoPorNombreModel = async (nombre) => {
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar medios de pago en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -38,7 +36,6 @@ const actualizarMedioPagoModel = async (idMedioPago, nombreMedioPago) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al actualizar medio de pago en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -53,7 +50,6 @@ const contarMedioPagoPorIdModel = async (idMedioPago) => {
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar medio de pago por ID en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -68,7 +64,6 @@ const contarMedioPagoNombreExcluyendoIdModel = async (nombreMedioPago, idMedioPa
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar medio de pago por nombre excluyendo ID en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -83,7 +78,6 @@ const eliminarMedioPagoModel = async (idMedioPago) => {
 
         return result[0][0]?.mensaje;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al eliminar medio de pago en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -98,7 +92,6 @@ const listarMediosPagoModel = async () => {
 
         return result[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al listar medios de pago');
     } finally {
         if (conexion) conexion.release();
@@ -113,7 +106,6 @@ const obtenerMedioPagoPorIdModel = async (idMedioPago) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener el medio de pago por id');
     } finally {
         if (conexion) conexion.release();

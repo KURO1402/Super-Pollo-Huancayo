@@ -34,8 +34,6 @@ router.patch('/habilitar-producto/:idProducto',autenticacionToken, verificarRole
 router.post('/agregar-imagen/:idProducto', autenticacionToken, verificarRoles(2, 3), verificarImagen, insertarImagenProductoController);
 router.put('/actualizar-imagen/:idImagen', autenticacionToken, verificarRoles(2, 3), verificarImagen, actualizarImagenProductoController);
 router.delete('/eliminar-imagen/:idImagen', autenticacionToken, verificarRoles(2, 3), eliminarImagenProductoController);
-
-//Rutas get
 router.get('/catalogo', obtenerProductosCatalogoController);
 router.get('/', autenticacionToken, verificarRoles(2, 3), obtenerProductosGestionController);
 router.get('/producto/:idProducto', autenticacionToken, verificarRoles(2, 3), obtenerProductoIdController);

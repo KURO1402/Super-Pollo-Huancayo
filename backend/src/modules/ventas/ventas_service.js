@@ -34,7 +34,6 @@ const {
 
 const MINUTOS_VENTANA = 1;
 
-// ─────────────────────────────────────────────────────────────────────────────
 
 const generarVentaService = async (datos, idUsuario) => {
     validarDatosVenta(datos);
@@ -45,13 +44,11 @@ const generarVentaService = async (datos, idUsuario) => {
 
     const datosParaComprobante = await generarDatosComprobante(tipoComprobante, cliente, productos);
 
-    // ─── Paso 1: Solo validar stock — si falla no hay nada que revertir ──────
     const insumosNecesarios = await validarStockInsumos(datosParaComprobante.productosConData);
 
     const esNotaVenta = datosParaComprobante.nombreComprobante === 'nota de venta';
     const nombreArchivo = `${datosParaComprobante.serie}-${datosParaComprobante.correlativo}-${Date.now()}`;
 
-    // ─── Paso 2: Generar y subir PDF ──────────────────────────────────────────
     let urlPdf, publicIdPdf;
     try {
         const pdfBuffer = await generarPdfTermico(
@@ -64,11 +61,9 @@ const generarVentaService = async (datos, idUsuario) => {
         urlPdf = resultado.url;
         publicIdPdf = resultado.publicId;
     } catch (errorPdf) {
-        console.log(errorPdf);
         throw crearError('Error al generar o subir el PDF del comprobante', 500);
     }
 
-    // ─── Paso 3: Registrar en BD ──────────────────────────────────────────────
     const fechaLimiteCorreccion = esNotaVenta
         ? null
         : new Date(Date.now() + MINUTOS_VENTANA * 60 * 1000);
@@ -106,15 +101,12 @@ const generarVentaService = async (datos, idUsuario) => {
         });
         idVenta = resultado.idVenta;
     } catch (errorBD) {
-        // Insumos aún no descontados — solo limpiar el PDF
         await eliminarArchivoCloudinary(publicIdPdf);
         throw errorBD;
     }
 
-    // ─── Paso 4: Venta confirmada — recién ahora descontar stock ─────────────
     await descontarStockInsumos(insumosNecesarios, registrarSalidaStockService, idUsuario);
 
-    // ─── Paso 5: Retornar venta completa ──────────────────────────────────────
     const venta = await obtenerVentaPorIdModel(idVenta);
     venta.detalles = await obtenerDetalleVentaPorIdVentaModel(idVenta);
 
@@ -128,7 +120,6 @@ const generarVentaService = async (datos, idUsuario) => {
     };
 };
 
-// ─── Anular venta dentro de la ventana de corrección ─────────────────────────
 const anularVentaService = async (idVenta, idUsuario) => {
     if (!idVenta || isNaN(Number(idVenta))) throw crearError('Se necesita especificar la venta', 400);
 
@@ -146,14 +137,11 @@ const anularVentaService = async (idVenta, idUsuario) => {
 
     if (!movimientoCaja) throw crearError('No se encontró el movimiento de caja asociado a esta venta', 500);
 
-    // 1. Revertir insumos en inventario
     await revertirInsumosVenta(detalles, registrarEntradaStockService, idUsuario);
 
-    // 2. Eliminar archivos de Cloudinary
     await eliminarArchivoCloudinary(venta.public_id_pdf);
     if (venta.public_id_xml) await eliminarArchivoCloudinary(venta.public_id_xml);
 
-    // 3. Revertir caja y eliminar de BD en una transacción
     await anularVentaModel(ventaID, movimientoCaja.id_movimiento_caja, venta.total_venta, idUsuario);
 
     return {
@@ -162,7 +150,6 @@ const anularVentaService = async (idVenta, idUsuario) => {
     };
 };
 
-// ─── Obtener ventas ───────────────────────────────────────────────────────────
 const obtenerVentasService = async (querys) => {
     const allowedQuerys = ['limit', 'offset', 'fechaInicio', 'fechaFin'];
     const keysInvalidas = Object.keys({ ...querys }).filter(key => !allowedQuerys.includes(key));
@@ -197,7 +184,6 @@ const obtenerVentasService = async (querys) => {
     };
 };
 
-// ─── Obtener detalle de venta ─────────────────────────────────────────────────
 const obtenerDetalleVentaPorIdVentaService = async (idVenta) => {
     if (!idVenta || isNaN(Number(idVenta))) throw crearError('Se necesita especificar la venta', 400);
 
@@ -209,7 +195,6 @@ const obtenerDetalleVentaPorIdVentaService = async (idVenta) => {
     return { ok: true, detalles_venta };
 };
 
-// ─── Obtener comprobante de venta ─────────────────────────────────────────────
 const obtenerComprobantePorIdVentaService = async (idVenta) => {
     if (!idVenta || isNaN(Number(idVenta))) throw crearError('Se necesita especificar la venta', 400);
 
@@ -223,7 +208,6 @@ const obtenerComprobantePorIdVentaService = async (idVenta) => {
 
 const reenviarComprobanteService = async (idComprobante) => {
     try {
-        console.log(`Iniciando reenvío manual del comprobante ${idComprobante}...`);
 
         const { comprobante, detalles } = await obtenerComprobantePendientePorIdModel(idComprobante);
 
@@ -248,7 +232,6 @@ const reenviarComprobanteService = async (idComprobante) => {
         );
 
         const payload = reconstruirPayloadApisPeru(comprobante, detalles);
-        console.log('Enviando payload a ApisPeru...');
         const { xml, sunatResponse } = await enviarComprobanteApisPeru(payload);
 
         const aceptado = sunatResponse?.cdrResponse?.code === '0';
@@ -262,7 +245,6 @@ const reenviarComprobanteService = async (idComprobante) => {
             const resultado = await subirArchivoCloudinary(Buffer.from(xml), nombreXml, 'xml');
             urlXml = resultado.url;
             publicIdXml = resultado.publicId;
-            console.log('XML subido a Cloudinary');
         }
 
         await actualizarEstadoSunatModel(
@@ -273,8 +255,6 @@ const reenviarComprobanteService = async (idComprobante) => {
             new Date()
         );
 
-        console.log(`Reenvio completado. Estado: ${estado}`);
-        console.log(sunatResponse);
         return {
             ok: true,
             mensaje: aceptado 

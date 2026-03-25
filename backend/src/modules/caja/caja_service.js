@@ -186,7 +186,6 @@ const obtenerCajasService = async (querys) => {
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        console.log('Cache hit');
 
         const cajas = await obtenerCajasModel(limite, desplazamiento, fechaInicio, fechaFin);
         if (!cajas || cajas.length === 0) {
@@ -199,7 +198,6 @@ const obtenerCajasService = async (querys) => {
         };
     }
 
-    console.log('Cache miss');
 
     const totalCajas = await contarCajasModel(fechaInicio, fechaFin);
 
@@ -241,7 +239,6 @@ const obtenerMovimientosPorCajaService = async (cajaId, querys) => {
     const cacheKey = `movimientos_caja:count:${tipoMovimiento || 'null'}`;
     const cachedTotal = cache.get(cacheKey);
     if (cachedTotal !== undefined) {
-        console.log('Cache hit');
 
         const movimientos = await obtenerMovimientosPorCajaModel(cajaId, tipoMovimiento, limite, desplazamiento);
         
@@ -255,7 +252,6 @@ const obtenerMovimientosPorCajaService = async (cajaId, querys) => {
             movimientos
         };
     }
-    console.log('Cache miss');
 
     const totalMovimientos = await contarMovimientosPorCajaModel(cajaId, tipoMovimiento);
 

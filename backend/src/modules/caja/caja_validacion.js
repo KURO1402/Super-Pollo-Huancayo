@@ -1,4 +1,3 @@
-const { contarUsuarioPorIdModel } = require('../usuarios/usuario_model')
 const crearError = require('../../utilidades/crear_error');
 
 const validarDatosAbrirCaja = (datos) => {

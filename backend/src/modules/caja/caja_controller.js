@@ -1,4 +1,3 @@
-const { obtenerCajaActualModel } = require('./caja_model');
 const {
   crearCajaService,
   registrarIngresoCajaService,

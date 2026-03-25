@@ -8,7 +8,6 @@ const insertarInsumoModel = async (nombreInsumo, stockIncial, unidadMedida, idUs
         return result[0][0];
         
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al insertar insumo en la base de datos.');
     } finally {
         if (conexion) conexion.release();
@@ -37,7 +36,6 @@ const recuperarInsumoModel  = async (idInsumo, unidadMedida, estadoInsumo, stock
         return result[0][0];
         
     } catch (err) {
-        console.log(err.message)
         throw new Error('Error al insertar insumo en la base de datos.');
     } finally {
         if (conexion) conexion.release();
@@ -125,7 +123,6 @@ const contarInsumosModel = async (nombreInsumo = null, nivelStock = null) => {
         return result[0][0]?.total_registros;
 
     } catch (err) {
-        console.log(err.message)
         throw new Error('Error al contar insumos en la base de datos.')
     } finally {
         if(conexion) conexion.release();
@@ -139,7 +136,6 @@ const obtenerInsumoIDModel = async (id) => {
         const [rows] = await pool.execute('CALL sp_obtener_insumo_por_id(?)', [id]);
         return rows[0][0]; 
     } catch (err) {
-        console.log(err.message)
         throw new Error('Error al obtener al insumo de la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -155,7 +151,6 @@ const obtenerStockActualModel = async (idInsumo) => {
 
         return result[0][0]?.stock_insumo;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener stock del insumo de la base de datos.');
     } finally {
         if (conexion) conexion.release();

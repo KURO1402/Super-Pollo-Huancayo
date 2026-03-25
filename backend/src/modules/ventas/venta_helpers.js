@@ -11,7 +11,6 @@ const obtenerFechaActual = require('../../utilidades/obtener_fecha_actual');
 const { company, IGV, TIPO_COMPROBANTE_CODIGO, TIPO_DOCUMENTO_CODIGO } = require('../../utilidades/helpers/constantes_venta');
 const numeroALetras = require('../../utilidades/numero_letras');
 
-// ─── Subir archivo a Cloudinary retornando { url, publicId } ─────────────────
 const subirArchivoCloudinary = (buffer, nombreArchivo, formato) => {
     return new Promise((resolve, reject) => {
         const stream = cloudinaryPdf.uploader.upload_stream(
@@ -30,7 +29,6 @@ const subirArchivoCloudinary = (buffer, nombreArchivo, formato) => {
     });
 };
 
-// ─── Eliminar archivo de Cloudinary por publicId ──────────────────────────────
 const eliminarArchivoCloudinary = async (publicId) => {
     if (!publicId) return;
     try {
@@ -40,7 +38,6 @@ const eliminarArchivoCloudinary = async (publicId) => {
     }
 };
 
-// ─── Validar documento por tipo ───────────────────────────────────────────────
 const validarDocumentoPorTipo = (nombreDoc, nroDoc) => {
     if (nombreDoc === 'ruc') {
         if (!/^\d{11}$/.test(nroDoc))
@@ -57,7 +54,6 @@ const validarDocumentoPorTipo = (nombreDoc, nroDoc) => {
     }
 };
 
-// ─── Calcular producto ────────────────────────────────────────────────────────
 const calcularProducto = (productoExiste, cantidad) => {
     const precioConIgv = parseFloat(productoExiste.precio_producto);
     const precioSinIgv = parseFloat((precioConIgv / (1 + IGV)).toFixed(2));
@@ -79,7 +75,6 @@ const calcularProducto = (productoExiste, cantidad) => {
     };
 };
 
-// ─── Generar datos del comprobante ────────────────────────────────────────────
 const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
     const tipoComprobanteExiste = await obtenerTipoComprobantePorIdModel(tipoComprobante);
     if (!tipoComprobanteExiste) throw crearError('Tipo de comprobante no valido', 400);
@@ -145,7 +140,6 @@ const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
     };
 };
 
-// ─── Reconstruir payload ApisPeru desde datos de BD (usado por el job) ────────
 const reconstruirPayloadApisPeru = (comprobante, detalles) => {
     const formatearFecha = (fecha) => {
         const d = new Date(fecha);
@@ -194,9 +188,9 @@ const reconstruirPayloadApisPeru = (comprobante, detalles) => {
         },
         company,
         mtoOperGravadas: parseFloat(comprobante.total_gravada),
-        mtoIGV: parseFloat(comprobante.total_igv),           // ← renombrar totalIgv
-        totalImpuestos: parseFloat(comprobante.total_igv),    // ← agregar
-        valorVenta: parseFloat(comprobante.total_gravada),    // ← agregar
+        mtoIGV: parseFloat(comprobante.total_igv),          
+        totalImpuestos: parseFloat(comprobante.total_igv),   
+        valorVenta: parseFloat(comprobante.total_gravada),   
         subTotal: parseFloat(comprobante.total_venta), 
         totalIgv: parseFloat(comprobante.total_igv),
         mtoImpVenta: parseFloat(comprobante.total_venta),
@@ -205,7 +199,6 @@ const reconstruirPayloadApisPeru = (comprobante, detalles) => {
     };
 };
 
-// ─── Llamar a ApisPeru /invoice/send ─────────────────────────────────────────
 const enviarComprobanteApisPeru = async (payload) => {
     const token = process.env.TOKEN_APIS_PERU;
     try {
@@ -218,18 +211,15 @@ const enviarComprobanteApisPeru = async (payload) => {
     } catch (error) {
         if (error.response) {
             const { status, data } = error.response;
-            console.error('❌ Error ApisPeru /invoice/send:', { status, data });
             throw crearError(`ApisPeru respondió con estado ${status}. ${data?.message || 'Error desconocido'}`, 502);
         }
         if (error.request) {
-            console.error('❌ Sin respuesta de ApisPeru (send)');
             throw crearError('No hubo respuesta del servidor ApisPeru al enviar el comprobante', 504);
         }
         throw crearError('Error interno al enviar el comprobante', 500);
     }
 };
 
-// ─── Llamar a ApisPeru /invoice/pdf ──────────────────────────────────────────
 const obtenerPdfApisPeru = async (payload) => {
     const token = process.env.TOKEN_APIS_PERU;
     try {
@@ -245,26 +235,21 @@ const obtenerPdfApisPeru = async (payload) => {
     } catch (error) {
         if (error.response) {
             const { status, data } = error.response;
-            console.error('❌ Error ApisPeru /invoice/pdf:', { status, data: data?.toString?.() || data });
             throw crearError(`ApisPeru PDF respondió con estado ${status}. ${data?.message || 'Error en generación de PDF'}`, 502);
         }
         if (error.request) {
-            console.error('❌ Sin respuesta de ApisPeru (pdf)');
             throw crearError('No hubo respuesta del servidor ApisPeru al generar el PDF', 504);
         }
         throw crearError('Error interno al generar el PDF', 500);
     }
 };
 
-// Alias para compatibilidad
 const generarPdfNotaVenta = (datosComprobante, cliente, nombreTipoDoc) =>
     generarPdfTermico(datosComprobante, cliente, nombreTipoDoc, 'Nota de Venta');
 
-// ─── Solo validar stock ───────────────────────────────────────────────────────
 const validarStockInsumos = async (productosConData) => {
     const insumosNecesarios = new Map();
 
-    // ─── Cargar insumos de todos los productos en paralelo ────────────────────
     const resultadosInsumos = await Promise.all(
         productosConData.map(({ productoExiste, cantidad }) => {
             if (!productoExiste.usa_insumos) return { insumos: [], cantidad };
@@ -291,7 +276,6 @@ const validarStockInsumos = async (productosConData) => {
         }
     }
 
-    // ─── Verificar stock de todos los insumos en paralelo ─────────────────────
     await Promise.all(
         Array.from(insumosNecesarios.entries()).map(async ([idInsumo, { nombreInsumo, cantidadValidacion }]) => {
             const stockActual = await obtenerStockActualModel(idInsumo);
@@ -307,7 +291,6 @@ const validarStockInsumos = async (productosConData) => {
     return insumosNecesarios;
 };
 
-// ─── Solo descontar stock (llamar después de confirmar la venta en BD) ────────
 const descontarStockInsumos = async (insumosNecesarios, registrarSalidaStockService, idUsuario) => {
     for (const [idInsumo, { cantidadExacta }] of insumosNecesarios) {
         await registrarSalidaStockService(
@@ -317,11 +300,9 @@ const descontarStockInsumos = async (insumosNecesarios, registrarSalidaStockServ
     }
 };
 
-// ─── Revertir insumos al anular una venta ─────────────────────────────────────
 const revertirInsumosVenta = async (detalles, registrarEntradaStockService, idUsuario) => {
     const insumosARevertir = new Map();
 
-    // ─── Cargar insumos de todos los productos en paralelo ────────────────────
     const resultadosInsumos = await Promise.all(
         detalles.map(({ id_producto, cantidad_producto, usa_insumos }) => {
             if (!usa_insumos) return { insumos: [], cantidad_producto };

@@ -26,7 +26,6 @@ const {
 
 const { validarDatosReservacion } = require('./reservacion_validacion');
 
-//  Ocupar mesas + Crear preferencia MP 
 const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     validarDatosReservacion(datos);
 
@@ -47,7 +46,6 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
         );
     }
 
-    // Obtener correo del usuario
     const usuario = await obtenerUsuarioPorIdModel(idUsuario);
     if (!usuario) throw crearError('Usuario no encontrado', 404);
     const correo = usuario.correo_usuario;
@@ -87,7 +85,7 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     const montoTotal = mesas.length * montoPorMesa;
 
     const items = mesasConInfo.map((mesa, index) => ({
-        title: `Reservación Pollería - Mesa ${mesa.numeroMesa}`,  // ← ahora usa numeroMesa real
+        title: `Reservación Pollería - Mesa ${mesa.numeroMesa}`, 
         quantity: 1,
         unit_price: montoPorMesa,
         currency_id: 'PEN'
@@ -110,9 +108,9 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
                 monto_total: montoTotal
             },
             back_urls: {
-                success: `${process.env.FRONTEND_URL}/reservacion/resultado?status=success`,
-                failure: `${process.env.FRONTEND_URL}/reservacion/resultado?status=failure`,
-                pending: `${process.env.FRONTEND_URL}/reservacion/resultado?status=pending`
+                success: `${process.env.FRONTEND_URL}/usuario/pago-exitoso`,
+                failure: `${process.env.FRONTEND_URL}/usuario/pago-fallido`,
+                pending: `${process.env.FRONTEND_URL}/usuario/pago-pendiente`
             },
             external_reference: codigoReservacion,
             notification_url: `${process.env.BACKEND_URL}/api/reservaciones/webhook`,

@@ -13,7 +13,6 @@ const registroUsuarioModel = async (nombre, apellido, correo, clave, telefono) =
         return usuarioNuevo;
 
     } catch (err) {
-        console.log('Error en registroUsuarioModel:', err.message);
         throw new Error('Ocurrio un error al insertar usuario en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -49,7 +48,6 @@ const registrarVerificacionCorreoModel = async (correo, codigo) => {
 
         return result;
     } catch (err) {
-        console.log('Error al registrar codigo de verificacion en la BD.', err.message);
         throw new Error('Error al insertar codigo de verificacion en la base de datos');
 
     } finally {
@@ -67,7 +65,6 @@ const validarCodigoCorreoModel = async (correo, codigo, fechaActual) => {
         return  result[0][0];
 
     } catch (err) {
-        console.log(err.message)
         throw new Error('Error al validar codigo de correo en la base de datos.');
 
     } finally {
@@ -98,7 +95,6 @@ const seleccionarUsuarioCorreoModel = async (correoUsuario) => {
 
         return result[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error en la base de datos al buscar usuario');
     } finally {
         if (conexion) conexion.release();

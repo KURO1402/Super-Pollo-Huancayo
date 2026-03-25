@@ -7,7 +7,6 @@ const obtenerRolesModel = async () => {
         const [rows] = await conexion.execute("CALL sp_listar_roles()");
         return rows[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error("Error al obtener roles de la base de datos");
     } finally {
         if (conexion) conexion.release();
@@ -39,7 +38,6 @@ const obtenerUsuariosModel = async (limite, desplazamiento, idUsuario, idRol = n
         const [rows] = await conexion.execute('CALL sp_listar_usuarios(?, ?, ?, ?, ?)', [limite, desplazamiento, idUsuario, idRol, valor]);
         return rows[0];
     } catch (err) {
-        console.log(err.message)
         throw new Error('Ocurrio un error al listar usuarios en la base de datos'); 
     } finally {
         if(conexion) conexion.release();
@@ -102,7 +100,6 @@ const obtenerClaveUsuarioPorIdModel = async (idUsuario) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Ocurrió un error al obtener la clave del usuario desde la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -131,7 +128,6 @@ const actualizarDatosUsuarioModel = async (datos, idUsuario) => {
 
         return result[0][0]?.mensaje;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al actualizar datos de el usuario en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -183,7 +179,6 @@ const eliminarUsuarioModel = async (idUsuario, estado) => {
         return result[0][0]?.mensaje;
         
     } catch (err) {
-        console.log(err.message);
         throw new Error("Error al eliminar el usaurio en la base de datos.");
     } finally {
         if (conexion) conexion.release
@@ -199,7 +194,6 @@ const obtenerRolPorIdModel = async (idRol) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Ocurrió un error al obtener el rol desde la base de datos');
     } finally {
         if (conexion) conexion.release();

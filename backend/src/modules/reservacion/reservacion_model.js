@@ -37,7 +37,6 @@ const verificarMesaDisponibleModel = async (idMesa, fechaHora, idUsuario) => {
         return result[0][0]?.conflictos;
 
     } catch (err) {
-        console.log(err.message)
         throw new Error('Error al verificar disponibilidad de la mesa');
     } finally {
         if (conexion) conexion.release();
@@ -88,7 +87,6 @@ const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuari
         return reservacion.id_reservacion;
 
     } catch (error) {
-        console.log("ERROR AL RESERVAR: ", error.message)
         if (conexion) await conexion.rollback();
         throw new Error('Error al registrar la reservación');
     } finally {

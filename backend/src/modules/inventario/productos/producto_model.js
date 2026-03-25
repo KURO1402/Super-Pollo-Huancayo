@@ -189,7 +189,6 @@ const agregarCantidadInsumoProductoModel = async (idProducto, idInsumo, cantidad
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message)
         throw new Error('Error al relacionar insumo con el producto en la base de datos');
     } finally {
         if(conexion) conexion.release();
@@ -299,7 +298,6 @@ const obtenerImagenProductoPorIdModel = async (idImagenProducto) => {
         return result[0][0];
 
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener los datos de la imagen del producto');
     } finally {
         if (conexion) conexion.release();
@@ -315,7 +313,6 @@ const obtenerProductosCatalogoModel = async (idCategoria = null) => {
         return result[0]; 
 
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener los productos de la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -332,7 +329,6 @@ const obtenerImagenesPorProductoModel = async (idProducto) => {
         return result[0];
 
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener los datos de la imagen del producto');
     } finally {
         if (conexion) conexion.release();
@@ -417,7 +413,6 @@ const obtenerProductoIdModel = async (idProducto) => {
         return result[0][0];
 
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener el producto de la base de datos');
     } finally {
         if (conexion) conexion.release();

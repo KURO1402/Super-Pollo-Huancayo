@@ -85,7 +85,6 @@ const obtenerInsumoIDController = async (req, res) => {
     try {
         const { idInsumo } = req.params;
         const resultado = await obtenerInsumoIDService(idInsumo);
-        console.log(resultado);
 
         return res.status(200).json(resultado);
 
@@ -140,7 +139,6 @@ const obtenerMovimientosStockController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
-        console.log(err.message)
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

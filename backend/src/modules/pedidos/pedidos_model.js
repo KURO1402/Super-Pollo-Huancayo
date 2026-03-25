@@ -7,7 +7,6 @@ const obtenerMesasPedidoModel = async (fechaHora) => {
         const [rows] = await conexion.execute('CALL sp_obtener_mesas_pedido(?)', [fechaHora]);
         return rows[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener las mesas en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -20,14 +19,12 @@ const insertarPedidoCompletoModel = async (precio_precuenta, mesas, detalles) =>
         conexion = await pool.getConnection();
         await conexion.beginTransaction();
 
-        // 1. Insertar pedido
         const [[pedido]] = await conexion.execute(
             'CALL sp_insertar_pedido(?)', 
             [precio_precuenta]
         );
         const id_pedido = pedido[0].id_pedido;
 
-        // 2. Insertar mesas
         for (const id_mesa of mesas) {
             await conexion.execute(
                 'CALL sp_insertar_mesa_pedido(?, ?)', 
@@ -35,7 +32,6 @@ const insertarPedidoCompletoModel = async (precio_precuenta, mesas, detalles) =>
             );
         }
 
-        // 3. Insertar detalles
         for (const detalle of detalles) {
             await conexion.execute(
                 'CALL sp_insertar_detalle_pedido(?, ?, ?)', 
@@ -48,7 +44,6 @@ const insertarPedidoCompletoModel = async (precio_precuenta, mesas, detalles) =>
 
     } catch (err) {
         if (conexion) await conexion.rollback();
-        console.log(err.message);
         throw new Error('Error al insertar el pedido en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -62,7 +57,6 @@ const listarPedidosModel = async (fechaHora) => {
         const [rows] = await conexion.execute('CALL sp_listar_pedidos(?)', [fechaHora]);
         return rows[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al listar los pedidos en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -76,7 +70,6 @@ const listarMesasPorPedidoModel = async (idPedido) => {
         const [rows] = await conexion.execute('CALL sp_listar_mesas_por_pedido(?)', [idPedido]);
         return rows[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al listar las mesas del pedido en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -90,7 +83,6 @@ const listarDetallePorPedidoModel = async (idPedido) => {
         const [rows] = await conexion.execute('CALL sp_listar_detalle_por_pedido(?)', [idPedido]);
         return rows[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al listar el detalle del pedido en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -107,7 +99,6 @@ const validarMesaDisponibleModel = async (idMesa, fechaHora) => {
         );
         return rows[0][0].ocupada === 0;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al validar disponibilidad de mesa en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -121,7 +112,6 @@ const obtenerEstadoPedidoModel = async (idPedido) => {
         const [rows] = await conexion.execute('CALL sp_obtener_estado_pedido(?)', [idPedido]);
         return rows[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener el estado del pedido en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -136,7 +126,6 @@ const obtenerDetallePedidoModel = async (idPedido) => {
         const [rows] = await conexion.execute('CALL sp_obtener_detalle_pedido(?)', [idPedido]);
         return rows[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener el detalle del pedido en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -151,7 +140,6 @@ const obtenerMesasDeUnPedidoModel = async (idPedido) => {
         const [rows] = await conexion.execute('CALL sp_obtener_mesas_de_un_pedido(?)', [idPedido]);
         return rows[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener las mesas del pedido en la base de datos');
     } finally {
         if (conexion) conexion.release();

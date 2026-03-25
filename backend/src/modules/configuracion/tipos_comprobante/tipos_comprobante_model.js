@@ -13,7 +13,6 @@ const obtenerTipoComprobantePorIdModel = async (idComprobante) => {
         return result[0][0];
 
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al obtener tipo de comprobante en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -32,7 +31,6 @@ const actualizarCorrelativoComprobanteModel = async (idComprobante, nuevoCorrela
 
         return result[0]; 
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al actualizar correlativo en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -47,7 +45,6 @@ const insertarTipoComprobanteModel = async (nombreTipoComprobante, serie) => {
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al insertar tipo de comprobante en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -62,7 +59,6 @@ const contarTipoComprobantePorNombreSerieModel = async (nombre, serie) => {
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar tipos de comprobante en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -77,7 +73,6 @@ const actualizarTipoComprobanteModel = async (idTipoComprobante, nombreTipoCompr
 
         return result[0][0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al actualizar tipo de comprobante en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -92,7 +87,6 @@ const contarTipoComprobantePorIdModel = async (idTipoComprobante) => {
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar tipo de comprobante por ID en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -107,7 +101,6 @@ const contarTipoComprobanteNombreSerieExcluyendoIdModel = async (nombreTipoCompr
 
         return result[0][0]?.total;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al contar tipo de comprobante por nombre y serie excluyendo ID en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -122,7 +115,6 @@ const eliminarTipoComprobanteModel = async (idTipoComprobante) => {
 
         return result[0][0]?.mensaje;
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al eliminar tipo de comprobante en la base de datos');
     } finally {
         if (conexion) conexion.release();
@@ -137,7 +129,6 @@ const listarTiposComprobanteModel = async () => {
 
         return result[0];
     } catch (err) {
-        console.log(err.message);
         throw new Error('Error al listar tipos de comprobante');
     } finally {
         if (conexion) conexion.release();

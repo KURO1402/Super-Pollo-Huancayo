@@ -57,7 +57,6 @@ const obtenerUsuariosService = async (idUsuario, querys) => {
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        console.log('Cache hit usuarios');
 
         const usuarios = await obtenerUsuariosModel(limite, desplazamiento, idUsuario, rol, valorFiltro);
 
@@ -71,8 +70,6 @@ const obtenerUsuariosService = async (idUsuario, querys) => {
             usuarios
         };
     }
-
-    console.log('Cache miss usuarios');
 
     const totalUsuarios = await contarUsuariosModel(idUsuario, rol, valorFiltro);
 

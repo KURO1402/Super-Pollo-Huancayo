@@ -5,9 +5,29 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const app = express();
+app.use(helmet());
+app.use(compression());
+app.use(morgan('dev'));
+app.set('trust proxy', 1);
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes, por favor intenta más tarde.' }
+});
+app.use('/api', generalLimiter);
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, 
+  max: 20, 
+  message: { error: 'Muchos intentos de acceso. Intenta en una hora.' }
+});
+app.use('/api/auth', authLimiter);
 
 const corsOptions = {
-  origin: ['http://localhost:5173', '*'],
+  origin: [CLIENT_URL || 'https://superpollohyo.com'],
   credentials: true,
 };
 app.use(cors(corsOptions));
@@ -41,8 +61,8 @@ app.use('/api/ventas', ventasRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/fuente-datos', fuenteDatosRoutes);
 
-/*const iniciarJobSunat = require('./src/jobs/sunat_job');
-iniciarJobSunat();*/
+const iniciarJobSunat = require('./src/jobs/sunat_job');
+iniciarJobSunat();
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

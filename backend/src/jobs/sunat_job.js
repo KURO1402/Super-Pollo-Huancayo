@@ -13,7 +13,6 @@ const {
 const MAX_INTENTOS = 3;
 const INTERVALO_MS = 30 * 1000;
 
-// ─── Procesar un comprobante pendiente ────────────────────────────────────────
 const procesarComprobante = async (idComprobante) => {
   let comprobante;
 
@@ -26,7 +25,6 @@ const procesarComprobante = async (idComprobante) => {
       return;
     }
 
-    // ─── Verificar límite de intentos antes de procesar ───────────────────────
     if (comprobante.intentos_reenvio >= MAX_INTENTOS) {
       console.warn(
         `Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} alcanzó el límite de ${MAX_INTENTOS} intentos. Se omite.`
@@ -47,7 +45,6 @@ const procesarComprobante = async (idComprobante) => {
 
     const nombreArchivo = `${comprobante.serie}-${comprobante.numero_correlativo}`;
 
-    // ─── Subir XML y CDR en paralelo ──────────────────────────────────────────
     const [resultadoXml, resultadoCdr] = await Promise.all([
       subirArchivoCloudinary(Buffer.from(xml), `${nombreArchivo}-xml`, 'xml'),
       subirArchivoCloudinary(Buffer.from(sunatResponse.cdrZip, 'base64'), `${nombreArchivo}-cdr`, 'zip'),
@@ -77,7 +74,6 @@ const procesarComprobante = async (idComprobante) => {
   } catch (error) {
     console.error(`Error procesando comprobante ${idComprobante}:`, error.message);
 
-    // ─── Revertir a pendiente para que el job reintente en la próxima vuelta ──
     try {
       await actualizarEstadoSunatModel(idComprobante, 'pendiente', null, null, null, null, null, null);
       console.warn(`Comprobante ${idComprobante} revertido a "pendiente" para reintento`);
@@ -87,7 +83,6 @@ const procesarComprobante = async (idComprobante) => {
   }
 };
 
-// ─── Ciclo principal del job ──────────────────────────────────────────────────
 const ejecutarJob = async () => {
   try {
     const pendientes = await obtenerComprobantesVencidosModel();
@@ -105,13 +100,11 @@ const ejecutarJob = async () => {
   }
 };
 
-// ─── Loop recursivo con setTimeout — evita solapamiento de ciclos ─────────────
 const loopJob = async () => {
   await ejecutarJob();
   setTimeout(loopJob, INTERVALO_MS);
 };
 
-// ─── Iniciar job ──────────────────────────────────────────────────────────────
 const iniciarJobSunat = () => {
   console.log(`Job SUNAT iniciado — intervalo: ${INTERVALO_MS / 1000}s, máx intentos: ${MAX_INTENTOS}`);
   loopJob();
