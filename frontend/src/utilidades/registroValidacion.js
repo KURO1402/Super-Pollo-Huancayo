@@ -4,16 +4,16 @@ export const registroValidacion = yup.object().shape({
   nombreUsuario: yup
     .string() 
     .required('Los nombres son obligatorios') 
-    .min(2, 'Los nombres deben tener al menos 2 caracteres') 
-    .max(50, 'Los nombres no pueden exceder 50 caracteres')
-    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Los nombres solo pueden contener letras'),
+    .min(2, 'Debe tener mínimo 2 caracteres') 
+    .max(50, 'No debe exceder 50 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Solo pueden contener letras'),
   
   apellidoUsuario: yup
     .string()
     .required('Los apellidos son obligatorios')
-    .min(2, 'Los apellidos deben tener al menos 2 caracteres')
-    .max(50, 'Los apellidos no pueden exceder 50 caracteres')
-    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Los apellidos solo pueden contener letras'),
+    .min(2, 'Deben tener al menos 2 caracteres')
+    .max(50, 'No pueden exceder 50 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Solo pueden contener letras'),
   
   correoUsuario: yup
     .string()
@@ -24,8 +24,8 @@ export const registroValidacion = yup.object().shape({
   claveUsuario: yup
   .string()
   .required('La contraseña es obligatoria')
-  .min(8, 'La contraseña debe tener al menos 8 caracteres')
-  .max(50, 'La contraseña no puede exceder 50 caracteres')
+  .min(8, 'Debe tener al menos 8 caracteres')
+  .max(50, 'No puede exceder 50 caracteres')
   .test(
     'clave segura', 
     'La contraseña no cumple con los requisitos mínimos',
