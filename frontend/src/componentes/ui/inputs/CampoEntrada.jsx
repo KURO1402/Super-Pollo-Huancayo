@@ -33,11 +33,13 @@ const CampoEntrada = ({
           placeholder={marcadorPosicion} 
         />
       </div>
-      {error && (
-        <p className="mt-1 text-sm text-red-600">
-          {error.message}
-        </p>
-      )}
+      <div className="min-h-[20px]">
+        {error && (
+          <p className=" text-sm text-red-600 transition-all duration-200">
+            {error.message}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

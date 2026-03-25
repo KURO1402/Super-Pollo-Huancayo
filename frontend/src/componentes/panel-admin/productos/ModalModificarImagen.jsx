@@ -48,7 +48,6 @@ export const ModalModificarImagen = ({ producto, onClose, onGuardar }) => {
 
       const formData = new FormData();
       formData.append('imagenProducto', data.imagen);
-      console.log('FormData antes de enviar:', formData.get('image'));
       await actualizarImagenProductoServicio(producto.id_imagen_producto, formData);
       
       mostrarAlerta.exito('Imagen actualizada correctamente');

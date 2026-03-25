@@ -16,11 +16,13 @@ const CampoCheckbox = ({ id, nombre, etiqueta, registro, error, className = '' }
         <label htmlFor={id} className="text-sm text-gray-900">
           {etiqueta}
         </label>
-        {error && (
-          <p className="mt-1 text-sm text-red-600">
-            {error.message}
-          </p>
-        )}
+        <div className="min-h-[20px]">
+          {error && (
+            <p className="text-sm text-red-600">
+              {error.message}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
