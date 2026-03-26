@@ -79,7 +79,8 @@ const Paso3Confirmacion = () => {
         localStorage.setItem(STORAGE_KEY, expira.toString());
         setContador(TIEMPO_BLOQUEO);
         iniciarContador();
-        window.open(respuesta.sandbox_init_point, "_blank");
+        window.location.href = respuesta.sandbox_init_point;
+        //window.open(respuesta.sandbox_init_point, "_blank");
       } else {
         mostrarAlerta.error("No se pudo generar el enlace de pago.");
       }
