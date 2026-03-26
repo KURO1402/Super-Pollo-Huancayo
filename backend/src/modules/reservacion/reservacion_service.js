@@ -108,12 +108,13 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
                 monto_total: montoTotal
             },
             back_urls: {
-                success: `${process.env.FRONTEND_URL}/usuario/pago-exitoso`,
-                failure: `${process.env.FRONTEND_URL}/usuario/pago-fallido`,
-                pending: `${process.env.FRONTEND_URL}/usuario/pago-pendiente`
+                success: `${process.env.CLIENT_URL}usuario/pago-exitoso`,
+                failure: `${process.env.CLIENT_URL}usuario/pago-fallido`,
+                pending: `${process.env.CLIENT_URL}usuario/pago-pendiente`
             },
+            auto_return: 'approved',
             external_reference: codigoReservacion,
-            notification_url: `${process.env.BACKEND_URL}/api/reservaciones/webhook`,
+            notification_url: `${process.env.BACKEND_URL}/reservaciones/webhook`,
             statement_descriptor: 'Polleria Super Pollo',
             expires: true,
             expiration_date_from: new Date().toISOString(),
@@ -200,7 +201,7 @@ const registrarReservacionManualService = async (datos) => {
 
     const idReservacion = await registrarReservacionModel(fecha, hora, cantidadPersonas, null, mesas, fechaHoraReserva, codigoReservacion);
 
-    // await registrarPagoReservacionModel(10 * mesas.length, null, idReservacion);
+    await registrarPagoReservacionModel(10 * mesas.length, null, idReservacion);
 
     const info = await enviarCorreoReservacion({ correo, codigoReservacion, fecha, hora, cantidadPersonas, mesasConInfo });
 

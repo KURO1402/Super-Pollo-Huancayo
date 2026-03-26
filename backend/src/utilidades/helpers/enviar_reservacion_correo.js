@@ -1,11 +1,11 @@
 const transporter = require('../../config/nodemailer');
 
 const enviarCorreoReservacion = async (datos) => {
-    const { codigoReservacion, fecha, hora, cantidadPersonas, mesasConInfo, correo } = datos;
-    const filaMesas = mesasConInfo.map(m => `
+    const {  correo, codigoReservacion, fecha, hora, cantidadPersonas, mesas } = datos;
+    const filaMesas = mesas.map(m => `
         <tr>
             <td style='padding: 10px 16px; border-bottom: 1px solid #e0e0e0; color: #444;'>
-                <span style='margin-right: 10px;'>🪑</span> Mesa ${m.numeroMesa}
+                <span style='margin-right: 10px;'>🪑</span> Mesa ${m.numero_mesa}
             </td>
         </tr>
     `).join('');

@@ -79,7 +79,7 @@ const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuari
         for (const mesa of mesas) {
             await conexion.execute(
                 'CALL sp_insertar_mesas_reservacion(?, ?, ?)',
-                [reservacion.id_reservacion, mesa.idMesa, fechaHoraReserva]
+                [reservacion.id_reservacion, mesa.id_mesa, fechaHoraReserva]
             );
         }
 

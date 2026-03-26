@@ -79,10 +79,7 @@ const registrarVerificacionCorreoService = async (datos) => {
 
   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
-  const resultado = await registrarVerificacionCorreoModel(correo, codigo);
-  if (resultado.affectedRows === 0) {
-    throw crearError('No se pudo verificar el correo', 500);
-  }
+  await registrarVerificacionCorreoModel(correo, codigo);
   const info = await enviarCorreoVerificacion(correo, codigo)
 
   return {

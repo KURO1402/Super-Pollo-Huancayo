@@ -45,7 +45,7 @@ CREATE TABLE verificacion_correos(
     correo_verificacion VARCHAR(100) NOT NULL,
     codigo_verificacion CHAR(6) NOT NULL,
     expiracion_verificacion DATETIME NOT NULL,
-    estado_verificacion TINYINT(1) NOT NULL,
+    estado_verificacion TINYINT(1) NOT NULL DEFAULT 0,
     registro_verificacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -268,19 +268,36 @@ CREATE TABLE comprobantes (
     serie VARCHAR(5) NOT NULL,
     numero_correlativo INT NOT NULL,
     fecha_emision DATE,
-    estado_sunat ENUM('pendiente','enviado_sunat','aceptado','rechazado') DEFAULT 'pendiente',
-    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta),
-    FOREIGN KEY (id_tipo_comprobante) REFERENCES tipo_comprobante(id_tipo_comprobante)
+    fecha_vencimiento DATE,
+    sunat_transaccion TINYINT(4) NOT NULL,
+    estado_sunat ENUM('pendiente', 'enviado_sunat', 'aceptado', 'rechazado') NOT NULL DEFAULT 'pendiente',
+    url_comprobante_pdf VARCHAR(150),
+    public_id_pdf VARCHAR(150) NULL,
+    url_comprobante_xml VARCHAR(150),
+    public_id_xml VARCHAR(150) NULL,
+    url_cdr VARCHAR(150) NULL,
+    public_id_cdr VARCHAR(150) NULL,
+    hash_comprobante VARCHAR(100) NULL,
+    fecha_envio DATETIME NULL,
+    fecha_ultimo_reintento DATETIME NULL,
+    intentos_reenvio INT DEFAULT 0,
+    fecha_limite_correccion DATETIME NULL,
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
+    FOREIGN KEY (id_tipo_comprobante) REFERENCES tipo_comprobante(id_tipo_comprobante) ON DELETE CASCADE
 );
 
 CREATE TABLE detalle_ventas (
     id_detalle_venta INT AUTO_INCREMENT PRIMARY KEY,
     cantidad_producto INT NOT NULL,
+    valor_unitario DECIMAL(10,2),
+    precio_unitario DECIMAL(10,2),
+    subtotal DECIMAL(10,2),
+    igv DECIMAL(10,2),
     total_producto DECIMAL(10,2),
     id_venta INT NOT NULL,
     id_producto INT NOT NULL,
-    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta),
-    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+    FOREIGN KEY (id_venta) REFERENCES ventas(id_venta) ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
 );
 
 CREATE TABLE pedido_mesa (

@@ -3834,6 +3834,7 @@ WHERE
     AND c.fecha_limite_correccion <= NOW();
 
 END //
+
 -- ─── SP: Obtener Comprobante Pendiente por ID (para reconstruir payload) ──────
 CREATE PROCEDURE sp_obtener_comprobante_pendiente_por_id (IN p_id_comprobante INT) BEGIN
 -- 1. Datos del comprobante y venta

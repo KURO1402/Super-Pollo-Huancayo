@@ -29,17 +29,22 @@ const crearPreferenciaReservacionController = async (req, res) => {
 
 const webhookReservacionController = async (req, res) => {
     try {
-        const { type, data } = req.body;
+        const { body } = req;
+        
+        const type = body.type || body.topic; 
+        const action = body.action;
+        const paymentId = body.data?.id || body.resource;
 
-        if (type !== 'payment') return res.sendStatus(200);
-
-        await confirmarPagoReservacionService(data.id);
+        if (type === 'payment' && (action === 'payment.created' || !action)) {
+            await confirmarPagoReservacionService(paymentId);
+        } else {
+            // Esto silencia los errores de "action is not defined"
+        }
 
         return res.sendStatus(200);
-
     } catch (err) {
-        console.error('Error en webhook:', err.message);
-        return res.sendStatus(200);
+        console.error('Error controlado en webhook:', err.message);
+        return res.sendStatus(200); 
     }
 };
 
