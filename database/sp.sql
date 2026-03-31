@@ -1218,6 +1218,7 @@ BEGIN
     SELECT
         c.id_caja,
         c.saldo_inicial,
+        c.estado_caja = 'abierta',
         c.monto_actual                                    AS saldo_actual,
         COALESCE(SUM(CASE WHEN m.tipo_movimiento = 'ingreso' 
                      THEN m.monto_movimiento ELSE 0 END), 0) AS total_ingresos,
