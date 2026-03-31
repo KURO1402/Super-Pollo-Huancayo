@@ -59,7 +59,6 @@ const AppRutas = () => {
                 { index: true, element: <Inicio /> },
                 { path: '/registro', element: <Registro /> },
                 { path: '/inicio-sesion', element: <InicioSesion /> },
-                { path: 'pago-pendiente', element: <PagoPendiente /> },
                 { path: 'terminos-condiciones', element: <TerminosCondiciones /> },
                 { path: 'politicas-privacidad', element: <PoliticasPrivacidad /> },
             ]
@@ -79,6 +78,7 @@ const AppRutas = () => {
                     { path: 'perfil', element: <PerfilUsuario /> },
                     { path: 'pago-exitoso', element: <PagoExitoso /> },
                     { path: 'pago-fallido', element: <PagoFallido /> },
+                    { path: 'pago-pendiente', element: <PagoPendiente /> },
                 ]
                 }
             ]

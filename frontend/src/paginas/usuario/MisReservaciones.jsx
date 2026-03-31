@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiCalendar, FiClock, FiRefreshCw } from "react-icons/fi";
-import { FaRegCheckCircle, FaRegClock, FaRegTimesCircle } from "react-icons/fa";
-import { FiDollarSign } from "react-icons/fi";
+import { FiCalendar, FiClock, FiRefreshCw, FiUsers, FiDollarSign, FiMapPin } from "react-icons/fi";
+import { FaRegCheckCircle, FaRegClock, FaRegTimesCircle, FaRegCalendarAlt } from "react-icons/fa";
 import { obtenerReservacionesPorUsuario } from "../../servicios/reservacionesServicio";
+import Logo from "../../assets/imagenes/Logo.svg";
+import NombreEmpresa from "../../assets/imagenes/Nombre_Empresa.png";
 
 const MisReservaciones = () => {
   const [filtro, setFiltro] = useState("todas");
@@ -40,25 +41,60 @@ const MisReservaciones = () => {
 
   const getEstadoConfig = (estado) => {
     switch (estado) {
-      case "pagado":     return { icono: <FiDollarSign className="w-3.5 h-3.5" />,       color: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30", barra: "bg-emerald-500" };
-      case "confirmada": return { icono: <FaRegCheckCircle className="w-3.5 h-3.5" />,   color: "bg-green-500/15 text-green-400 border border-green-500/30",       barra: "bg-green-500" };
-      case "completado": return { icono: <FaRegCheckCircle className="w-3.5 h-3.5" />,   color: "bg-blue-500/15 text-blue-400 border border-blue-500/30",           barra: "bg-blue-500" };
-      case "pendiente":  return { icono: <FaRegClock className="w-3.5 h-3.5" />,         color: "bg-yellow-500/15 text-yellow-400 border border-yellow-500/30",     barra: "bg-yellow-500" };
-      case "cancelada":  return { icono: <FaRegTimesCircle className="w-3.5 h-3.5" />,   color: "bg-red-500/15 text-red-400 border border-red-500/30",               barra: "bg-red-500" };
-      default:           return { icono: <FaRegClock className="w-3.5 h-3.5" />,         color: "bg-gray-500/15 text-gray-400 border border-gray-500/30",           barra: "bg-gray-500" };
+      case "pagado":     
+        return { 
+          icono: <FiDollarSign className="w-4 h-4" />,       
+          color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40", 
+          barra: "bg-emerald-500",
+          texto: "Pagado"
+        };
+      case "confirmada": 
+        return { 
+          icono: <FaRegCheckCircle className="w-4 h-4" />,   
+          color: "bg-green-500/20 text-green-400 border-green-500/40",       
+          barra: "bg-green-500",
+          texto: "Confirmada"
+        };
+      case "completado": 
+        return { 
+          icono: <FaRegCheckCircle className="w-4 h-4" />,   
+          color: "bg-blue-500/20 text-blue-400 border-blue-500/40",           
+          barra: "bg-blue-500",
+          texto: "Completado"
+        };
+      case "pendiente":  
+        return { 
+          icono: <FaRegClock className="w-4 h-4" />,         
+          color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",     
+          barra: "bg-yellow-500",
+          texto: "Pendiente"
+        };
+      case "cancelada":  
+        return { 
+          icono: <FaRegTimesCircle className="w-4 h-4" />,   
+          color: "bg-red-500/20 text-red-400 border-red-500/40",               
+          barra: "bg-red-500",
+          texto: "Cancelada"
+        };
+      default:           
+        return { 
+          icono: <FaRegClock className="w-4 h-4" />,         
+          color: "bg-gray-500/20 text-gray-400 border-gray-500/40",           
+          barra: "bg-gray-500",
+          texto: estado || "Desconocido"
+        };
     }
-  };
-
-  const formatearEstado = (estado) => {
-    const estados = { pagado: "Pagado", pendiente: "Pendiente", confirmada: "Confirmada", cancelada: "Cancelada", completado: "Completado" };
-    return estados[estado] || estado;
   };
 
   const formatearFecha = (fecha) => {
     if (!fecha) return "—";
     const [dia, mes, anio] = fecha.split("-");
-    return new Date(`${anio}-${mes}-${dia}`).toLocaleDateString("es-ES", {
-      weekday: "short", day: "numeric", month: "short", year: "numeric",
+    const fechaObj = new Date(`${anio}-${mes}-${dia}`);
+    return fechaObj.toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
 
@@ -68,10 +104,17 @@ const MisReservaciones = () => {
 
   if (cargando) {
     return (
-      <section className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto space-y-3">
+      <section className="bg-azul-secundario relative w-full min-h-screen py-20 md:py-24 px-6 md:px-10 lg:px-16 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute top-0 right-0 w-125 h-125 rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, #e63946 0%, transparent 70%)" }} />
+          <div className="absolute bottom-0 left-0 w-100 h-100 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #f4b942 0%, transparent 70%)" }} />
+        </div>
+        <div className="relative z-10 max-w-4xl mx-auto space-y-4">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-16 bg-gray-700 rounded-xl animate-pulse" />
+            <div key={n} className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 animate-pulse">
+              <div className="h-4 bg-gray-700 rounded w-1/3 mb-4" />
+              <div className="h-20 bg-gray-700 rounded" />
+            </div>
           ))}
         </div>
       </section>
@@ -79,37 +122,67 @@ const MisReservaciones = () => {
   }
 
   return (
-    <section className="min-h-screen bg-linear-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <section className="bg-azul-secundario relative w-full min-h-screen py-20 md:py-24 lg:py-32 px-6 md:px-10 lg:px-16 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-0 right-0 w-125 h-125 rounded-full opacity-[0.06]"
+          style={{ background: "radial-gradient(circle, #e63946 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-100 h-100 rounded-full opacity-[0.05]"
+          style={{ background: "radial-gradient(circle, #f4b942 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full opacity-[0.03]"
+          style={{ background: "radial-gradient(circle, #ffffff 0%, transparent 70%)" }}
+        />
+      </div>
 
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-            MIS <span className="text-rojo">RESERVACIONES</span>
+      <div className="relative z-10 max-w-5xl mx-auto">
+        <div className="text-center mb-12 opacity-0 animate-fade-up">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <span className="block w-8 h-px bg-amarillo" />
+            <span className="text-amarillo text-xs font-semibold uppercase tracking-[0.2em]">
+              MIS RESERVAS
+            </span>
+            <span className="block w-8 h-px bg-amarillo" />
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+            MIS{" "}
+            <span className="text-rojo relative inline-block">
+              RESERVACIONES
+              <span className="absolute -bottom-1 left-0 w-full h-1 bg-rojo rounded-full opacity-50" />
+            </span>
           </h1>
-          <div className="w-32 h-1 bg-rojo mx-auto mb-6" />
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          <p className="text-gray-300 text-lg max-w-2xl mx-auto mt-6">
             Gestiona y revisa todas tus reservas en Super Pollo
           </p>
+          <div className="w-16 h-0.5 bg-amarillo mx-auto mt-5 rounded-full" />
         </div>
 
         {error && (
-          <div className="bg-red-900/20 border border-red-700 text-red-400 rounded-xl px-4 py-3 mb-5 text-sm">
-            {error}
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-5 py-4 mb-6 opacity-0 animate-fade-up delay-100 backdrop-blur-sm">
+            <p className="flex items-center gap-2">
+              <FaRegTimesCircle className="text-red-400" />
+              {error}
+            </p>
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 opacity-0 animate-fade-up delay-200">
           <div className="flex gap-2 flex-wrap">
             {[
-              { valor: "todas",      etiqueta: "Todas",        color: "bg-azul-primario" },
-              { valor: "pendiente",  etiqueta: "Pendientes",   color: "bg-yellow-500" },
-              { valor: "completado", etiqueta: "Completadas",  color: "bg-blue-500" },
+              { valor: "todas", etiqueta: "Todas", color: "bg-rojo" },
+              { valor: "pendiente", etiqueta: "Pendientes", color: "bg-yellow-500" },
+              { valor: "completado", etiqueta: "Completadas", color: "bg-blue-500" },
             ].map(({ valor, etiqueta, color }) => (
               <button
                 key={valor}
                 onClick={() => setFiltro(valor)}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs ${
-                  filtro === valor ? `${color} text-white shadow-md` : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm ${
+                  filtro === valor 
+                    ? `${color} text-white shadow-lg transform scale-105` 
+                    : "bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:bg-gray-700 border border-white/10"
                 }`}
               >
                 {etiqueta}
@@ -118,45 +191,104 @@ const MisReservaciones = () => {
           </div>
           <button
             onClick={cargarReservaciones}
-            className="flex items-center gap-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            className="flex items-center gap-2 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 border border-white/10 hover:border-white/20"
           >
-            <FiRefreshCw className="w-3.5 h-3.5" />
+            <FiRefreshCw className="w-4 h-4" />
             Recargar
           </button>
         </div>
 
-        <div className="space-y-2">
-          {reservacionesFiltradas.map((reserva) => {
+        <div className="space-y-4">
+          {reservacionesFiltradas.map((reserva, index) => {
             const config = getEstadoConfig(reserva.estado_reservacion);
             return (
               <div
                 key={reserva.id_reservacion}
-                className="flex items-center gap-4 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200"
+                className="relative opacity-0 animate-fade-up"
+                style={{ animationDelay: `${300 + index * 100}ms` }}
               >
-                <div className={`w-1 h-10 rounded-full shrink-0 ${config.barra}`} />
+                <div className="absolute -inset-2 border border-rojo/10 rounded-2xl z-0 hidden md:block" />
+                <div className="absolute -inset-4 border border-amarillo/5 rounded-3xl z-0 hidden md:block" />
+                
+                <div className="relative bg-gray-900/95 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 hover:transform hover:-translate-y-1">
+                  <div className={`h-1 w-full ${config.barra}`} />
 
-                <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FiCalendar className="w-4 h-4 text-gray-400 shrink-0" />
-                    <span className="text-sm font-medium text-white capitalize truncate">
-                      {formatearFecha(reserva.fecha_reservacion)}
-                    </span>
+                  <div className="p-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-gray-800/80 border border-white/10 rounded-lg px-3 py-2">
+                          <span className="font-mono text-sm font-bold text-white tracking-wider">
+                            {reserva.codigo_reservacion}
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border ${config.color}`}>
+                        {config.icono}
+                        {config.texto}
+                      </span>
+                    </div>
+
+                    {/* Información principal */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                      <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
+                        <FaRegCalendarAlt className="text-amarillo text-lg" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider">Fecha</p>
+                          <p className="text-sm text-gray-200 font-medium capitalize">
+                            {formatearFecha(reserva.fecha_reservacion)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
+                        <FiClock className="text-amarillo text-lg" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider">Hora</p>
+                          <p className="text-sm text-gray-200 font-medium">{reserva.hora_reservacion}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
+                        <FiUsers className="text-amarillo text-lg" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider">Personas</p>
+                          <p className="text-sm text-gray-200 font-medium">{reserva.cantidad_personas} personas</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {reserva.mesas_reservadas?.length > 0 && (
+                      <>
+                        <div className="h-px bg-linear-to-r from-transparent via-white/10 to-transparent my-4" />
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <FiMapPin className="text-amarillo" />
+                            Mesas reservadas
+                          </p>
+                          <div className="flex gap-3 flex-wrap">
+                            {reserva.mesas_reservadas.map((mesa) => (
+                              <div
+                                key={mesa.numero_mesa}
+                                className="flex items-center gap-3 bg-gray-800/50 border border-white/10 rounded-xl px-4 py-2 hover:border-white/20 transition-all"
+                              >
+                                <div className="w-10 h-10 bg-linear-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg flex items-center justify-center border border-yellow-500/30">
+                                  <svg className="w-5 h-5 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="3" y="7" width="18" height="4" rx="1"/>
+                                    <line x1="5" y1="11" x2="5" y2="18"/>
+                                    <line x1="19" y1="11" x2="19" y2="18"/>
+                                    <line x1="3" y1="18" x2="21" y2="18"/>
+                                  </svg>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-white">Mesa {mesa.numero_mesa}</p>
+                                  <p className="text-xs text-gray-400">Cap. {mesa.capacidad} personas</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <FiClock className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-300">{reserva.hora_reservacion}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-gray-500 font-mono hidden sm:block">
-                    #{reserva.id_reservacion}
-                  </span>
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${config.color}`}>
-                    {config.icono}
-                    {formatearEstado(reserva.estado_reservacion)}
-                  </span>
                 </div>
               </div>
             );
@@ -164,20 +296,21 @@ const MisReservaciones = () => {
         </div>
 
         {reservacionesFiltradas.length === 0 && !error && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FiCalendar className="w-8 h-8 text-gray-400" />
+          <div className="text-center py-16 opacity-0 animate-fade-up delay-300">
+            <div className="w-20 h-20 bg-gray-800/50 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-5 border border-white/10">
+              <FiCalendar className="w-10 h-10 text-amarillo" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">No hay reservaciones</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">No hay reservaciones</h3>
             <p className="text-gray-400 text-sm mb-6">
               {filtro === "todas"
                 ? "Aún no has realizado ninguna reservación"
-                : `No hay reservaciones ${formatearEstado(filtro).toLowerCase()}s`}
+                : `No hay reservaciones ${filtro === "pendiente" ? "pendientes" : filtro === "completado" ? "completadas" : filtro}`}
             </p>
             <Link
               to="/usuario/nueva-reservacion"
-              className="inline-block bg-rojo hover:bg-rojo/90 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-rojo to-rojo/80 hover:from-rojo/90 hover:to-rojo text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all hover:scale-105 shadow-lg"
             >
+              <FiCalendar />
               Realizar mi primera reservación
             </Link>
           </div>

@@ -312,11 +312,42 @@ CREATE PROCEDURE sp_listar_reservaciones_por_usuario(
 BEGIN
     SELECT
         r.id_reservacion,
+        r.codigo_reservacion,
         DATE_FORMAT(r.fecha_reservacion, '%d-%m-%Y') AS fecha_reservacion,
         DATE_FORMAT(r.hora_reservacion, '%H:%i') AS hora_reservacion,
-        r.estado_reservacion
+        r.cantidad_personas,
+        r.estado_reservacion,
+        DATE_FORMAT(r.fecha_creacion, '%d-%m-%Y %H:%i') AS fecha_creacion,
+        GROUP_CONCAT(
+            CONCAT(m.numero_mesa, ':', m.capacidad)
+            ORDER BY m.numero_mesa SEPARATOR ','
+        ) AS mesas_reservadas,
+        pr.estado_pago,
+        pr.monto_pagado,
+        pr.id_transaccion,
+        DATE_FORMAT(pr.fecha_pago, '%d-%m-%Y %H:%i') AS fecha_pago
     FROM reservaciones r
+    LEFT JOIN mesas_reservacion mr ON r.id_reservacion = mr.id_reservacion
+    LEFT JOIN mesas m ON mr.id_mesa = m.id_mesa
+    LEFT JOIN pago_reservacion pr ON pr.id_pago = (
+        SELECT id_pago FROM pago_reservacion
+        WHERE id_reservacion = r.id_reservacion
+        ORDER BY fecha_pago DESC
+        LIMIT 1
+    )
     WHERE r.id_usuario = p_id_usuario
+    GROUP BY
+        r.id_reservacion,
+        r.codigo_reservacion,
+        r.fecha_reservacion,
+        r.hora_reservacion,
+        r.cantidad_personas,
+        r.estado_reservacion,
+        r.fecha_creacion,
+        pr.estado_pago,
+        pr.monto_pagado,
+        pr.id_transaccion,
+        pr.fecha_pago
     ORDER BY r.fecha_reservacion ASC, r.hora_reservacion ASC;
 END //
 

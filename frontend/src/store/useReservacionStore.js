@@ -9,7 +9,7 @@ export const useReservacionStore = create((set, get) => ({
   datos: {
     fecha: '',
     hora: '',
-    personas: 2,
+    personas: 1,
     mesas: [],
   },
 

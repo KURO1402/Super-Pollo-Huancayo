@@ -218,7 +218,18 @@ const listarReservacionesPorUsuarioModel = async (idUsuario) => {
     try {
         conexion = await pool.getConnection();
         const [result] = await conexion.execute('CALL sp_listar_reservaciones_por_usuario(?)', [idUsuario]);
-        return result[0];
+        
+        const reservaciones = result[0].map(row => ({
+            ...row,
+            mesas_reservadas: row.mesas_reservadas
+                ? row.mesas_reservadas.split(',').map(mesa => {
+                    const [numero_mesa, capacidad] = mesa.split(':');
+                    return { numero_mesa: parseInt(numero_mesa), capacidad: parseInt(capacidad) };
+                })
+                : null
+        }));
+
+        return reservaciones;
     } catch (err) {
         throw new Error(err.message);
     } finally {
