@@ -20,7 +20,7 @@ const NuevaReservacion = () => {
     defaultValues: {
       fecha: datos.fecha || '',
       hora: datos.hora || '',
-      personas: datos.personas || 2,
+      personas: datos.personas || 1,
     },
     mode: "onChange"
   });
@@ -50,7 +50,7 @@ const NuevaReservacion = () => {
     }
   };
 
-  const puedeAvanzarDesdeP1 = valores.fecha && valores.hora && valores.personas >= 2;
+  const puedeAvanzarDesdeP1 = valores.fecha && valores.hora && valores.personas >= 1;
 
   const puedeAvanzarDesdeP2 = verificarPaso2();
 

@@ -50,18 +50,15 @@ const Cabecera = () => {
   };
 
   const renderSeccionUsuarioMobile = () => {
-  if (usuario && usuario.idRol === ROLES.USUARIO) {
+  if (usuario && usuario.id_rol === ROLES.USUARIO) {
     return (
       <div className="flex flex-col items-center space-y-3">
-        <span className="text-gray-100 font-medium">
-          Hola, {usuario.nombresUsuario}
-        </span>
         <DropdownUsuario usuario={usuario} mobile />
       </div>
     );
   }
 
-  if (usuario && usuario.idRol !== ROLES.USUARIO) {
+  if (usuario && usuario.id_rol !== ROLES.USUARIO) {
     return <DropdownAdmin usuario={usuario} mobile />;
   }
 

@@ -13,7 +13,7 @@ const Paso1DatosBasicos = () => {
   const [diasAMostrar, setDiasAMostrar] = useState(5);
 
   const horaForm = watch('hora');
-  const personasForm = watch('personas') || 2;
+  const personasForm = watch('personas') || 1;
   const fechaForm = watch('fecha');
 
   useEffect(() => {
@@ -401,13 +401,13 @@ const Paso1DatosBasicos = () => {
           <button
             type="button"
             onClick={() => {
-              if (personasForm > 2) {
+              if (personasForm > 1) {
                 setValue('personas', personasForm - 1, { shouldValidate: true });
               }
             }}
-            disabled={personasForm <= 2}
+            disabled={personasForm <= 1}
             className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all shrink-0 ${
-              personasForm <= 2
+              personasForm <= 1
                 ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 : 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
             }`}
@@ -446,7 +446,7 @@ const Paso1DatosBasicos = () => {
           type="hidden"
           {...register("personas", { 
             required: "El número de personas es requerido",
-            min: { value: 2, message: "Mínimo 2 personas" },
+            min: { value: 1, message: "Mínimo 1 persona" },
             max: { value: 20, message: "Máximo 20 personas para reserva online" },
             valueAsNumber: true
           })}
