@@ -3598,7 +3598,7 @@ CREATE PROCEDURE sp_generar_venta(
     IN p_sunat_transaccion TINYINT(4),
     IN p_url_comprobante_pdf VARCHAR(150),
     IN p_public_id_pdf VARCHAR(150),
-    IN p_estado_sunat ENUM('pendiente','enviado_sunat','aceptado','rechazado'),
+    IN p_estado_sunat ENUM('pendiente','enviado_sunat','aceptado','rechazado', 'interno'),
     IN p_fecha_limite_correccion DATETIME,
     -- Caja y usuario
     IN p_id_usuario INT,
