@@ -15,22 +15,32 @@ app.use(morgan('dev'));
 app.set('trust proxy', 1); 
 
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 30 * 1000,
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Demasiadas solicitudes, por favor intenta más tarde.' }
+  handler: (req, res, next, options) => {
+    return res.status(options.statusCode).json({
+      ok: false,
+      mensaje: 'Demasiadas solicitudes, por favor intenta más tarde.'
+    });
+  }
 });
 
 const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, 
-  max: 20, 
-  message: { error: 'Muchos intentos de acceso. Intenta en una hora.' }
+  windowMs: 1 * 60 * 1000, 
+  max: 5, 
+  handler: (req, res, next, options) => {
+    return res.status(options.statusCode).json({
+      ok: false,
+      mensaje: 'Muchos intentos. Intenta de nuevo en un minuto.'
+    });
+  }
 });
 
 
 const corsOptions = {
-  origin: [process.env.CLIENT_URL || 'https://superpollohyo.com'],
+  origin: [process.env.CLIENT_URL, 'https://superpollohyo.com', 'https://www.superpollohyo.com'],
   credentials: true,
 };
 app.use(cors(corsOptions));
