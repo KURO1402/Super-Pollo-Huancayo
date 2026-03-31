@@ -55,7 +55,7 @@ export const useCajaStore = create(
           set({
             cajaActual: {
               id_caja: caja.id_caja,
-              estado: 'abierta',
+              estado: caja.estado_caja,
               saldoInicial,
               saldoActual: saldoInicial,
               ingresos: 0,
@@ -240,11 +240,6 @@ export const useCajaStore = create(
 
         set({ rehidratando: true });
 
-        if (!cajaActual.id_caja || cajaActual.estado !== 'abierta') {
-          set({ rehidratando: false });
-          return;
-        }
-
         set({ cargando: true, error: null });
 
         try {
@@ -253,7 +248,7 @@ export const useCajaStore = create(
           set({
             cajaActual: {
               id_caja: caja.id_caja,
-              estado: 'abierta',
+              estado: caja.estado_caja,
               saldoInicial: Number(caja.saldo_inicial) || 0,
               saldoActual: Number(caja.saldo_actual) || 0,
               ingresos: Number(caja.total_ingresos) || 0,
