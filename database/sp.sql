@@ -3040,10 +3040,11 @@ BEGIN
         r.id_reservacion,
         DATE_FORMAT(r.fecha_reservacion, '%d-%m-%Y') AS fecha_reservacion,
         DATE_FORMAT(r.hora_reservacion, '%H:%i') AS hora_reservacion,
+        IF(r.estado_reservacion = 'pendiente', r.codigo_reservacion, '******') AS codigo_reservacion,
         r.estado_reservacion
     FROM reservaciones r
     WHERE r.id_usuario = p_id_usuario
-    ORDER BY r.fecha_reservacion ASC, r.hora_reservacion ASC;
+    ORDER BY r.fecha_reservacion DESC, r.hora_reservacion DESC; 
 END //
 
 

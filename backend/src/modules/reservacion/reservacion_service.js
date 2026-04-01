@@ -341,15 +341,26 @@ const listarReservacionesPorFechaService = async (fechaInicio, fechaFin) => {
 
 const listarReservacionesPorUsuarioService = async (idUsuario) => {
 
-    const reservaciones = await listarReservacionesPorUsuarioModel(idUsuario);
+    const reservacionesBase = await listarReservacionesPorUsuarioModel(idUsuario);
 
-    if (!reservaciones || reservaciones.length === 0) {
+    if (!reservacionesBase || reservacionesBase.length === 0) {
         throw crearError('No hay reservaciones para este usuario', 404);
     }
 
+    const reservacionesConMesas = await Promise.all(
+        reservacionesBase.map(async (reserva) => {
+            const mesas = await obtenerMesasPorIdReservacionModel(reserva.id_reservacion);
+            
+            return {
+                ...reserva,
+                mesas: mesas || []
+            };
+        })
+    );
+
     return { 
         ok: true, 
-        reservaciones 
+        reservaciones: reservacionesConMesas 
     };
 };
 
