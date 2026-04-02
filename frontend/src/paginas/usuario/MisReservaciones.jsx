@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { FiCalendar, FiClock, FiRefreshCw, FiUsers, FiDollarSign, FiMapPin, FiEye, FiEyeOff, FiCopy, FiCheck } from "react-icons/fi";
 import { FaRegCheckCircle, FaRegClock, FaRegTimesCircle, FaRegCalendarAlt } from "react-icons/fa";
 import { obtenerReservacionesPorUsuario } from "../../servicios/reservacionesServicio";
-import Logo from "../../assets/imagenes/Logo.svg";
-import NombreEmpresa from "../../assets/imagenes/Nombre_Empresa.png";
 
 const MisReservaciones = () => {
   const [filtro, setFiltro] = useState("todas");
@@ -28,9 +26,14 @@ const MisReservaciones = () => {
         setReservaciones([]);
       }
     } catch (err) {
-      if (err.response?.status === 403) {
+      if (err.status === 404) {
+        setReservaciones([]);
+        setError(null);
+        return;
+      }
+      if (err.status === 403) {
         setError("No tienes permisos para ver las reservaciones. Por favor, inicia sesión nuevamente.");
-      } else if (err.response?.status === 401) {
+      } else if (err.status === 401) {
         setError("Sesión expirada. Por favor, inicia sesión nuevamente.");
       } else {
         setError("Error al cargar las reservaciones. Por favor, intenta nuevamente.");
@@ -42,69 +45,60 @@ const MisReservaciones = () => {
   };
 
   const toggleMostrarCodigo = (id) => {
-    setCodigosMostrados(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+    setCodigosMostrados(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const copiarCodigo = (codigo, id) => {
     navigator.clipboard.writeText(codigo).then(() => {
-      setCopiados(prev => ({
-        ...prev,
-        [id]: true
-      }));
+      setCopiados(prev => ({ ...prev, [id]: true }));
       setTimeout(() => {
-        setCopiados(prev => ({
-          ...prev,
-          [id]: false
-        }));
+        setCopiados(prev => ({ ...prev, [id]: false }));
       }, 2000);
     });
   };
 
   const getEstadoConfig = (estado) => {
     switch (estado) {
-      case "pagado":     
-        return { 
-          icono: <FiDollarSign className="w-4 h-4" />,       
-          color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40", 
+      case "pagado":
+        return {
+          icono: <FiDollarSign className="w-4 h-4" />,
+          color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40",
           barra: "bg-emerald-500",
           texto: "Pagado"
         };
-      case "confirmada": 
-        return { 
-          icono: <FaRegCheckCircle className="w-4 h-4" />,   
-          color: "bg-green-500/20 text-green-400 border-green-500/40",       
+      case "confirmada":
+        return {
+          icono: <FaRegCheckCircle className="w-4 h-4" />,
+          color: "bg-green-500/20 text-green-400 border-green-500/40",
           barra: "bg-green-500",
           texto: "Confirmada"
         };
-      case "completado": 
-        return { 
-          icono: <FaRegCheckCircle className="w-4 h-4" />,   
-          color: "bg-blue-500/20 text-blue-400 border-blue-500/40",           
+      case "completado":
+        return {
+          icono: <FaRegCheckCircle className="w-4 h-4" />,
+          color: "bg-blue-500/20 text-blue-400 border-blue-500/40",
           barra: "bg-blue-500",
           texto: "Completado"
         };
-      case "pendiente":  
-        return { 
-          icono: <FaRegClock className="w-4 h-4" />,         
-          color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",     
+      case "pendiente":
+        return {
+          icono: <FaRegClock className="w-4 h-4" />,
+          color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",
           barra: "bg-yellow-500",
           texto: "Pendiente"
         };
       case "cancelada":
-      case "cancelado":  
-        return { 
-          icono: <FaRegTimesCircle className="w-4 h-4" />,   
-          color: "bg-red-500/20 text-red-400 border-red-500/40",               
+      case "cancelado":
+        return {
+          icono: <FaRegTimesCircle className="w-4 h-4" />,
+          color: "bg-red-500/20 text-red-400 border-red-500/40",
           barra: "bg-red-500",
           texto: "Cancelada"
         };
-      default:           
-        return { 
-          icono: <FaRegClock className="w-4 h-4" />,         
-          color: "bg-gray-500/20 text-gray-400 border-gray-500/40",           
+      default:
+        return {
+          icono: <FaRegClock className="w-4 h-4" />,
+          color: "bg-gray-500/20 text-gray-400 border-gray-500/40",
           barra: "bg-gray-500",
           texto: estado || "Desconocido"
         };
@@ -123,10 +117,7 @@ const MisReservaciones = () => {
     });
   };
 
-  const debeOcultarCodigo = (codigo) => {
-    // Solo ocultar si viene como '******'
-    return codigo === "******";
-  };
+  const debeOcultarCodigo = (codigo) => codigo === "******";
 
   const reservacionesFiltradas = filtro === "todas"
     ? reservaciones
@@ -154,27 +145,16 @@ const MisReservaciones = () => {
   return (
     <section className="bg-azul-secundario relative w-full min-h-screen py-20 md:py-24 lg:py-32 px-6 md:px-10 lg:px-16 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div
-          className="absolute top-0 right-0 w-125 h-125 rounded-full opacity-[0.06]"
-          style={{ background: "radial-gradient(circle, #e63946 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-100 h-100 rounded-full opacity-[0.05]"
-          style={{ background: "radial-gradient(circle, #f4b942 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full opacity-[0.03]"
-          style={{ background: "radial-gradient(circle, #ffffff 0%, transparent 70%)" }}
-        />
+        <div className="absolute top-0 right-0 w-125 h-125 rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, #e63946 0%, transparent 70%)" }} />
+        <div className="absolute bottom-0 left-0 w-100 h-100 rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, #f4b942 0%, transparent 70%)" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, #ffffff 0%, transparent 70%)" }} />
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto">
         <div className="text-center mb-12 opacity-0 animate-fade-up">
           <div className="inline-flex items-center gap-2 mb-3">
             <span className="block w-8 h-px bg-amarillo" />
-            <span className="text-amarillo text-xs font-semibold uppercase tracking-[0.2em]">
-              MIS RESERVAS
-            </span>
+            <span className="text-amarillo text-xs font-semibold uppercase tracking-[0.2em]">MIS RESERVAS</span>
             <span className="block w-8 h-px bg-amarillo" />
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
@@ -210,11 +190,10 @@ const MisReservaciones = () => {
               <button
                 key={valor}
                 onClick={() => setFiltro(valor)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm ${
-                  filtro === valor 
-                    ? `${color} text-white shadow-lg transform scale-105` 
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm ${filtro === valor
+                    ? `${color} text-white shadow-lg transform scale-105`
                     : "bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:bg-gray-700 border border-white/10"
-                }`}
+                  }`}
               >
                 {etiqueta}
               </button>
@@ -245,42 +224,33 @@ const MisReservaciones = () => {
               >
                 <div className="absolute -inset-2 border border-rojo/10 rounded-2xl z-0 hidden md:block" />
                 <div className="absolute -inset-4 border border-amarillo/5 rounded-3xl z-0 hidden md:block" />
-                
+
                 <div className="relative bg-gray-900/95 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 hover:transform hover:-translate-y-1">
                   <div className={`h-1 w-full ${config.barra}`} />
 
                   <div className="p-6">
-                    {/* Header con estado y botón de código */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
-                      {/* Botón Ver código - Solo en pendientes */}
-                      {esPendiente && !codigoOculto && (
+                      {esPendiente && !codigoOculto ? (
                         <button
                           onClick={() => toggleMostrarCodigo(reserva.id_reservacion)}
                           className="px-4 py-2 bg-amarillo/10 hover:bg-amarillo/20 text-amarillo border border-amarillo/30 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2"
                         >
                           {mostrarCodigo ? (
-                            <>
-                              <FiEyeOff className="w-4 h-4" />
-                              Ocultar código
-                            </>
+                            <><FiEyeOff className="w-4 h-4" />Ocultar código</>
                           ) : (
-                            <>
-                              <FiEye className="w-4 h-4" />
-                              Ver código de reservación
-                            </>
+                            <><FiEye className="w-4 h-4" />Ver código de reservación</>
                           )}
                         </button>
+                      ) : (
+                        <div />
                       )}
-                      {(!esPendiente || codigoOculto) && <div></div>}
 
-                      {/* Estado */}
                       <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border ${config.color} flex-shrink-0`}>
                         {config.icono}
                         {config.texto}
                       </span>
                     </div>
 
-                    {/* Código visible cuando está abierto */}
                     {esPendiente && !codigoOculto && mostrarCodigo && (
                       <div className="bg-gray-800/50 border border-amarillo/30 rounded-lg p-4 mb-5">
                         <div className="flex items-center justify-between gap-4">
@@ -292,32 +262,24 @@ const MisReservaciones = () => {
                           </div>
                           <button
                             onClick={() => copiarCodigo(reserva.codigo_reservacion, reserva.id_reservacion)}
-                            className={`p-3 rounded-lg transition-all duration-300 ${
-                              codigoCopiad 
-                                ? 'bg-green-500/20 text-green-400' 
+                            className={`p-3 rounded-lg transition-all duration-300 ${codigoCopiad
+                                ? 'bg-green-500/20 text-green-400'
                                 : 'bg-amarillo/10 hover:bg-amarillo/20 text-amarillo'
-                            }`}
+                              }`}
                             title="Copiar código"
                           >
-                            {codigoCopiad ? (
-                              <FiCheck className="w-5 h-5" />
-                            ) : (
-                              <FiCopy className="w-5 h-5" />
-                            )}
+                            {codigoCopiad ? <FiCheck className="w-5 h-5" /> : <FiCopy className="w-5 h-5" />}
                           </button>
                         </div>
                       </div>
                     )}
 
-                    {/* Información principal */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
                       <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
                         <FaRegCalendarAlt className="text-amarillo text-lg flex-shrink-0" />
                         <div className="min-w-0">
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Fecha</p>
-                          <p className="text-sm text-gray-200 font-medium capitalize">
-                            {formatearFecha(reserva.fecha_reservacion)}
-                          </p>
+                          <p className="text-sm text-gray-200 font-medium capitalize">{formatearFecha(reserva.fecha_reservacion)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
@@ -352,10 +314,10 @@ const MisReservaciones = () => {
                               >
                                 <div className="w-10 h-10 bg-linear-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg flex items-center justify-center border border-yellow-500/30 flex-shrink-0">
                                   <svg className="w-5 h-5 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="3" y="7" width="18" height="4" rx="1"/>
-                                    <line x1="5" y1="11" x2="5" y2="18"/>
-                                    <line x1="19" y1="11" x2="19" y2="18"/>
-                                    <line x1="3" y1="18" x2="21" y2="18"/>
+                                    <rect x="3" y="7" width="18" height="4" rx="1" />
+                                    <line x1="5" y1="11" x2="5" y2="18" />
+                                    <line x1="19" y1="11" x2="19" y2="18" />
+                                    <line x1="3" y1="18" x2="21" y2="18" />
                                   </svg>
                                 </div>
                                 <div className="min-w-0">
@@ -367,7 +329,6 @@ const MisReservaciones = () => {
                         </div>
                       </>
                     )}
-
                   </div>
                 </div>
               </div>

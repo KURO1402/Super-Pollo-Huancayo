@@ -2830,25 +2830,39 @@ CREATE PROCEDURE sp_insertar_reservacion(
     IN p_codigo_reservacion CHAR(6)  
 )
 BEGIN
-    DELETE FROM bloqueos_temporales_mesa
-    WHERE id_usuario = p_id_usuario;
+    DECLARE v_codigo_existe INT DEFAULT 0;
+    DECLARE v_id_reservacion INT;
+    
+    SELECT COUNT(*) INTO v_codigo_existe 
+    FROM reservaciones 
+    WHERE codigo_reservacion = p_codigo_reservacion;
+    
+    IF v_codigo_existe > 0 THEN
+        SELECT id_reservacion 
+        FROM reservaciones 
+        WHERE codigo_reservacion = p_codigo_reservacion 
+        LIMIT 1;
+    ELSE
+        DELETE FROM bloqueos_temporales_mesa
+        WHERE id_usuario = p_id_usuario;
 
-    INSERT INTO reservaciones(
-        fecha_reservacion,
-        hora_reservacion,
-        cantidad_personas,
-        id_usuario,
-        codigo_reservacion 
-    )
-    VALUES (
-        p_fecha,
-        p_hora,
-        p_cantidad_personas,
-        p_id_usuario,
-        p_codigo_reservacion
-    );
+        INSERT INTO reservaciones(
+            fecha_reservacion,
+            hora_reservacion,
+            cantidad_personas,
+            id_usuario,
+            codigo_reservacion 
+        )
+        VALUES (
+            p_fecha,
+            p_hora,
+            p_cantidad_personas,
+            p_id_usuario,
+            p_codigo_reservacion
+        );
 
-    SELECT LAST_INSERT_ID() AS id_reservacion;
+        SELECT LAST_INSERT_ID() AS id_reservacion;
+    END IF;
 END //
 
 CREATE PROCEDURE sp_insertar_mesas_reservacion(
