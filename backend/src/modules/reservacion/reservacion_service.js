@@ -137,7 +137,7 @@ const confirmarPagoReservacionService = async (paymentId) => {
     const codigoReservacion = pagoMP.external_reference;
 
     const reservacionExistente = await obtenerReservacionPorCodigoModel(codigoReservacion);
-    if (reservacionExistente) return;
+    if (reservacionExistente?.id_reservacion) return;
 
     const { fecha, hora, cantidad_personas, id_usuario, correo, mesas, monto_total } = pagoMP.metadata;
     const fechaHoraReserva = `${fecha} ${hora}:00`;
