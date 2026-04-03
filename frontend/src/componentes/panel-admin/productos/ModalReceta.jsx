@@ -13,7 +13,7 @@ export const ModalReceta = ({ producto, onClose, onGuardar }) => {
   const [nuevaCantidad, setNuevaCantidad] = useState(0);
   const [cargando, setCargando] = useState(true);
 
-  const usaInsumos = producto.usa_insumos === 'Sí' || producto.usa_insumos === 1;
+  const usaInsumos = producto.usa_insumos === 'Si' || producto.usa_insumos === 1;
 
   const confirmacionEliminar = useConfirmacion();
 

@@ -4,14 +4,14 @@ import { MdOutlineNoFood } from "react-icons/md";
 
 export const FilaProducto = ({ producto, onGestionarInsumos, onEditarProducto, onDeshabilitarProducto }) => {
   const getUsaInsumosClases = (usaInsumos) => {
-    if (usaInsumos === 1 || usaInsumos === 'Sí') {
+    if (usaInsumos === 1 || usaInsumos === 'Si') {
       return "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200";
     }
     return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
   };
 
   const getConfiguracionInsumos = (usaInsumos) => {
-    if (usaInsumos === 1 || usaInsumos === 'Sí') {
+    if (usaInsumos === 1 || usaInsumos === 'Si') {
       return {
         texto: "Gestionar insumos",
         icono: <LuChefHat size={17} className="mr-2" />,
@@ -52,7 +52,7 @@ export const FilaProducto = ({ producto, onGestionarInsumos, onEditarProducto, o
 
       <td className="px-4 py-3">
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getUsaInsumosClases(producto.usa_insumos)}`}>
-          {producto.usa_insumos === 1 || producto.usa_insumos === 'Sí' ? 'Si' : 'No'}
+          {producto.usa_insumos === 1 || producto.usa_insumos === 'Si' ? 'Si' : 'No'}
         </span>
       </td>
 
@@ -60,7 +60,7 @@ export const FilaProducto = ({ producto, onGestionarInsumos, onEditarProducto, o
         <button
           onClick={() => onGestionarInsumos(producto)}
           className={`p-1.5 transition-colors cursor-pointer flex items-center font-medium ${configInsumos.clases}`}
-          title={producto.usa_insumos === 1 || producto.usa_insumos === 'Sí' ? "Modificar insumos existentes" : "Agregar sistema de insumos"}
+          title={producto.usa_insumos === 1 || producto.usa_insumos === 'Si' ? "Modificar insumos existentes" : "Agregar sistema de insumos"}
         >
           {configInsumos.icono}
           <span className="text-sm">{configInsumos.texto}</span>
