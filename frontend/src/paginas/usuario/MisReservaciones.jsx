@@ -245,7 +245,7 @@ const MisReservaciones = () => {
                         <div />
                       )}
 
-                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border ${config.color} flex-shrink-0`}>
+                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border ${config.color} shrink-0`}>
                         {config.icono}
                         {config.texto}
                       </span>
@@ -276,21 +276,21 @@ const MisReservaciones = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
                       <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
-                        <FaRegCalendarAlt className="text-amarillo text-lg flex-shrink-0" />
+                        <FaRegCalendarAlt className="text-amarillo text-lg shrink-0" />
                         <div className="min-w-0">
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Fecha</p>
                           <p className="text-sm text-gray-200 font-medium capitalize">{formatearFecha(reserva.fecha_reservacion)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
-                        <FiClock className="text-amarillo text-lg flex-shrink-0" />
+                        <FiClock className="text-amarillo text-lg shrink-0" />
                         <div className="min-w-0">
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Hora</p>
                           <p className="text-sm text-gray-200 font-medium">{reserva.hora_reservacion}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 bg-gray-800/50 border border-white/5 rounded-xl px-4 py-3">
-                        <FiUsers className="text-amarillo text-lg flex-shrink-0" />
+                        <FiUsers className="text-amarillo text-lg shrink-0" />
                         <div className="min-w-0">
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Personas</p>
                           <p className="text-sm text-gray-200 font-medium">{reserva.cantidad_personas} personas</p>
@@ -303,7 +303,7 @@ const MisReservaciones = () => {
                         <div className="h-px bg-linear-to-r from-transparent via-white/10 to-transparent my-4" />
                         <div>
                           <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <FiMapPin className="text-amarillo flex-shrink-0" />
+                            <FiMapPin className="text-amarillo shrink-0" />
                             Mesas reservadas
                           </p>
                           <div className="flex gap-3 flex-wrap">
@@ -312,7 +312,7 @@ const MisReservaciones = () => {
                                 key={mesa.numero_mesa}
                                 className="flex items-center gap-3 bg-gray-800/50 border border-white/10 rounded-xl px-4 py-2 hover:border-white/20 transition-all"
                               >
-                                <div className="w-10 h-10 bg-linear-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg flex items-center justify-center border border-yellow-500/30 flex-shrink-0">
+                                <div className="w-10 h-10 bg-linear-to-br from-yellow-500/20 to-yellow-600/20 rounded-lg flex items-center justify-center border border-yellow-500/30 shrink-0">
                                   <svg className="w-5 h-5 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <rect x="3" y="7" width="18" height="4" rx="1" />
                                     <line x1="5" y1="11" x2="5" y2="18" />

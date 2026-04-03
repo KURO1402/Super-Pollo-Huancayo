@@ -1,5 +1,6 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import { useEffect } from "react";
 import { useReservacionStore } from "../../store/useReservacionStore";
 import PasosNavegacion from "../../componentes/PasosNavegacion";
 import Paso1DatosBasicos from "../../componentes/Paso1DatosBasicos";
@@ -27,6 +28,10 @@ const NuevaReservacion = () => {
 
   const { formState: { isValid }, getValues } = methods;
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [pasoActual]);
+
   const handleAvanzarPaso1 = () => {
     const data = getValues();
     updateDatos(data);
@@ -51,7 +56,6 @@ const NuevaReservacion = () => {
   };
 
   const puedeAvanzarDesdeP1 = valores.fecha && valores.hora && valores.personas >= 1;
-
   const puedeAvanzarDesdeP2 = verificarPaso2();
 
   const capacidadActual = datos.mesas?.reduce((total, mesa) => total + mesa.capacidad, 0) || 0;
@@ -76,9 +80,7 @@ const NuevaReservacion = () => {
           
           {pasoActual === 1 && (
             <FormProvider {...methods}>
-              <div>
-                <Paso1DatosBasicos />
-              </div>
+              <Paso1DatosBasicos />
             </FormProvider>
           )}
           
@@ -153,7 +155,7 @@ const NuevaReservacion = () => {
                 methods.reset({
                   fecha: '',
                   hora: '',
-                  personas: 2,
+                  personas: 1,
                 });
               }}
               className="flex items-center justify-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105"
