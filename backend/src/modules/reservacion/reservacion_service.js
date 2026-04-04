@@ -156,7 +156,7 @@ const registrarReservacionManualService = async (datos) => {
     const { fecha, hora, cantidadPersonas, mesas, correo } = datos;
 
     if (!correo || typeof correo !== 'string' || !validarCorreo(correo)) {
-        throw crearError('Se necesita un correo para enviar el codigo de reservacion.', 400);
+        throw crearError('Se necesita un correo para enviar el código de reservación.', 400);
     }
 
     const fechaHoraReserva = `${fecha} ${hora}`;
@@ -171,7 +171,7 @@ const registrarReservacionManualService = async (datos) => {
 
     let capacidadTotal = 0;
     const mesasOcupadas = [];
-    const mesasConInfo = []; 
+    const mesasFinalesParaDB = []; 
 
     for (const mesa of mesas) {
         const mesaInfo = await obtenerMesaPorIdModel(mesa.idMesa);
@@ -181,7 +181,11 @@ const registrarReservacionManualService = async (datos) => {
         if (conflictos > 0) mesasOcupadas.push(mesa.idMesa);
 
         capacidadTotal += mesaInfo.capacidad;
-        mesasConInfo.push({ idMesa: mesa.idMesa, numeroMesa: mesaInfo.numero_mesa });
+        
+        mesasFinalesParaDB.push({ 
+            id_mesa: mesa.idMesa, 
+            numero_mesa: mesaInfo.numero_mesa 
+        });
     }
 
     if (mesasOcupadas.length > 0) {
@@ -199,15 +203,30 @@ const registrarReservacionManualService = async (datos) => {
 
     const codigoReservacion = generarCodigoReservacion();
 
-    const idReservacion = await registrarReservacionModel(fecha, hora, cantidadPersonas, null, mesas, fechaHoraReserva, codigoReservacion);
+    const idReservacion = await registrarReservacionModel(
+        fecha, 
+        hora, 
+        cantidadPersonas, 
+        null, 
+        mesasFinalesParaDB, 
+        fechaHoraReserva, 
+        codigoReservacion
+    );
 
     await registrarPagoReservacionModel(10 * mesas.length, null, idReservacion);
 
-    const info = await enviarCorreoReservacion({ correo, codigoReservacion, fecha, hora, cantidadPersonas, mesasConInfo });
+    const info = await enviarCorreoReservacion({ 
+        correo, 
+        codigoReservacion, 
+        fecha, 
+        hora, 
+        cantidadPersonas, 
+        mesas: mesasFinalesParaDB 
+    });
 
     return {
         ok: true,
-        mensaje: `Reservación registrada exitosamente y código de reserva enviado a ${info.accepted[0]}`
+        mensaje: `Reservación registrada exitosamente y código enviado a ${info.accepted[0]}`
     };
 };
 

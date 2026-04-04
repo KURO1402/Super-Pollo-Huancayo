@@ -39,7 +39,7 @@ const enviarCorreoReservacion = async (datos) => {
                 </div>
 
                 <p style='font-size: 13px; color: #999; margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; text-align: center;'>
-                    📞 ¿Dudas? Contáctanos al 123-456-789
+                    📞 ¿Dudas? Contáctanos al 947932022
                 </p>
             </div>
         `

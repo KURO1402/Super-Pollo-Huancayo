@@ -226,7 +226,7 @@ CREATE TABLE mesas_reservacion (
 CREATE TABLE pago_reservacion (
     id_pago INT AUTO_INCREMENT PRIMARY KEY,
     monto_pagado DECIMAL(5,2) NOT NULL,
-    id_transaccion VARCHAR(100) NOT NULL,
+    id_transaccion VARCHAR(100),
     fecha_pago DATETIME NOT NULL,
     estado_pago ENUM('pendiente','confirmado','fallido') NOT NULL,
     id_reservacion INT NOT NULL,
