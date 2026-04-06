@@ -184,7 +184,7 @@ const MisReservaciones = () => {
             {[
               { valor: "todas", etiqueta: "Todas", color: "bg-rojo" },
               { valor: "pendiente", etiqueta: "Pendientes", color: "bg-yellow-500" },
-              { valor: "confirmada", etiqueta: "Confirmadas", color: "bg-green-500" },
+              { valor: "completado", etiqueta: "Completadas", color: "bg-blue-500" },
               { valor: "cancelado", etiqueta: "Canceladas", color: "bg-red-500" },
             ].map(({ valor, etiqueta, color }) => (
               <button
@@ -345,7 +345,7 @@ const MisReservaciones = () => {
             <p className="text-gray-400 text-sm mb-6">
               {filtro === "todas"
                 ? "Aún no has realizado ninguna reservación"
-                : `No hay reservaciones ${filtro === "pendiente" ? "pendientes" : filtro === "confirmada" ? "confirmadas" : "canceladas"}`}
+                : `No hay reservaciones ${filtro === "pendiente" ? "pendientes" : filtro === "completado" ? "completadas" : "canceladas"}`}
             </p>
             <Link
               to="/usuario/nueva-reservacion"
