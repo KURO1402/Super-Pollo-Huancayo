@@ -6,9 +6,9 @@ import { LuDessert } from "react-icons/lu";
 
 const categorias = [
   { id: null, nombre: "Todos", icono: <FaBorderAll /> },
-  { id: 1, nombre: "Pollos", icono: <GiChickenOven /> },
-  { id: 2, nombre: "Bebidas", icono: <RiDrinks2Fill /> },
-  { id: 3, nombre: "Extras", icono: <LuSalad /> },
+  { id: 3, nombre: "Pollos", icono: <GiChickenOven /> },
+  { id: 1, nombre: "Bebidas", icono: <RiDrinks2Fill /> },
+  { id: 2, nombre: "Extras", icono: <LuSalad /> },
   { id: 4, nombre: "Postres", icono: <LuDessert /> },
 ];
 
