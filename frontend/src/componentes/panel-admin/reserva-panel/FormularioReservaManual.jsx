@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { FiLoader, FiUsers, FiClock } from "react-icons/fi";
 import { useReservacionAdminStore } from "../../../store/useReservacionAdminStore";
 
@@ -6,9 +6,9 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
   const { mesasDisponibles, cargarMesasDisponibles, limpiarMesasDisponibles, cargandoMesas } =
     useReservacionAdminStore();
 
-  const hoyStr = new Date().toISOString().split('T')[0];
+  const hoyStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-  const generarOpcionesDeHora = (fechaSeleccionada) => {
+  const generarOpcionesDeHora = useCallback((fechaSeleccionada) => {
     const opciones = [];
     const ahora = new Date();
     const limiteAnticipacion = new Date(ahora.getTime() + 2 * 60 * 60 * 1000);
@@ -28,34 +28,41 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
       });
     }
     return opciones;
-  };
+  }, [hoyStr]);
 
   const [form, setForm] = useState(() => {
-    const fechaIniciada = fechaInicial || (new Date().getHours() >= 18 ?
-      new Date(Date.now() + 86400000).toISOString().split('T')[0] : hoyStr);
+    const fechaIniciada = fechaInicial || (new Date().getHours() >= 18
+      ? new Date(Date.now() + 86400000).toISOString().split('T')[0]
+      : hoyStr);
 
     const horasDisponibles = generarOpcionesDeHora(fechaIniciada);
 
     return {
       fecha: fechaIniciada,
-      hora: horasDisponibles.length > 0 ? horasDisponibles[0] : "12:00",
+      hora: horasDisponibles[0] ?? "12:00",
       correo: '',
       cantidadPersonas: 1,
       mesasSeleccionadas: [],
     };
   });
 
-  const opcionesHora = generarOpcionesDeHora(form.fecha);
+  const opcionesHora = useMemo(
+    () => generarOpcionesDeHora(form.fecha),
+    [form.fecha, generarOpcionesDeHora]
+  );
 
   useEffect(() => {
-    if (!opcionesHora.includes(form.hora) && opcionesHora.length > 0) {
+    if (opcionesHora.length > 0 && !opcionesHora.includes(form.hora)) {
       setForm(prev => ({ ...prev, hora: opcionesHora[0] }));
     }
+  }, [form.fecha]);
+
+  useEffect(() => {
     if (form.fecha && form.hora) {
       cargarMesasDisponibles(form.fecha, form.hora);
     }
     return () => limpiarMesasDisponibles();
-  }, [form.fecha, form.hora, opcionesHora.length]);
+  }, [form.fecha, form.hora]);
 
   useEffect(() => {
     if (!mesasDisponibles.length) return;
@@ -71,14 +78,13 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
   }, [mesasDisponibles]);
 
   const manejarSubmit = () => {
-    const payload = {
+    onSubmit({
       fecha: form.fecha,
       hora: form.hora,
       correo: form.correo,
       cantidadPersonas: Number(form.cantidadPersonas),
       mesas: form.mesasSeleccionadas.map((id) => ({ idMesa: Number(id) })),
-    };
-    onSubmit(payload);
+    });
   };
 
   const inputClass = "w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none";
@@ -98,7 +104,7 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
           />
         </div>
         <div>
-          <label className={labelClass}>Hora (PM)</label>
+          <label className={labelClass}>Hora</label>
           <div className="relative">
             <select
               className={inputClass}
@@ -106,15 +112,16 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
               onChange={(e) => setForm(prev => ({ ...prev, hora: e.target.value, mesasSeleccionadas: [] }))}
             >
               {opcionesHora.map(h => (
-                <option key={h} value={h}>{h} PM</option>
+                <option key={h} value={h}>{h}</option>
               ))}
-              {opcionesHora.length === 0 && <option disabled>No hay horarios</option>}
+              {opcionesHora.length === 0 && <option disabled>No hay horarios disponibles</option>}
             </select>
             <FiClock className="absolute right-3 top-2.5 text-gray-400 pointer-events-none" />
           </div>
         </div>
       </div>
 
+      {/* resto del JSX sin cambios... */}
       <div>
         <label className={labelClass}>Correo del Cliente</label>
         <input
@@ -172,11 +179,11 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
                     }));
                   }}
                   className={`p-2 rounded-lg border text-sm transition-all relative flex flex-col items-center justify-center min-h-[60px] outline-none focus:outline-none ${estaReservada
-                      ? 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed opacity-60 pointer-events-none'
-                      : sel
-                        ? 'border-blue-600 bg-blue-600 text-white font-bold shadow-md scale-[1.02]'
-                        : 'border-gray-200 text-gray-700 bg-white hover:border-blue-400 dark:bg-gray-700 dark:text-gray-200'
-                    }`}
+                    ? 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed opacity-60 pointer-events-none'
+                    : sel
+                      ? 'border-blue-600 bg-blue-600 text-white font-bold shadow-md scale-[1.02]'
+                      : 'border-gray-200 text-gray-700 bg-white hover:border-blue-400 dark:bg-gray-700 dark:text-gray-200'
+                  }`}
                 >
                   {estaReservada && (
                     <span className="absolute top-1 right-1 text-[7px] bg-red-500 text-white px-1 rounded-sm font-black uppercase">

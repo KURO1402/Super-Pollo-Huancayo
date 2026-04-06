@@ -256,11 +256,24 @@ const confirmarReservacionService = async (idReservacion) => {
 
     const reservacionID = Number(idReservacion);
 
-    // Verificar que existe
     const existe = await contarReservacionPorIdModel(reservacionID);
     if (!existe) throw crearError('Reservación no encontrada', 404);
+    
+    const {fecha_reservacion, hora_reservacion} = await obtenerReservacionPorIdModel(reservacionID);
+    
+    const [dia, mes, anio] = fecha_reservacion.split('-');
+    const fechaISO = `${anio}-${mes}-${dia}`;
 
-    // Verificar estado
+    const fechaReserva = new Date(`${fechaISO}T${hora_reservacion}`);
+    const ahora = new Date();
+
+    const diferenciaMs = ahora - fechaReserva;
+    const diferenciaMinutos = diferenciaMs / (1000 * 60);
+
+    if (diferenciaMinutos < -15 || diferenciaMinutos > 30) {
+        throw crearError('Aún no puede confirmar esta reserva.', 400);
+    }
+
     const estado = await obtenerEstadoReservacionModel(reservacionID);
 
     if (estado === 'completado') throw crearError('La reservación ya está confirmada', 400);

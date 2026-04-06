@@ -4,6 +4,15 @@ import { useConfirmacion } from "../../../hooks/useConfirmacion";
 import { ModalConfirmacion } from "../../ui/modal/ModalConfirmacion";
 import mostrarAlerta from "../../../utilidades/toastUtilidades";
 
+const enVentanaConfirmacion = (fechaStr, horaStr) => {
+  if (!fechaStr || !horaStr) return false;
+  const [anio, mes, dia] = fechaStr.split('-').map(Number);
+  const [hora, min] = horaStr.split(':').map(Number);
+  const msReserva = new Date(anio, mes - 1, dia, hora, min, 0, 0).getTime();
+  const ahora = Date.now();
+  return ahora >= msReserva - 15 * 60 * 1000 && ahora <= msReserva + 30 * 60 * 1000;
+};
+
 const ModalGestionReserva = ({ onCerrar, onAccion }) => {
   const {
     reservacionBuscada,
@@ -54,8 +63,9 @@ const ModalGestionReserva = ({ onCerrar, onAccion }) => {
     }
   };
 
-  const yaCancelada = detalle?.estado_reservacion === 'cancelado';
+  const yaCancelada  = detalle?.estado_reservacion === 'cancelado';
   const yaConfirmada = detalle?.estado_reservacion === 'confirmado' || detalle?.estado_reservacion === 'completado';
+  const puedeConfirmar = enVentanaConfirmacion(detalle?.fecha_reservacion, detalle?.hora_reservacion);
 
   if (cargandoBusqueda) {
     return (
@@ -91,7 +101,6 @@ const ModalGestionReserva = ({ onCerrar, onAccion }) => {
         </div>
 
         <div className="flex justify-end gap-3 pt-2">
-
           {!yaCancelada && !yaConfirmada && (
             <>
               <button
@@ -100,25 +109,27 @@ const ModalGestionReserva = ({ onCerrar, onAccion }) => {
                 disabled={guardando}
                 className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors text-sm flex items-center gap-2"
               >
-                {guardando
-                  ? <FiLoader className="animate-spin w-4 h-4" />
-                  : <FiXCircle className="w-4 h-4" />
-                }
+                {guardando ? <FiLoader className="animate-spin w-4 h-4" /> : <FiXCircle className="w-4 h-4" />}
                 Cancelar Reserva
               </button>
 
-              <button
-                type="button"
-                onClick={manejarConfirmar}
-                disabled={guardando}
-                className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 transition-colors text-sm flex items-center gap-2"
-              >
-                {guardando
-                  ? <FiLoader className="animate-spin w-4 h-4" />
-                  : <FiCheckCircle className="w-4 h-4" />
-                }
-                Confirmar Reserva
-              </button>
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={manejarConfirmar}
+                  disabled={!puedeConfirmar || guardando}
+                  className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-2"
+                >
+                  {guardando ? <FiLoader className="animate-spin w-4 h-4" /> : <FiCheckCircle className="w-4 h-4" />}
+                  Confirmar Reserva
+                </button>
+                {!puedeConfirmar && (
+                  <div className="absolute bottom-full right-0 mb-2 w-52 px-3 py-2 rounded-lg bg-gray-800 text-white text-xs text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    Aún no se puede confirmar esta reserva
+                    <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-800" />
+                  </div>
+                )}
+              </div>
             </>
           )}
 
