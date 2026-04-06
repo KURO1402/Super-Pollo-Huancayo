@@ -1,16 +1,61 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FaCalendarAlt, FaClock, FaInfoCircle, FaArrowRight } from "react-icons/fa";
 import { FiUser, FiLock, FiArrowRight } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { horasDisponibles } from "../../../mocks/horaReserva";
 import { useAutenticacionStore } from "../../../store/useAutenticacionStore";
+import { useReservacionStore } from "../../../store/useReservacionStore";
+import { useNavigate } from "react-router-dom";
 
 const FormularioReserva = () => {
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("");
   const [mostrarGuarda, setMostrarGuarda] = useState(false);
   const { usuario } = useAutenticacionStore();
+  const { updateDatos } = useReservacionStore();
+  const navigate = useNavigate();
+
+  const ahora = new Date();
+  const horaActual = ahora.getHours();
+  const HORA_CIERRE = 20;
+
+  const fechaMinima = useMemo(() => {
+    const base = new Date();
+    if (horaActual >= HORA_CIERRE) {
+      base.setDate(base.getDate());
+    }
+    return base.toISOString().split("T")[0];
+  }, [horaActual]);
+
+  const horasConEstado = useMemo(() => {
+    const hoy = new Date().toISOString().split("T")[0];
+    const esHoy = fecha === hoy;
+
+    return horasDisponibles.map((h) => {
+      if (!esHoy) return { ...h, deshabilitada: false };
+
+      const [hh, mm] = h.value.split(":").map(Number);
+      const minutosHora = hh * 60 + mm;
+      const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+      const deshabilitada = minutosHora - minutosAhora < 120;
+
+      return { ...h, deshabilitada };
+    });
+  }, [fecha, ahora]);
+
+  const handleFecha = (e) => {
+    const nuevaFecha = e.target.value;
+    setFecha(nuevaFecha);
+    setHora("");
+    updateDatos({ fecha: nuevaFecha, hora: "" });
+  };
+
+  const handleHora = (e) => {
+    const nuevaHora = e.target.value;
+    setHora(nuevaHora);
+    updateDatos({ hora: nuevaHora });
+  };
 
   const handleContinuar = (e) => {
     e.preventDefault();
@@ -18,7 +63,7 @@ const FormularioReserva = () => {
       setMostrarGuarda(true);
       return;
     }
-    window.location.href = "/usuario/nueva-reservacion";
+    navigate("/usuario/nueva-reservacion");
   };
 
   return (
@@ -44,7 +89,8 @@ const FormularioReserva = () => {
                   <input
                     type="date"
                     value={fecha}
-                    onChange={(e) => setFecha(e.target.value)}
+                    min={fechaMinima}
+                    onChange={handleFecha}
                     className="w-full px-4 py-3 pl-12 bg-white rounded-lg border-none focus:ring-2 focus:ring-red-400 focus:outline-none"
                   />
                   <FaCalendarAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -58,13 +104,16 @@ const FormularioReserva = () => {
                 <div className="relative">
                   <select
                     value={hora}
-                    onChange={(e) => setHora(e.target.value)}
-                    className="w-full px-4 py-3 pl-12 bg-white rounded-lg border-none focus:ring-2 focus:ring-red-400 focus:outline-none appearance-none"
+                    onChange={handleHora}
+                    disabled={!fecha}
+                    className="w-full px-4 py-3 pl-12 bg-white rounded-lg border-none focus:ring-2 focus:ring-red-400 focus:outline-none appearance-none disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <option value="">Seleccione una hora</option>
-                    {horasDisponibles.map((hora, index) => (
-                      <option key={index} value={hora.value}>
-                        {hora.label}
+                    <option value="">
+                      {!fecha ? "Primero seleccione una fecha" : "Seleccione una hora"}
+                    </option>
+                    {horasConEstado.map((h, index) => (
+                      <option key={index} value={h.value} disabled={h.deshabilitada}>
+                        {h.label}{h.deshabilitada ? " (no disponible)" : ""}
                       </option>
                     ))}
                   </select>
@@ -75,6 +124,11 @@ const FormularioReserva = () => {
                     </svg>
                   </div>
                 </div>
+                {fecha && horasConEstado.every((h) => h.deshabilitada) && (
+                  <p className="text-white/80 text-xs mt-1.5">
+                    ⚠️ No hay horas disponibles para hoy. Por favor selecciona otro día.
+                  </p>
+                )}
               </div>
 
               <div className="bg-red-700 rounded-lg p-4">
@@ -88,7 +142,8 @@ const FormularioReserva = () => {
 
               <button
                 onClick={handleContinuar}
-                className="w-full bg-white text-red-600 font-bold py-3 md:py-4 px-6 rounded-lg hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center space-x-2 cursor-pointer"
+                disabled={!fecha || !hora}
+                className="w-full bg-white text-red-600 font-bold py-3 md:py-4 px-6 rounded-lg hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
               >
                 <span>Continuar</span>
                 <FaArrowRight />
