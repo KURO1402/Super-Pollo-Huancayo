@@ -74,13 +74,12 @@ const Paso3Confirmacion = () => {
     setProcesandoPago(true);
     try {
       const respuesta = await crearReserva();
-      if (respuesta?.sandbox_init_point) {
+      if (respuesta?.init_point) {
         const expira = Date.now() + TIEMPO_BLOQUEO * 1000;
         localStorage.setItem(STORAGE_KEY, expira.toString());
         setContador(TIEMPO_BLOQUEO);
         iniciarContador();
-        window.location.href = respuesta.sandbox_init_point;
-        //window.open(respuesta.sandbox_init_point, "_blank");
+        window.location.href = respuesta.init_point;
       } else {
         mostrarAlerta.error("No se pudo generar el enlace de pago.");
       }
