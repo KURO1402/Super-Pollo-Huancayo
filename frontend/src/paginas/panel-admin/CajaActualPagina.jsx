@@ -114,7 +114,7 @@ const CajaActualPagina = () => {
       modalIngreso.cerrar();
       mostrarAlerta.exito("Ingreso registrado con éxito");
     } catch (error) {
-      mostrarAlerta.error("Error al registrar ingreso");
+      mostrarAlerta.error(error.message || "Error al registrar ingreso");
     }
   };
 
@@ -127,7 +127,7 @@ const CajaActualPagina = () => {
       modalEgreso.cerrar();
       mostrarAlerta.exito("Egreso registrado con éxito");
     } catch (error) {
-      mostrarAlerta.error("Error al registrar egreso");
+      mostrarAlerta.error(error.message || "Error al registrar egreso");
     }
   };
 
