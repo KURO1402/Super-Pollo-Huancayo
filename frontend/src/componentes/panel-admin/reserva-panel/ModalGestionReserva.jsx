@@ -6,7 +6,7 @@ import mostrarAlerta from "../../../utilidades/toastUtilidades";
 
 const enVentanaConfirmacion = (fechaStr, horaStr) => {
   if (!fechaStr || !horaStr) return false;
-  const [anio, mes, dia] = fechaStr.split('-').map(Number);
+  const [dia, mes, anio] = fechaStr.split('-').map(Number); 
   const [hora, min] = horaStr.split(':').map(Number);
   const msReserva = new Date(anio, mes - 1, dia, hora, min, 0, 0).getTime();
   const ahora = Date.now();

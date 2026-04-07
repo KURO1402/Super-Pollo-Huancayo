@@ -325,7 +325,7 @@ const revertirInsumosVenta = async (detalles, registrarEntradaStockService, idUs
 
     for (const [idInsumo, { cantidad }] of insumosARevertir) {
         await registrarEntradaStockService(
-            { idInsumo, cantidadMovimiento: cantidad, detalleMovimiento: 'Anulación de venta' },
+            { idInsumo, cantidadMovimiento: cantidad, detalleMovimiento: 'Anulacion de venta' },
             idUsuario
         );
     }

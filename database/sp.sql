@@ -3498,7 +3498,7 @@ BEGIN
 
     COMMIT;
 
-    SELECT 'Contraseña actualizada correctamente' AS mensaje;
+    SELECT 'Clave actualizada correctamente' AS mensaje;
 END //
 
 CREATE PROCEDURE sp_actualizar_estado_usuario(
@@ -4004,7 +4004,7 @@ SELECT
     'egreso',
     NOW(),
     p_monto_revertir,
-    'Anulación de venta',
+    'Anulacion de venta',
     id_caja,
     p_id_usuario
 FROM
