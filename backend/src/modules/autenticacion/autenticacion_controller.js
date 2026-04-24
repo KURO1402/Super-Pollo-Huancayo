@@ -161,5 +161,6 @@ module.exports = {
   validarCodigoCorreoController,
   iniciarSesionUsuarioController,
   renovarAccessTokenController,
-  cerrarSesionController
+  cerrarSesionController,
+  iniciarSesionMovilController
 }

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const verificarClienteMovil = require('../../middlewares/verificar_cliente_movil');
 
 const { 
     registroUsuarioController,
@@ -17,6 +18,7 @@ router.post('/verificar-codigo', validarCodigoCorreoController);
 router.post('/login', iniciarSesionUsuarioController);
 router.post('/renovar-token', renovarAccessTokenController);
 router.post('/logout', cerrarSesionController);
-router.post('/movil/login', iniciarSesionMovilController);
+router.post('/movil/login', verificarClienteMovil, iniciarSesionMovilController);
+router.post('/movil/renovar-token', verificarClienteMovil, renovarAccessTokenController);
 
 module.exports = router;
