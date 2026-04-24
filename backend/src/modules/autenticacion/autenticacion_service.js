@@ -210,10 +210,65 @@ const renovarAccessTokenService = async (refreshToken) => {
   return nuevoAccessToken;
 };
 
+const iniciarSesionMovilService = async (datos) => {
+  if (!datos || typeof datos !== 'object') {
+    throw crearError('Se necesita correo y contraseña para iniciar sesion', 400);
+  }
+  const { email, clave } = datos;
+
+  if (!email || typeof email != 'string' || !email.trim()) {
+    throw crearError('Se necesita el email para iniciar sesion', 400);
+  }
+
+  if (!clave || typeof clave != 'string' || !clave.trim()) {
+    throw crearError('Se necesita la clave para iniciar sesión', 400);
+  }
+
+  const resultado = await seleccionarUsuarioCorreoModel(email);
+
+  if (resultado.length === 0) {
+    throw crearError('Correo o contraseña incorrecto', 401);
+  }
+
+  const usuario = resultado[0];
+  const contraseñaValida = await bcrypt.compare(clave, usuario.clave_usuario);
+
+  if (!contraseñaValida) {
+    throw crearError('Correo o contraseña incorrecto', 401);
+  }
+
+  const payload = {
+    id_usuario: usuario.id_usuario,
+    nombre_usuario: usuario.nombre_usuario,
+    apellido_usuario: usuario.apellido_usuario,
+    id_rol: usuario.id_rol,
+    nombre_rol: usuario.nombre_rol
+  };
+
+  const accessToken = jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_ACCESS_EXPIRATION || '15m' }
+  );
+
+  const refreshToken = jwt.sign(
+    payload,
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_MOBILE_REFRESH_EXPIRATION || '30d' }
+  );
+
+  return {
+    usuario: payload,
+    accessToken,
+    refreshToken 
+  };
+};
+
 module.exports = {
   registroUsuarioService,
   registrarVerificacionCorreoService,
   validarCodigoCorreoService,
   iniciarSesionUsuarioService,
-  renovarAccessTokenService
+  renovarAccessTokenService,
+  iniciarSesionMovilService
 }

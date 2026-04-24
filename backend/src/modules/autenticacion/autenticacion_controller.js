@@ -4,7 +4,8 @@ const {
   registrarVerificacionCorreoService,
   validarCodigoCorreoService,
   iniciarSesionUsuarioService,
-  renovarAccessTokenService
+  renovarAccessTokenService,
+  iniciarSesionMovilService
 } = require('./autenticacion_service');
 
 const registroUsuarioController = async (req, res) => {
@@ -131,6 +132,27 @@ const cerrarSesionController = async (req, res) => {
     } catch (err) {
         return res.status(500).json({ ok: false, mensaje: 'Error al cerrar sesión' });
     }
+};
+
+const iniciarSesionMovilController = async (req, res) => {
+  try {
+    const { usuario, accessToken, refreshToken } = await iniciarSesionMovilService(req.body);
+
+    return res.status(200).json({
+      ok: true,
+      mensaje: 'Inicio de sesión exitoso',
+      usuario,
+      accessToken,
+      refreshToken 
+    });
+
+  } catch (err) {
+    const statusCode = err.status || 500;
+    return res.status(statusCode).json({
+      ok: false,
+      mensaje: err.message || 'Error interno del servidor',
+    });
+  }
 };
 
 module.exports = {

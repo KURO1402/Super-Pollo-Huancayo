@@ -7,7 +7,8 @@ const {
     validarCodigoCorreoController,
     iniciarSesionUsuarioController,
     renovarAccessTokenController,
-    cerrarSesionController
+    cerrarSesionController,
+    iniciarSesionMovilController
  } = require('./autenticacion_controller');
 
 router.post('/registro', registroUsuarioController);
@@ -16,5 +17,6 @@ router.post('/verificar-codigo', validarCodigoCorreoController);
 router.post('/login', iniciarSesionUsuarioController);
 router.post('/renovar-token', renovarAccessTokenController);
 router.post('/logout', cerrarSesionController);
+router.post('/movil/login', iniciarSesionMovilController);
 
 module.exports = router;
