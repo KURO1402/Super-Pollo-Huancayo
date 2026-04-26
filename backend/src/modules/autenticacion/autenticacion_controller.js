@@ -121,6 +121,24 @@ const renovarAccessTokenController = async (req, res) => {
   }
 };
 
+const renovarAccessTokenMovilController = async (req, res) => {
+  try {
+    const { refreshToken } = req.body; 
+    console.log(refreshToken)
+
+    if (!refreshToken) {
+      return res.status(401).json({ ok: false, mensaje: 'No hay refresh token' });
+    }
+
+    const nuevoAccessToken = await renovarAccessTokenService(refreshToken);
+
+    return res.status(200).json({ ok: true, accessToken: nuevoAccessToken });
+
+  } catch (err) {
+    return res.status(403).json({ ok: false, mensaje: 'Refresh token inválido o expirado' });
+  }
+};
+
 const cerrarSesionController = async (req, res) => {
     try {
         res.clearCookie('refreshToken', {
@@ -161,6 +179,7 @@ module.exports = {
   validarCodigoCorreoController,
   iniciarSesionUsuarioController,
   renovarAccessTokenController,
+  renovarAccessTokenMovilController,
   cerrarSesionController,
   iniciarSesionMovilController
 }

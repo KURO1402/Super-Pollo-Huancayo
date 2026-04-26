@@ -8,6 +8,7 @@ const {
     validarCodigoCorreoController,
     iniciarSesionUsuarioController,
     renovarAccessTokenController,
+    renovarAccessTokenMovilController,
     cerrarSesionController,
     iniciarSesionMovilController
  } = require('./autenticacion_controller');
@@ -19,6 +20,6 @@ router.post('/login', iniciarSesionUsuarioController);
 router.post('/renovar-token', renovarAccessTokenController);
 router.post('/logout', cerrarSesionController);
 router.post('/movil/login', verificarClienteMovil, iniciarSesionMovilController);
-router.post('/movil/renovar-token', verificarClienteMovil, renovarAccessTokenController);
+router.post('/movil/renovar-token', verificarClienteMovil, renovarAccessTokenMovilController);
 
 module.exports = router;
