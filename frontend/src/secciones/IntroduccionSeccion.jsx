@@ -37,7 +37,7 @@ const IntroduccionSeccion = () => {
             LOS MEJORES
           </h2>
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
-            POLLOS A LA <span className="text-rojo">BRASASSS</span>
+            POLLOS A LA <span className="text-rojo">BRASA</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-lg mx-auto lg:mx-0">
             Disfruta del auténtico sabor de la cocina peruana con nuestro pollo a la brasa, preparado con las mejores especias y técnicas tradicionales.
