@@ -1,0 +1,49 @@
+services:
+  mysql_db:
+    image: mysql:8
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 8519
+      MYSQL_DATABASE: super_pollo_hyo
+      TZ: America/Lima
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - appnet
+
+  backend:
+    build: ./backend
+    container_name: backend_app
+    restart: always
+    depends_on:
+      - mysql_db
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3001:3001"
+    environment:
+      TZ: America/Lima
+    networks:
+      - appnet
+
+  frontend:
+    build: ./frontend
+    container_name: frontend_app
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - appnet
+
+volumes:
+  db_data:
+
+networks:
+  appnet:
+    driver: bridge
