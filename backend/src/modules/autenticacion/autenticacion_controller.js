@@ -4,7 +4,8 @@ const {
   registrarVerificacionCorreoService,
   validarCodigoCorreoService,
   iniciarSesionUsuarioService,
-  renovarAccessTokenService
+  renovarAccessTokenService,
+  iniciarSesionMovilService
 } = require('./autenticacion_service');
 
 const registroUsuarioController = async (req, res) => {
@@ -120,6 +121,24 @@ const renovarAccessTokenController = async (req, res) => {
   }
 };
 
+const renovarAccessTokenMovilController = async (req, res) => {
+  try {
+    const { refreshToken } = req.body; 
+    console.log(refreshToken)
+
+    if (!refreshToken) {
+      return res.status(401).json({ ok: false, mensaje: 'No hay refresh token' });
+    }
+
+    const nuevoAccessToken = await renovarAccessTokenService(refreshToken);
+
+    return res.status(200).json({ ok: true, accessToken: nuevoAccessToken });
+
+  } catch (err) {
+    return res.status(403).json({ ok: false, mensaje: 'Refresh token inválido o expirado' });
+  }
+};
+
 const cerrarSesionController = async (req, res) => {
     try {
         res.clearCookie('refreshToken', {
@@ -133,11 +152,34 @@ const cerrarSesionController = async (req, res) => {
     }
 };
 
+const iniciarSesionMovilController = async (req, res) => {
+  try {
+    const { usuario, accessToken, refreshToken } = await iniciarSesionMovilService(req.body);
+
+    return res.status(200).json({
+      ok: true,
+      mensaje: 'Inicio de sesión exitoso',
+      usuario,
+      accessToken,
+      refreshToken 
+    });
+
+  } catch (err) {
+    const statusCode = err.status || 500;
+    return res.status(statusCode).json({
+      ok: false,
+      mensaje: err.message || 'Error interno del servidor',
+    });
+  }
+};
+
 module.exports = {
   registroUsuarioController,
   registrarVerificacionCorreoController,
   validarCodigoCorreoController,
   iniciarSesionUsuarioController,
   renovarAccessTokenController,
-  cerrarSesionController
+  renovarAccessTokenMovilController,
+  cerrarSesionController,
+  iniciarSesionMovilController
 }

@@ -8,7 +8,10 @@ const autenticacionToken = (req, res, next) => {
   }
   jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
     if (err) {
-      return res.status(403).json({ok: false, message: 'Token inválido o expirado' });
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({ ok: false, message: 'Token expirado' });
+      }
+      return res.status(403).json({ ok: false, message: 'Token inválido o expirado' });
     }
     req.usuario = usuario;
     next();
@@ -20,7 +23,7 @@ const verificarRoles = (...rolesPermitidos) => {
     const { id_rol } = req.usuario;
 
     if (!rolesPermitidos.includes(id_rol)) {
-      return res.status(403).json({ok: false, message: 'Acceso denegado. Rol no autorizado.' });
+      return res.status(403).json({ ok: false, message: 'Acceso denegado. Rol no autorizado.' });
     }
 
     next();
