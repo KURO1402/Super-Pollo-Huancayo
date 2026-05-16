@@ -20,6 +20,6 @@ jobs:
             cd /opt/miapp
             git pull origin main
             docker compose up --build -d
-          env:
-            BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
-            FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
