@@ -1,6 +1,5 @@
 USE super_pollo_hyo;
 
--- Procedimientos de categorias de productos
 DROP PROCEDURE IF EXISTS sp_insertar_categoria_producto;
 DROP PROCEDURE IF EXISTS sp_contar_categoria_por_nombre;
 DROP PROCEDURE IF EXISTS sp_actualizar_categoria_producto;
@@ -10,8 +9,6 @@ DROP PROCEDURE IF EXISTS sp_eliminar_categoria_producto;
 DROP PROCEDURE IF EXISTS sp_contar_productos_por_categoria;
 DROP PROCEDURE IF EXISTS sp_listar_categorias_producto;
 DROP PROCEDURE IF EXISTS sp_obtener_categoria_producto_por_id;
-
--- Procedimientos para tipo de documento
 DROP PROCEDURE IF EXISTS sp_insertar_tipo_documento;
 DROP PROCEDURE IF EXISTS sp_contar_tipo_documento_por_nombre;
 DROP PROCEDURE IF EXISTS sp_contar_tipo_documento_por_id;
@@ -20,7 +17,6 @@ DROP PROCEDURE IF EXISTS sp_actualizar_tipo_documento;
 DROP PROCEDURE IF EXISTS sp_eliminar_tipo_documento;
 DROP PROCEDURE IF EXISTS sp_listar_tipos_documento;
 DROP PROCEDURE IF EXISTS sp_obtener_tipo_documento_por_id;
--- Procedimientos para medios de pago
 DROP PROCEDURE IF EXISTS sp_insertar_medio_pago;
 DROP PROCEDURE IF EXISTS sp_contar_medio_pago_por_nombre;
 DROP PROCEDURE IF EXISTS sp_actualizar_medio_pago;
@@ -29,7 +25,6 @@ DROP PROCEDURE IF EXISTS sp_contar_medio_pago_nombre_excluyendo_id;
 DROP PROCEDURE IF EXISTS sp_eliminar_medio_pago;
 DROP PROCEDURE IF EXISTS sp_listar_medios_pago;
 DROP PROCEDURE IF EXISTS sp_obtener_medio_pago_por_id;
--- Procedimientos para tipo de comprobante
 DROP PROCEDURE IF EXISTS sp_contar_tipo_comprobante_por_id;
 DROP PROCEDURE IF EXISTS sp_obtener_tipo_comprobante_por_id;
 DROP PROCEDURE IF EXISTS sp_actualizar_correlativo_tipo_comprobante;

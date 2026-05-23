@@ -3,43 +3,45 @@ const { obtenerProductoIdModel } = require('../inventario/productos/producto_mod
 const pusher = require('../../config/pusher');
 
 const {
-  obtenerMesasPedidoModel,
-  insertarPedidoCompletoModel,
-  listarPedidosModel,
-  listarMesasPorPedidoModel,
-  listarDetallePorPedidoModel,
-  validarMesaDisponibleModel,
-  obtenerEstadoPedidoModel,
-  obtenerDetallePedidoModel,
-  obtenerMesasDeUnPedidoModel
-} = require('./pedidos_model')
+    obtenerMesasPedidoModel,
+    insertarPedidoCompletoModel,
+    listarPedidosModel,
+    listarMesasPorPedidoModel,
+    listarDetallePorPedidoModel,
+    validarMesaDisponibleModel,
+    obtenerEstadoPedidoModel,
+    obtenerDetallePedidoModel,
+    obtenerMesasDeUnPedidoModel,
+    editarPedidoCompletoModel,
+    cancelarPedidoModel,
+} = require('./pedidos_model');
 
 const obtenerMesasPedidoService = async (fecha, hora) => {
 
-  if (!fecha || typeof fecha !== 'string') {
-    throw crearError('Se necesita una fecha válida.', 400);
-  }
+    if (!fecha || typeof fecha !== 'string') {
+        throw crearError('Se necesita una fecha válida.', 400);
+    }
 
-  if (!hora || typeof hora !== 'string') {
-    throw crearError('Se necesita una hora válida.', 400);
-  }
+    if (!hora || typeof hora !== 'string') {
+        throw crearError('Se necesita una hora válida.', 400);
+    }
 
-  const fechaHora = `${fecha} ${hora}:00`;
+    const fechaHora = `${fecha} ${hora}:00`;
 
-  if (isNaN(Date.parse(fechaHora))) {
-    throw crearError('La fecha y hora proporcionadas no son válidas.', 400);
-  }
+    if (isNaN(Date.parse(fechaHora))) {
+        throw crearError('La fecha y hora proporcionadas no son válidas.', 400);
+    }
 
-  const mesas = await obtenerMesasPedidoModel(fechaHora);
+    const mesas = await obtenerMesasPedidoModel(fechaHora);
 
-  if (mesas.length === 0) {
-    throw crearError('No se encontraron mesas disponibles.', 404);
-  }
+    if (mesas.length === 0) {
+        throw crearError('No se encontraron mesas disponibles.', 404);
+    }
 
-  return {
-    ok: true,
-    mesas
-  }
+    return {
+        ok: true,
+        mesas
+    };
 };
 
 const insertarPedidoService = async (datos) => {
@@ -100,14 +102,11 @@ const insertarPedidoService = async (datos) => {
     // Insertar pedido en BD
     const resultado = await insertarPedidoCompletoModel(precio_precuenta, idsMesas, detalles);
 
-    // ==========================================
-    // EMITIR EVENTO A PUSHER
-    // ==========================================
+    // Emitir evento a Pusher
     try {
-        // Generar texto de mesas (Ej: "mesa 1 y 7" o "mesas 6, 1 y 3")
         const numerosDesMesas = idsMesas.map(id => id);
         let textMesas = '';
-        
+
         if (numerosDesMesas.length === 1) {
             textMesas = `mesa ${numerosDesMesas[0]}`;
         } else if (numerosDesMesas.length === 2) {
@@ -117,7 +116,6 @@ const insertarPedidoService = async (datos) => {
             textMesas = `mesas ${todasMenos} y ${numerosDesMesas[numerosDesMesas.length - 1]}`;
         }
 
-        // Crear payload para Pusher
         const payloadPusher = {
             tipo: 'agregar',
             id_pedido: resultado.id_pedido,
@@ -126,16 +124,13 @@ const insertarPedidoService = async (datos) => {
             timestamp: new Date().toISOString()
         };
 
-        // Enviar evento a Pusher (sin esperar respuesta - es async)
         pusher.trigger('pedidos', 'pedido-creado', payloadPusher)
             .catch(err => {
                 console.error('Error al emitir evento a Pusher:', err.message);
-                // No relanzamos el error para que el pedido se cree igual
             });
 
     } catch (err) {
         console.error('Error en emisión de Pusher:', err.message);
-        // No relanzamos el error para que el pedido se cree igual
     }
 
     return {
@@ -189,38 +184,198 @@ const listarPedidosService = async (fecha, hora) => {
 const obtenerPedidoCompletoService = async (idPedido) => {
 
     if (!idPedido || isNaN(idPedido)) {
-      throw crearError('Se necesita especificar un pedido válido.', 400);
+        throw crearError('Se necesita especificar un pedido válido.', 400);
     }
-  
+
     const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
-  
+
     if (!estadoPedido || estadoPedido.length === 0) {
-      throw crearError('No se encontró el pedido.', 404);
+        throw crearError('No se encontró el pedido.', 404);
     }
-  
+
     const detallePedido = await obtenerDetallePedidoModel(idPedido);
     const mesasPedido = await obtenerMesasDeUnPedidoModel(idPedido);
-  
+
     return {
-      ok: true,
-      id_pedido: estadoPedido.id_pedido,
-      estado_pedido: estadoPedido.estado_pedido,
-      detalle: detallePedido.map(item => ({
-        id_detalle_pedido: item.id_detalle_pedido,
-        id_producto: item.id_producto,
-        nombre_producto: item.nombre_producto,
-        cantidad_pedido: item.cantidad_pedido
-      })),
-      mesas: mesasPedido.map(item => ({
-        id_mesa: item.id_mesa,
-        numero_mesa: item.numero_mesa
-      }))
+        ok: true,
+        id_pedido: estadoPedido.id_pedido,
+        estado_pedido: estadoPedido.estado_pedido,
+        detalle: detallePedido.map(item => ({
+            id_detalle_pedido: item.id_detalle_pedido,
+            id_producto: item.id_producto,
+            nombre_producto: item.nombre_producto,
+            cantidad_pedido: item.cantidad_pedido
+        })),
+        mesas: mesasPedido.map(item => ({
+            id_mesa: item.id_mesa,
+            numero_mesa: item.numero_mesa
+        }))
     };
-  };
+};
+
+const editarPedidoService = async (idPedido, datos) => {
+
+    if (!idPedido || isNaN(idPedido)) {
+        throw crearError('Se necesita especificar un pedido válido.', 400);
+    }
+
+    if (!datos || typeof datos !== 'object') {
+        throw crearError('Se necesitan datos para editar el pedido.', 400);
+    }
+
+    const { mesas, productos } = datos;
+
+    if (!mesas || !Array.isArray(mesas) || mesas.length === 0) {
+        throw crearError('Se necesita al menos una mesa.', 400);
+    }
+
+    if (!productos || !Array.isArray(productos) || productos.length === 0) {
+        throw crearError('Se necesita al menos un producto.', 400);
+    }
+
+    // Verificar que el pedido existe y está en estado pendiente
+    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+
+    if (!estadoPedido || estadoPedido.length === 0) {
+        throw crearError('No se encontró el pedido.', 404);
+    }
+
+    if (estadoPedido.estado_pedido !== 'pendiente') {
+        throw crearError(`No se puede editar un pedido en estado "${estadoPedido.estado_pedido}". Solo se permiten pedidos pendientes.`, 409);
+    }
+
+    // Obtener mesas actuales del pedido para no revalidarlas como ocupadas
+    const mesasActuales = await obtenerMesasDeUnPedidoModel(idPedido);
+    const idsMesasActuales = new Set(mesasActuales.map((m) => m.id_mesa));
+
+    // Validar disponibilidad solo de mesas nuevas (las que no pertenecen ya al pedido)
+    const ahora = new Date();
+
+    for (const item of mesas) {
+        if (!item.idMesa) {
+            throw crearError('Cada mesa debe tener un idMesa válido.', 400);
+        }
+
+        if (!idsMesasActuales.has(item.idMesa)) {
+            const disponible = await validarMesaDisponibleModel(item.idMesa, ahora);
+            if (!disponible) {
+                throw crearError(`La mesa ${item.idMesa} no está disponible.`, 409);
+            }
+        }
+    }
+
+    // Calcular nuevo precio total
+    let precio_precuenta = 0;
+
+    for (const item of productos) {
+        if (!item.idProducto || !item.cantidad || item.cantidad <= 0) {
+            throw crearError('Se necesita un producto valido y cantidad válida.', 400);
+        }
+
+        const producto = await obtenerProductoIdModel(item.idProducto);
+
+        if (!producto) {
+            throw crearError('Producto especificado no valido', 404);
+        }
+
+        precio_precuenta += producto.precio_producto * item.cantidad;
+    }
+
+    const idsMesas = mesas.map((m) => m.idMesa);
+
+    const detalles = productos.map((p) => ({
+        id_producto: p.idProducto,
+        cantidad: p.cantidad,
+    }));
+
+    await editarPedidoCompletoModel(idPedido, precio_precuenta, idsMesas, detalles);
+
+    // Emitir evento a Pusher
+    try {
+        let textMesas = '';
+
+        if (idsMesas.length === 1) {
+            textMesas = `mesa ${idsMesas[0]}`;
+        } else if (idsMesas.length === 2) {
+            textMesas = `mesas ${idsMesas[0]} y ${idsMesas[1]}`;
+        } else {
+            const todasMenos = idsMesas.slice(0, -1).join(', ');
+            textMesas = `mesas ${todasMenos} y ${idsMesas[idsMesas.length - 1]}`;
+        }
+
+        const payloadPusher = {
+            tipo: 'editar',
+            id_pedido: Number(idPedido),
+            mesas: idsMesas,
+            titulo: `Se editó el pedido para la ${textMesas}`,
+            timestamp: new Date().toISOString()
+        };
+
+        pusher.trigger('pedidos', 'pedido-editado', payloadPusher)
+            .catch(err => {
+                console.error('Error al emitir evento a Pusher:', err.message);
+            });
+
+    } catch (err) {
+        console.error('Error en emisión de Pusher:', err.message);
+    }
+
+    return {
+        ok: true,
+        mensaje: 'Pedido actualizado exitosamente',
+        id_pedido: Number(idPedido),
+    };
+};
+
+const cancelarPedidoService = async (idPedido) => {
+
+    if (!idPedido || isNaN(idPedido)) {
+        throw crearError('Se necesita especificar un pedido válido.', 400);
+    }
+
+    // Verificar que el pedido existe y está en estado pendiente
+    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+
+    if (!estadoPedido || estadoPedido.length === 0) {
+        throw crearError('No se encontró el pedido.', 404);
+    }
+
+    if (estadoPedido.estado_pedido !== 'pendiente') {
+        throw crearError(`No se puede cancelar un pedido en estado "${estadoPedido.estado_pedido}". Solo se permiten pedidos pendientes.`, 409);
+    }
+
+    await cancelarPedidoModel(idPedido);
+
+    // Emitir evento a Pusher
+    try {
+        const payloadPusher = {
+            tipo: 'cancelar',
+            id_pedido: Number(idPedido),
+            titulo: `Se canceló el pedido #${idPedido}`,
+            timestamp: new Date().toISOString()
+        };
+
+        pusher.trigger('pedidos', 'pedido-cancelado', payloadPusher)
+            .catch(err => {
+                console.error('Error al emitir evento a Pusher:', err.message);
+            });
+
+    } catch (err) {
+        console.error('Error en emisión de Pusher:', err.message);
+    }
+
+    return {
+        ok: true,
+        mensaje: 'Pedido cancelado exitosamente',
+        id_pedido: Number(idPedido),
+    };
+};
 
 module.exports = {
-  obtenerMesasPedidoService,
-  insertarPedidoService,
-  listarPedidosService,
-  obtenerPedidoCompletoService
-}
+    obtenerMesasPedidoService,
+    insertarPedidoService,
+    listarPedidosService,
+    obtenerPedidoCompletoService,
+    editarPedidoService,
+    cancelarPedidoService,
+};

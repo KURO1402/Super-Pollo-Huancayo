@@ -40,7 +40,7 @@ const authLimiter = rateLimit({
 
 
 const corsOptions = {
-  origin: [process.env.CLIENT_URL, 'https://superpollohyo.com', 'https://www.superpollohyo.com', 'http://localhost:60765'],
+  origin: [process.env.CLIENT_URL, 'https://superpollohyo.com', 'https://www.superpollohyo.com', 'http://localhost:50172'],
   credentials: true,
 };
 app.use(cors(corsOptions));

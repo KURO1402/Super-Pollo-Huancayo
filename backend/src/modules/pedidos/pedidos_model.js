@@ -20,21 +20,21 @@ const insertarPedidoCompletoModel = async (precio_precuenta, mesas, detalles) =>
         await conexion.beginTransaction();
 
         const [[pedido]] = await conexion.execute(
-            'CALL sp_insertar_pedido(?)', 
+            'CALL sp_insertar_pedido(?)',
             [precio_precuenta]
         );
         const id_pedido = pedido[0].id_pedido;
 
         for (const id_mesa of mesas) {
             await conexion.execute(
-                'CALL sp_insertar_mesa_pedido(?, ?)', 
+                'CALL sp_insertar_mesa_pedido(?, ?)',
                 [id_mesa, id_pedido]
             );
         }
 
         for (const detalle of detalles) {
             await conexion.execute(
-                'CALL sp_insertar_detalle_pedido(?, ?, ?)', 
+                'CALL sp_insertar_detalle_pedido(?, ?, ?)',
                 [id_pedido, detalle.id_producto, detalle.cantidad]
             );
         }
@@ -94,7 +94,7 @@ const validarMesaDisponibleModel = async (idMesa, fechaHora) => {
     try {
         conexion = await pool.getConnection();
         const [rows] = await conexion.execute(
-            'CALL sp_validar_mesa_disponible(?, ?)', 
+            'CALL sp_validar_mesa_disponible(?, ?)',
             [idMesa, fechaHora]
         );
         return rows[0][0].ocupada === 0;
@@ -118,7 +118,6 @@ const obtenerEstadoPedidoModel = async (idPedido) => {
     }
 };
 
-
 const obtenerDetallePedidoModel = async (idPedido) => {
     let conexion;
     try {
@@ -131,7 +130,6 @@ const obtenerDetallePedidoModel = async (idPedido) => {
         if (conexion) conexion.release();
     }
 };
-
 
 const obtenerMesasDeUnPedidoModel = async (idPedido) => {
     let conexion;
@@ -146,14 +144,71 @@ const obtenerMesasDeUnPedidoModel = async (idPedido) => {
     }
 };
 
+// Edición completa — transacción necesaria porque toca mesas_pedido, detalle_pedido y mesas
+const editarPedidoCompletoModel = async (idPedido, precio_precuenta, nuevasMesas, nuevosDetalles) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        await conexion.beginTransaction();
+
+        // Liberar mesas actuales y limpiar relaciones anteriores
+        await conexion.execute('CALL sp_limpiar_pedido_para_edicion(?)', [idPedido]);
+
+        // Insertar nuevas mesas (el SP también marca estado_local = 'ocupado')
+        for (const id_mesa of nuevasMesas) {
+            await conexion.execute('CALL sp_insertar_mesa_pedido(?, ?)', [id_mesa, idPedido]);
+        }
+
+        // Insertar nuevos detalles
+        for (const detalle of nuevosDetalles) {
+            await conexion.execute(
+                'CALL sp_insertar_detalle_pedido(?, ?, ?)',
+                [idPedido, detalle.id_producto, detalle.cantidad]
+            );
+        }
+
+        // Actualizar precio recalculado
+        await conexion.execute('CALL sp_actualizar_precio_pedido(?, ?)', [idPedido, precio_precuenta]);
+
+        await conexion.commit();
+
+    } catch (err) {
+        if (conexion) await conexion.rollback();
+        throw new Error('Error al editar el pedido en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+// Cancelación — transacción necesaria porque toca pedido_mesa y mesas
+const cancelarPedidoModel = async (idPedido) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        await conexion.beginTransaction();
+
+        await conexion.execute('CALL sp_cancelar_pedido(?)', [idPedido]);
+
+        await conexion.commit();
+
+    } catch (err) {
+        if (conexion) await conexion.rollback();
+        throw new Error('Error al cancelar el pedido en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
-  obtenerMesasPedidoModel,
-  insertarPedidoCompletoModel,
-  listarPedidosModel,
-  listarMesasPorPedidoModel,
-  listarDetallePorPedidoModel,
-  validarMesaDisponibleModel,
-  obtenerEstadoPedidoModel,
-  obtenerDetallePedidoModel,
-  obtenerMesasDeUnPedidoModel
-}
+    obtenerMesasPedidoModel,
+    insertarPedidoCompletoModel,
+    listarPedidosModel,
+    listarMesasPorPedidoModel,
+    listarDetallePorPedidoModel,
+    validarMesaDisponibleModel,
+    obtenerEstadoPedidoModel,
+    obtenerDetallePedidoModel,
+    obtenerMesasDeUnPedidoModel,
+    editarPedidoCompletoModel,
+    cancelarPedidoModel,
+};
