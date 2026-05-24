@@ -21,6 +21,7 @@ import EstructuraBaseAdmin from "../layouts/panel-admin/EstructuraBaseAdmin";
 import PanelControlPagina from "../paginas/panel-admin/PanelControlPagina";
 
 import GenerarVentaPagina from "../paginas/panel-admin/GenerarVentaPagina";
+import GestionPedidosPagina from "../paginas/panel-admin/GestionPedidosPagina";
 import RegistroVentasPagina from "../paginas/panel-admin/RegistroVentasPagina";
 
 import GestionProductosPagina from "../paginas/panel-admin/GestionProductosPagina";
@@ -93,6 +94,7 @@ const AppRutas = () => {
                 children: [
                     { index: true, element: <PanelControlPagina /> },
                     { path: 'generar-venta', element: <GenerarVentaPagina/> },
+                    { path: 'gestion-pedidos', element: <GestionPedidosPagina/> },
                     { path: 'registro-ventas', element: <RegistroVentasPagina/> },
                     { path: 'stock-insumos', element: <StockInsumosPagina/> },
                     { path: 'historial-entradas', element: <HistorialEntradasPagina/> },
