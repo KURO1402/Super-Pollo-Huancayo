@@ -237,6 +237,7 @@ CREATE TABLE ventas (
     id_venta INT AUTO_INCREMENT PRIMARY KEY,
     numero_documento_cliente VARCHAR(12) NOT NULL,
     id_tipo_documento INT NOT NULL,
+    nombre_cliente VARCHAR(250),
     porcentaje_igv DECIMAL(5,2),
     total_gravada DECIMAL(10,2),
     total_igv DECIMAL(10,2),
@@ -303,7 +304,7 @@ CREATE TABLE detalle_ventas (
 CREATE TABLE pedido_mesa (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
-    estado_pedido ENUM('pendiente','completado') DEFAULT 'pendiente',
+    estado_pedido ENUM('pendiente','completado','cancelado') DEFAULT 'pendiente',
     precio_precuenta DECIMAL(6,2)
 );
 

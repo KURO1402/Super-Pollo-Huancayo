@@ -3595,6 +3595,7 @@ CREATE PROCEDURE sp_generar_venta(
     -- Venta
     IN p_numero_documento_cliente VARCHAR(12),
     IN p_id_tipo_documento INT,
+    IN p_nombre_cliente VARCHAR(255),
     IN p_porcentaje_igv DECIMAL(5,2),
     IN p_total_gravada DECIMAL(10,2),
     IN p_total_igv DECIMAL(10,2),
@@ -3647,10 +3648,10 @@ BEGIN
 
     -- 2. Insertar venta
     INSERT INTO ventas (
-        numero_documento_cliente, id_tipo_documento, porcentaje_igv,
+        numero_documento_cliente, id_tipo_documento, nombre_cliente, porcentaje_igv,
         total_gravada, total_igv, total_venta, id_medio_pago
     ) VALUES (
-        p_numero_documento_cliente, p_id_tipo_documento, p_porcentaje_igv,
+        p_numero_documento_cliente, p_id_tipo_documento, p_nombre_cliente, p_porcentaje_igv,
         p_total_gravada, p_total_igv, p_total_venta, p_id_medio_pago
     );
     SET v_id_venta = LAST_INSERT_ID();

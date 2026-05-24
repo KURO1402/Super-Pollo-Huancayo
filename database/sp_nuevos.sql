@@ -3,6 +3,9 @@ USE super_pollo_hyo;
 DROP PROCEDURE IF EXISTS sp_limpiar_pedido_para_edicion;
 DROP PROCEDURE IF EXISTS sp_actualizar_precio_pedido;
 DROP PROCEDURE IF EXISTS sp_cancelar_pedido
+DROP PROCEDURE IF EXISTS sp_completar_pedido;
+DROP PROCEDURE IF EXISTS sp_obtener_cabecera_pedido;
+DROP PROCEDURE IF EXISTS sp_obtener_productos_pedido;
 
 DELIMITER //
 
@@ -50,6 +53,23 @@ BEGIN
     -- Actualizar estado del pedido
     UPDATE pedido_mesa
     SET estado_pedido = 'cancelado'
+    WHERE id_pedido = p_id_pedido;
+
+    -- Liberar mesas asociadas
+    UPDATE mesas
+    SET estado_local = 'disponible'
+    WHERE id_mesa IN (
+        SELECT id_mesa FROM mesas_pedido WHERE id_pedido = p_id_pedido
+    );
+END //
+
+CREATE PROCEDURE sp_completar_pedido(
+    IN p_id_pedido INT
+)
+BEGIN
+    -- Actualizar estado del pedido
+    UPDATE pedido_mesa
+    SET estado_pedido = 'completado'
     WHERE id_pedido = p_id_pedido;
 
     -- Liberar mesas asociadas

@@ -199,6 +199,24 @@ const cancelarPedidoModel = async (idPedido) => {
     }
 };
 
+const completarPedidoModel = async (idPedido) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        await conexion.beginTransaction();
+
+        await conexion.execute('CALL sp_completar_pedido(?)', [idPedido]);
+
+        await conexion.commit();
+
+    } catch (err) {
+        if (conexion) await conexion.rollback();
+        throw new Error('Error al completar el pedido en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 module.exports = {
     obtenerMesasPedidoModel,
     insertarPedidoCompletoModel,
@@ -211,4 +229,5 @@ module.exports = {
     obtenerMesasDeUnPedidoModel,
     editarPedidoCompletoModel,
     cancelarPedidoModel,
+    completarPedidoModel
 };

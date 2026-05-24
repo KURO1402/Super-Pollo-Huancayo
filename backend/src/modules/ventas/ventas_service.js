@@ -73,6 +73,7 @@ const generarVentaService = async (datos, idUsuario) => {
         const resultado = await insertarVentaModel({
             numeroDocumentoCliente: cliente.numDoc,
             idTipoDocumento: cliente.idTipoDoc,
+            cliente: cliente.denominacionCliente,
             porcentajeIgv: 18,
             totalGravada: datosParaComprobante.mtoOperGravadas,
             totalIgv: datosParaComprobante.totalIgv,

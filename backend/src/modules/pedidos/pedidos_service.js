@@ -14,6 +14,7 @@ const {
     obtenerMesasDeUnPedidoModel,
     editarPedidoCompletoModel,
     cancelarPedidoModel,
+    completarPedidoModel,
 } = require('./pedidos_model');
 
 const obtenerMesasPedidoService = async (fecha, hora) => {
@@ -371,6 +372,49 @@ const cancelarPedidoService = async (idPedido) => {
     };
 };
 
+const completarPedidoService = async () => {
+    if (!idPedido || isNaN(idPedido)) {
+        throw crearError('Se necesita especificar un pedido válido.', 400);
+    }
+
+    // Verificar que el pedido existe y está en estado pendiente
+    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+
+    if (!estadoPedido || estadoPedido.length === 0) {
+        throw crearError('No se encontró el pedido.', 404);
+    }
+
+    if (estadoPedido.estado_pedido !== 'pendiente') {
+        throw crearError(`No se puede completar un pedido en estado "${estadoPedido.estado_pedido}". Solo se permiten pedidos pendientes.`, 409);
+    }
+
+    await completarPedidoModel(idPedido);
+
+    // Emitir evento a Pusher
+    try {
+        const payloadPusher = {
+            tipo: 'completar',
+            id_pedido: Number(idPedido),
+            titulo: `Se completó el pedido #${idPedido}`,
+            timestamp: new Date().toISOString()
+        };
+
+        pusher.trigger('pedidos', 'pedido-completado', payloadPusher)
+            .catch(err => {
+                console.error('Error al emitir evento a Pusher:', err.message);
+            });
+
+    } catch (err) {
+        console.error('Error en emisión de Pusher:', err.message);
+    }
+
+    return {
+        ok: true,
+        mensaje: 'Pedido completado exitosamente',
+        id_pedido: Number(idPedido),
+    };
+};
+
 module.exports = {
     obtenerMesasPedidoService,
     insertarPedidoService,
@@ -378,4 +422,5 @@ module.exports = {
     obtenerPedidoCompletoService,
     editarPedidoService,
     cancelarPedidoService,
+    completarPedidoService
 };

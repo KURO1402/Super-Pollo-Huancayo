@@ -5,6 +5,7 @@ const {
     obtenerPedidoCompletoService,
     editarPedidoService,
     cancelarPedidoService,
+    completarPedidoService,
 } = require('./pedidos_service');
 
 const obtenerMesasPedidoController = async (req, res) => {
@@ -98,11 +99,41 @@ const cancelarPedidoController = async (req, res) => {
     }
 };
 
+const completarPedidoController = async (req, res) => {
+    try {
+        const { idPedido } = req.params;
+        const resultado = await completarPedidoService(idPedido);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const obtenerPedidoCompletoC = async (req, res) => {
+    try {
+        const { idPedido } = req.params;
+        const resultado = await completarPedidoService(idPedido);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
+
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
 module.exports = {
     obtenerMesasPedidoController,
     insertarPedidoController,
     listarPedidosController,
     obtenerPedidoCompletoController,
     editarPedidoController,
-    cancelarPedidoController,
+    cancelarPedidoController
 };
