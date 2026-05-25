@@ -133,7 +133,9 @@ export const useVentaStore = create((set, get) => ({
   agregarProducto: (producto) => {
     const { detalle, cantidades, obtenerId } = get();
     const productoId = obtenerId(producto);
-    const cantidad = cantidades[productoId] || 1;
+   
+    let cantidad = producto.cantidad || cantidades[productoId] || 1;
+   
     const productoExistente = detalle.find((item) => {
       const itemId = item.id_producto || item.id;
       return itemId === productoId;
@@ -154,10 +156,10 @@ export const useVentaStore = create((set, get) => ({
         idProducto: productoId,
         id: productoId,
         cantidad: cantidad,
-        nombre: producto.nombre_producto,
-        precio: Number(producto.precio_producto),
-        categoria: producto.nombre_categoria,
-        descripcion: producto.descripcion_producto,
+        nombre: producto.nombre_producto || producto.nombre,
+        precio: Number(producto.precio_producto || producto.precio),
+        categoria: producto.nombre_categoria || producto.categoria,
+        descripcion: producto.descripcion_producto || producto.descripcion,
         usaInsumos: producto.usa_insumos,
       };
       set({ detalle: [...detalle, nuevoProducto] });
