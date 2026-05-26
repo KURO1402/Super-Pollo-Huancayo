@@ -19,6 +19,7 @@ import PerfilUsuario from "../paginas/usuario/PerfilUsuario";
 
 import EstructuraBaseAdmin from "../layouts/panel-admin/EstructuraBaseAdmin";
 import PanelControlPagina from "../paginas/panel-admin/PanelControlPagina";
+import ReportesPagina from "../paginas/panel-admin/ReportesPagina";
 
 import GenerarVentaPagina from "../paginas/panel-admin/GenerarVentaPagina";
 import GestionPedidosPagina from "../paginas/panel-admin/GestionPedidosPagina";
@@ -93,6 +94,7 @@ const AppRutas = () => {
                 element: <EstructuraBaseAdmin />,
                 children: [
                     { index: true, element: <PanelControlPagina /> },
+                    { path: 'reportes', element: <ReportesPagina /> },
                     { path: 'generar-venta', element: <GenerarVentaPagina/> },
                     { path: 'gestion-pedidos', element: <GestionPedidosPagina/> },
                     { path: 'registro-ventas', element: <RegistroVentasPagina/> },

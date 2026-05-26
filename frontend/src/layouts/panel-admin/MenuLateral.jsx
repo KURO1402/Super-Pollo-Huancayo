@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiGrid, FiShoppingCart, FiArchive, FiCalendar, FiUsers, FiUser, FiChevronDown, FiMoreHorizontal, FiSettings } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import { FaCashRegister } from "react-icons/fa";
+import { FaCashRegister, FaChartBar } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import Nombre from "../../assets/imagenes/Nombre_Empresa.png";
 import Logo from "../../assets/imagenes/Logo.svg";
@@ -15,6 +15,12 @@ const navItems = [
     icon: <FiGrid size={20} />,
     name: "Dashboard",
     path: "/admin",
+    rolesPermitidos: [ROLES.ADMINISTRADOR],
+  },
+  {
+    icon: <FaChartBar size={20} />,
+    name: "Reportes",
+    path: "/admin/reportes",
     rolesPermitidos: [ROLES.ADMINISTRADOR],
   },
   {
