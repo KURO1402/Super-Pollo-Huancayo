@@ -67,6 +67,7 @@ app.use('/api/ventas', require('./src/modules/ventas/ventas_routes'));
 app.use('/api/pedidos', require('./src/modules/pedidos/pedidos_routes'));
 app.use('/api/fuente-datos', require('./src/modules/fuente-datos/fuente_datos_routes'));
 app.use('/api', require('./src/modules/configuracion/configuracion_routes'));
+app.use('/api/reportes', require('./src/modules/reportes/reportes_routes'));
 
 const iniciarJobSunat = require('./src/jobs/sunat_job');
 iniciarJobSunat();

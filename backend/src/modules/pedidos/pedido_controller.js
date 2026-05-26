@@ -135,5 +135,6 @@ module.exports = {
     listarPedidosController,
     obtenerPedidoCompletoController,
     editarPedidoController,
-    cancelarPedidoController
+    cancelarPedidoController,
+    completarPedidoController
 };
