@@ -13,9 +13,7 @@ const ReportesPagina = () => {
   useEffect(() => {
     const hoy = new Date();
     const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    
     const formatearFecha = (date) => date.toISOString().split('T')[0];
-
     setFechaDesde(formatearFecha(primerDiaMes));
     setFechaHasta(formatearFecha(hoy));
   }, []);
@@ -53,9 +51,10 @@ const ReportesPagina = () => {
 
   const handleDescargarReporte = async (e) => {
     e.preventDefault();
-    if (!fechaDesde || !fechaHasta) return (
-      mostrarAlerta.advertencia("Por favor selecciona ambas fechas.")
-    );
+    if (!fechaDesde || !fechaHasta) {
+      mostrarAlerta.advertencia("Por favor selecciona ambas fechas.");
+      return;
+    }
 
     setDescargando(true);
 
@@ -69,12 +68,15 @@ const ReportesPagina = () => {
       link.click();
       document.body.removeChild(link);
 
+      // ← éxito SOLO si no hubo excepción
+      mostrarAlerta.exito("Reporte generado y descargado correctamente.");
+
     } catch (error) {
       console.error("Error al procesar el reporte en el frontend:", error);
+      // El interceptor ya formatea el mensaje del backend (400, 422, etc.)
       mostrarAlerta.error(error.message || "Hubo un error inesperado al intentar descargar el reporte.");
     } finally {
       setDescargando(false);
-      mostrarAlerta.exito("Reporte generado y descargado correctamente.");
     }
   };
 
