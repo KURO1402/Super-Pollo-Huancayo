@@ -154,6 +154,12 @@ const GestionPedidosPagina = () => {
           idPedido: pedidoId,
           idMesa: mesaId,
           numeroMesa: numeroMesa,
+          // Lista con id_producto, nombre y cantidad para precargar el POS
+          productosPedido: pedidoActivo.productos.map((p) => ({
+            id_producto:     p.id_producto,
+            nombre_producto: p.nombre_producto,
+            cantidad:        p.cantidad,
+          })),
         },
       });
 

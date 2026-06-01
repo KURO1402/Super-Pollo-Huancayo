@@ -21,37 +21,35 @@ import { ResumenVenta } from "../../componentes/panel-admin/ventas/ResumenVenta"
 import { FormularioCliente } from "../../componentes/panel-admin/ventas/FormularioCliente";
 import { ModalComprobanteGenerado } from "../../componentes/panel-admin/ventas/ModalComprobanteGenerado";
 import mostrarAlerta from "../../utilidades/toastUtilidades";
+import { completarPedidoServicio } from "../../servicios/pedidosServicio";
 
-const esFactura = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('factura');
+const esFactura  = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('factura');
 const esNotaVenta = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('nota de venta');
 
 const GenerarVentaPagina = () => {
-  const location = useLocation();
+  const location  = useLocation();
   const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
-  const { detalle, limpiarVenta } = useVentaStore();
+  const { detalle, limpiarVenta, agregarProducto } = useVentaStore();
   const { estaAbierto, abrir, cerrar } = useModal();
   const {
-    confirmacionVisible,
-    mensajeConfirmacion,
-    tituloConfirmacion,
-    solicitarConfirmacion,
-    ocultarConfirmacion,
-    confirmarAccion,
+    confirmacionVisible, mensajeConfirmacion, tituloConfirmacion,
+    solicitarConfirmacion, ocultarConfirmacion, confirmarAccion,
   } = useConfirmacion();
 
-  const [tiposComprobante, setTiposComprobante] = useState([]);
-  const [cargandoTipos, setCargandoTipos] = useState(true);
-  const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
-  const [metodosPago, setMetodosPago] = useState([]);
-  const [cargandoMetodoPago, setCargandoMetodoPago] = useState(true);
+  const [tiposComprobante,       setTiposComprobante]       = useState([]);
+  const [cargandoTipos,          setCargandoTipos]          = useState(true);
+  const [tipoSeleccionado,       setTipoSeleccionado]       = useState(null);
+  const [metodosPago,            setMetodosPago]            = useState([]);
+  const [cargandoMetodoPago,     setCargandoMetodoPago]     = useState(true);
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState("");
-  const [datosCliente, setDatosCliente] = useState(null);
-  const [cargando, setCargando] = useState(false);
-  const [mostrarModalComprobante, setMostrarModalComprobante] = useState(false);
-  const [datosComprobante, setDatosComprobante] = useState(null);
-  const [productos, setProductos] = useState([]);
-  const [cargandoProductos, setCargandoProductos] = useState(true);
+  const [datosCliente,           setDatosCliente]           = useState(null);
+  const [cargando,               setCargando]               = useState(false);
+  const [mostrarModalComprobante,setMostrarModalComprobante]= useState(false);
+  const [datosComprobante,       setDatosComprobante]       = useState(null);
+  const [productos,              setProductos]              = useState([]);
+  const [cargandoProductos,      setCargandoProductos]      = useState(true);
 
+  // ── Limpiar al cambiar de ruta ────────────────────────────────────────────
   useEffect(() => {
     limpiarVenta();
     setDatosCliente(null);
@@ -60,6 +58,7 @@ const GenerarVentaPagina = () => {
     setDatosComprobante(null);
   }, [location.pathname]);
 
+  // ── Cargar tipos de comprobante ───────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -75,6 +74,7 @@ const GenerarVentaPagina = () => {
     })();
   }, []);
 
+  // ── Cargar catálogo de productos ──────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -88,6 +88,60 @@ const GenerarVentaPagina = () => {
       }
     })();
   }, []);
+
+  // ── Precargar productos si viene desde un pedido ──────────────────────────
+  // Se ejecuta cuando el catálogo ya está cargado y hay state.desdePedido.
+  useEffect(() => {
+    const state = location.state;
+    if (!state?.desdePedido || !state?.productosPedido?.length) return;
+    if (cargandoProductos || productos.length === 0) return;
+
+    // productosPedido: [{ id_producto, nombre_producto, cantidad }]
+    const productosPedido = state.productosPedido;
+
+    limpiarVenta();
+
+    let noEncontrados = [];
+
+    for (const item of productosPedido) {
+      // Buscar el producto en el catálogo para obtener precio y datos completos
+      const productoCatalogo = productos.find(
+        (p) => p.id_producto === item.id_producto
+      );
+
+      if (productoCatalogo) {
+        agregarProducto({
+          ...productoCatalogo,
+          cantidad: item.cantidad,
+        });
+      } else {
+        // Si no se encuentra en el catálogo (producto eliminado/inactivo),
+        // se agrega sin precio para que el vendedor lo note
+        noEncontrados.push(item.nombre_producto);
+        agregarProducto({
+          id_producto: item.id_producto,
+          id:          item.id_producto,
+          nombre_producto: item.nombre_producto,
+          nombre:          item.nombre_producto,
+          precio_producto: 0,
+          precio:          0,
+          cantidad:        item.cantidad,
+        });
+      }
+    }
+
+    if (noEncontrados.length > 0) {
+      mostrarAlerta.advertencia(
+        `Algunos productos no se encontraron en el catálogo: ${noEncontrados.join(", ")}`
+      );
+    }
+
+    // Limpiar el state para evitar que se recargue si el usuario navega
+    window.history.replaceState(
+      { ...window.history.state, usr: { ...state, desdePedido: false, productosPedido: [] } },
+      ""
+    );
+  }, [cargandoProductos, productos, location.state]);
 
   useEffect(() => {
     (async () => {
@@ -106,44 +160,24 @@ const GenerarVentaPagina = () => {
     })();
   }, []);
 
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleTipoComprobante = (tipo) => {
     setTipoSeleccionado(tipo);
-    if (
-      esFactura(tipo) &&
-      datosCliente &&
-      datosCliente.tipoDocumento !== "2"
-    ) {
+    if (esFactura(tipo) && datosCliente?.tipoDocumento !== "2") {
       setDatosCliente(null);
       mostrarAlerta.advertencia("Para factura se requiere cliente con RUC");
     }
-    if (!esFactura(tipo) && datosCliente) {
-      setDatosCliente(null);
-    }
+    if (!esFactura(tipo) && datosCliente) setDatosCliente(null);
   };
 
   const handleClienteGuardado = (cliente) => {
     if (esFactura(tipoSeleccionado)) {
-      if (cliente.tipoDocumento !== "2") {
-        mostrarAlerta.error("Para factura solo se acepta RUC");
-        return;
-      }
-      if (cliente.numeroDocumento?.length !== 11) {
-        mostrarAlerta.error("El RUC debe tener 11 dígitos");
-        return;
-      }
-      if (!cliente.direccion?.trim()) {
-        mostrarAlerta.error("La dirección es obligatoria para factura");
-        return;
-      }
+      if (cliente.tipoDocumento !== "2")        { mostrarAlerta.error("Para factura solo se acepta RUC"); return; }
+      if (cliente.numeroDocumento?.length !== 11){ mostrarAlerta.error("El RUC debe tener 11 dígitos"); return; }
+      if (!cliente.direccion?.trim())            { mostrarAlerta.error("La dirección es obligatoria para factura"); return; }
     } else {
-      if (cliente.tipoDocumento === "2") {
-        mostrarAlerta.error("Para boleta o nota de venta use DNI");
-        return;
-      }
-      if (cliente.numeroDocumento?.length !== 8) {
-        mostrarAlerta.error("El DNI debe tener 8 dígitos");
-        return;
-      }
+      if (cliente.tipoDocumento === "2")         { mostrarAlerta.error("Para boleta o nota de venta use DNI"); return; }
+      if (cliente.numeroDocumento?.length !== 8) { mostrarAlerta.error("El DNI debe tener 8 dígitos"); return; }
     }
     setDatosCliente(cliente);
     cerrar();
@@ -153,11 +187,8 @@ const GenerarVentaPagina = () => {
   const handleEliminarCliente = () => {
     solicitarConfirmacion(
       "¿Desea quitar el cliente de esta venta?",
-      () => {
-        setDatosCliente(null);
-        mostrarAlerta.exito("Cliente quitado");
-      },
-      { titulo: "Quitar cliente" },
+      () => { setDatosCliente(null); mostrarAlerta.exito("Cliente quitado"); },
+      { titulo: "Quitar cliente" }
     );
   };
 
@@ -165,72 +196,56 @@ const GenerarVentaPagina = () => {
     if (detalle.length > 0 || datosCliente) {
       solicitarConfirmacion(
         "¿Estás seguro de limpiar toda la venta?",
-        () => {
-          limpiarVenta();
-          setDatosCliente(null);
-          mostrarAlerta.exito("Venta limpiada");
-        },
-        { titulo: "Limpiar venta" },
+        () => { limpiarVenta(); setDatosCliente(null); mostrarAlerta.exito("Venta limpiada"); },
+        { titulo: "Limpiar venta" }
       );
     }
   };
 
   const handleGenerarComprobante = async () => {
-    if (detalle.length === 0) {
-      mostrarAlerta.advertencia("Debe agregar al menos un producto");
-      return;
-    }
-    if (esFactura(tipoSeleccionado) && !datosCliente) {
-      mostrarAlerta.advertencia(
-        "Para factura debe seleccionar un cliente con RUC",
-      );
-      return;
-    }
-    if (!metodoPagoSeleccionado) {
-      mostrarAlerta.advertencia("Debe seleccionar un método de pago");
-      return;
-    }
+    if (detalle.length === 0)                         { mostrarAlerta.advertencia("Debe agregar al menos un producto"); return; }
+    if (esFactura(tipoSeleccionado) && !datosCliente) { mostrarAlerta.advertencia("Para factura debe seleccionar un cliente con RUC"); return; }
+    if (!metodoPagoSeleccionado)                      { mostrarAlerta.advertencia("Debe seleccionar un método de pago"); return; }
 
     setCargando(true);
     try {
-      let clientePayload;
-      if (esFactura(tipoSeleccionado) && datosCliente) {
-        clientePayload = {
-          idTipoDoc: 2,
-          numDoc: Number(datosCliente.numeroDocumento),
-          denominacionCliente: datosCliente.nombre,
-          direccionCliente: datosCliente.direccion?.trim() || "",
-        };
-      } else if (datosCliente) {
-        clientePayload = {
-          idTipoDoc: 1,
-          numDoc: Number(datosCliente.numeroDocumento),
-          denominacionCliente: datosCliente.nombre,
-        };
-      } else {
-        clientePayload = {
-          idTipoDoc: 1,
-          numDoc: 10000000,
-          denominacionCliente: "Clientes Varios",
-        };
-      }
+      const clientePayload = esFactura(tipoSeleccionado) && datosCliente
+        ? { idTipoDoc: 2, numDoc: Number(datosCliente.numeroDocumento), denominacionCliente: datosCliente.nombre, direccionCliente: datosCliente.direccion?.trim() || "" }
+        : datosCliente
+          ? { idTipoDoc: 1, numDoc: Number(datosCliente.numeroDocumento), denominacionCliente: datosCliente.nombre }
+          : { idTipoDoc: 1, numDoc: 10000000, denominacionCliente: "Clientes Varios" };
 
       const ventaData = {
         tipoComprobante: Number(tipoSeleccionado.id_tipo_comprobante),
-        medioPago: Number(metodoPagoSeleccionado),
-        cliente: clientePayload,
+        medioPago:       Number(metodoPagoSeleccionado),
+        cliente:         clientePayload,
         productos: detalle.map((item) => ({
           idProducto: item.id_producto || item.idProducto || item.id,
-          cantidad: item.cantidad,
+          cantidad:   item.cantidad,
         })),
       };
 
       const respuesta = await generarVentaServicio(ventaData);
 
       if (respuesta?.ok) {
+        // ── Completar el pedido si viene desde uno ─────────────────────────
+        const idPedido = location.state?.idPedido;
+        if (idPedido) {
+          try {
+            await completarPedidoServicio(idPedido);
+          } catch (errorPedido) {
+            // No bloqueamos el flujo: el comprobante ya se generó.
+            // Solo avisamos con una advertencia suave.
+            console.warn("No se pudo completar el pedido:", errorPedido.message);
+            mostrarAlerta.advertencia(
+              `Comprobante generado, pero no se pudo completar el pedido #${idPedido}: ${errorPedido.message}`
+            );
+          }
+        }
+
         setDatosComprobante({
           ...respuesta,
-          tipoComprobante: tipoSeleccionado.id_tipo_comprobante,
+          tipoComprobante:      tipoSeleccionado.id_tipo_comprobante,
           tipoComprobanteTexto: tipoSeleccionado?.nombre_tipo_comprobante || "Comprobante",
         });
         setMostrarModalComprobante(true);
@@ -250,38 +265,32 @@ const GenerarVentaPagina = () => {
   };
 
   const handleDescargarPDF = () => {
-    if (datosComprobante?.urlPdf)
-      window.open(datosComprobante.urlPdf, "_blank");
+    if (datosComprobante?.urlPdf) window.open(datosComprobante.urlPdf, "_blank");
   };
 
-  const filtrados = filtrarPorBusqueda(productos, [
-    "nombre_producto",
-    "descripcion_producto",
-  ]);
-  const labelCliente = esFactura(tipoSeleccionado)
-    ? "Cliente (RUC requerido)"
-    : "Cliente (opcional)";
-  const placeholderCliente = esFactura(tipoSeleccionado)
-    ? "Seleccione un cliente con RUC"
-    : "Clientes Varios";
+  const filtrados    = filtrarPorBusqueda(productos, ["nombre_producto", "descripcion_producto"]);
+  const labelCliente = esFactura(tipoSeleccionado) ? "Cliente (RUC requerido)" : "Cliente (opcional)";
+  const placeholderCliente = esFactura(tipoSeleccionado) ? "Seleccione un cliente con RUC" : "Clientes Varios";
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center gap-2">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Punto de Venta
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Punto de Venta</h1>
         <FiShoppingCart className="text-2xl text-blue-500" />
+        {/* Badge cuando viene de un pedido */}
+        {location.state?.idPedido && (
+          <span className="ml-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full">
+            Pedido #{location.state.idPedido} · Mesa {location.state.numeroMesa}
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* ── Panel izquierdo: catálogo ── */}
         <div className="lg:col-span-1">
           <div className="mb-3">
-            <BarraBusqueda
-              valor={terminoBusqueda}
-              onChange={setTerminoBusqueda}
-              placeholder="Buscar producto..."
-            />
+            <BarraBusqueda valor={terminoBusqueda} onChange={setTerminoBusqueda} placeholder="Buscar producto..." />
           </div>
           {cargandoProductos ? (
             <div className="flex flex-col items-center justify-center h-32 gap-2">
@@ -296,23 +305,19 @@ const GenerarVentaPagina = () => {
           ) : (
             <div className="grid grid-cols-1 gap-2 max-h-[70vh] overflow-y-auto pr-1">
               {filtrados.map((producto) => (
-                <TarjetaProducto
-                  key={producto.id_producto}
-                  producto={producto}
-                />
+                <TarjetaProducto key={producto.id_producto} producto={producto} />
               ))}
             </div>
           )}
         </div>
 
+        {/* ── Panel derecho: venta ── */}
         <div className="col-span-3 space-y-4">
+          {/* Selector tipo comprobante */}
           {cargandoTipos ? (
             <div className="flex gap-2">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
-                />
+                <div key={i} className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
               ))}
             </div>
           ) : (
@@ -323,8 +328,7 @@ const GenerarVentaPagina = () => {
                     key={tipo.id_tipo_comprobante}
                     onClick={() => handleTipoComprobante(tipo)}
                     className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${
-                      tipoSeleccionado?.id_tipo_comprobante ===
-                      tipo.id_tipo_comprobante
+                      tipoSeleccionado?.id_tipo_comprobante === tipo.id_tipo_comprobante
                         ? "border-blue-500 text-blue-600 dark:text-blue-400"
                         : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400"
                     }`}
@@ -341,61 +345,40 @@ const GenerarVentaPagina = () => {
             </div>
           )}
 
+          {/* Avisos */}
           {esFactura(tipoSeleccionado) && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-sm text-amber-800 dark:text-amber-300">
               <span className="shrink-0 mt-0.5">⚠️</span>
-              <span>
-                La factura requiere un cliente con{" "}
-                <strong>RUC de 11 dígitos</strong> y dirección fiscal.
-              </span>
+              <span>La factura requiere un cliente con <strong>RUC de 11 dígitos</strong> y dirección fiscal.</span>
             </div>
           )}
-
           {esNotaVenta(tipoSeleccionado) && (
             <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg text-sm text-blue-800 dark:text-blue-300">
               <span className="shrink-0 mt-0.5">ℹ️</span>
-              <span>
-                La nota de venta <strong>no se envía a SUNAT</strong> y no es
-                válida para crédito fiscal.
-              </span>
+              <span>La nota de venta <strong>no se envía a SUNAT</strong> y no es válida para crédito fiscal.</span>
             </div>
           )}
 
+          {/* Cliente */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {labelCliente}
-              {esFactura(tipoSeleccionado) && (
-                <span className="text-red-500 ml-1">*</span>
-              )}
+              {esFactura(tipoSeleccionado) && <span className="text-red-500 ml-1">*</span>}
             </label>
             {datosCliente ? (
               <div className="flex items-center gap-2 p-3 border border-green-300 dark:border-green-600 rounded-lg bg-green-50 dark:bg-green-900/20">
-                <FiCheck
-                  className="text-green-600 dark:text-green-400 shrink-0"
-                  size={18}
-                />
+                <FiCheck className="text-green-600 dark:text-green-400 shrink-0" size={18} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {datosCliente.nombre}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{datosCliente.nombre}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {datosCliente.tipoDocumento === "2" ? "RUC" : "DNI"}:{" "}
-                    {datosCliente.numeroDocumento}
+                    {datosCliente.tipoDocumento === "2" ? "RUC" : "DNI"}: {datosCliente.numeroDocumento}
                     {datosCliente.direccion && ` • ${datosCliente.direccion}`}
                   </p>
                 </div>
-                <button
-                  onClick={abrir}
-                  className="p-1.5 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors"
-                  title="Editar cliente"
-                >
+                <button onClick={abrir} className="p-1.5 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors" title="Editar cliente">
                   <FiEdit2 size={16} />
                 </button>
-                <button
-                  onClick={handleEliminarCliente}
-                  className="p-1.5 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
-                  title="Quitar cliente"
-                >
+                <button onClick={handleEliminarCliente} className="p-1.5 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors" title="Quitar cliente">
                   <FiX size={16} />
                 </button>
               </div>
@@ -403,38 +386,29 @@ const GenerarVentaPagina = () => {
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
                   <FiUser className="text-gray-400 shrink-0" />
-                  <span className="text-gray-500 text-sm truncate">
-                    {placeholderCliente}
-                  </span>
+                  <span className="text-gray-500 text-sm truncate">{placeholderCliente}</span>
                 </div>
-                <button
-                  onClick={abrir}
-                  className="w-20 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center cursor-pointer"
-                  title="Agregar cliente"
-                >
+                <button onClick={abrir} className="w-20 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center cursor-pointer" title="Agregar cliente">
                   <FaPlus />
                 </button>
               </div>
             )}
           </div>
 
+          {/* Método de pago */}
           <div className="w-full sm:w-1/2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Método de Pago <span className="text-red-500">*</span>
             </label>
             {cargandoMetodoPago ? (
-              <div className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 text-sm">
-                Cargando...
-              </div>
+              <div className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 text-sm">Cargando...</div>
             ) : (
               <select
                 value={metodoPagoSeleccionado}
                 onChange={(e) => setMetodoPagoSeleccionado(e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="" disabled>
-                  Seleccione método
-                </option>
+                <option value="" disabled>Seleccione método</option>
                 {metodosPago.map((m) => (
                   <option key={m.id_medio_pago} value={m.id_medio_pago}>
                     {m.nombre_medio_pago.charAt(0).toUpperCase() + m.nombre_medio_pago.slice(1)}
@@ -457,31 +431,14 @@ const GenerarVentaPagina = () => {
             </button>
             <button
               onClick={handleGenerarComprobante}
-              disabled={
-                detalle.length === 0 ||
-                cargando ||
-                (esFactura(tipoSeleccionado) && !datosCliente) ||
-                !metodoPagoSeleccionado
-              }
+              disabled={detalle.length === 0 || cargando || (esFactura(tipoSeleccionado) && !datosCliente) || !metodoPagoSeleccionado}
               className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               {cargando ? (
                 <>
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                   Procesando...
                 </>
@@ -494,40 +451,14 @@ const GenerarVentaPagina = () => {
       </div>
 
       {estaAbierto && (
-        <Modal
-          estaAbierto={estaAbierto}
-          onCerrar={cerrar}
-          titulo={datosCliente ? "Editar Cliente" : "Agregar Cliente"}
-          tamaño="xl"
-          mostrarHeader={true}
-          mostrarFooter={false}
-        >
-          <FormularioCliente
-            onSubmit={handleClienteGuardado}
-            onCancelar={cerrar}
-            tipoComprobante={tipoSeleccionado?.nombre_tipo_comprobante}
-            soloRuc={esFactura(tipoSeleccionado)}
-          />
+        <Modal estaAbierto={estaAbierto} onCerrar={cerrar} titulo={datosCliente ? "Editar Cliente" : "Agregar Cliente"} tamaño="xl" mostrarHeader={true} mostrarFooter={false}>
+          <FormularioCliente onSubmit={handleClienteGuardado} onCancelar={cerrar} tipoComprobante={tipoSeleccionado?.nombre_tipo_comprobante} soloRuc={esFactura(tipoSeleccionado)} />
         </Modal>
       )}
 
-      <ModalComprobanteGenerado
-        estaAbierto={mostrarModalComprobante}
-        onCerrar={handleCerrarModalComprobante}
-        datosComprobante={datosComprobante}
-        onDescargarPDF={handleDescargarPDF}
-      />
+      <ModalComprobanteGenerado estaAbierto={mostrarModalComprobante} onCerrar={handleCerrarModalComprobante} datosComprobante={datosComprobante} onDescargarPDF={handleDescargarPDF} />
 
-      <ModalConfirmacion
-        visible={confirmacionVisible}
-        onCerrar={ocultarConfirmacion}
-        onConfirmar={confirmarAccion}
-        titulo={tituloConfirmacion}
-        mensaje={mensajeConfirmacion}
-        textoConfirmar="Confirmar"
-        textoCancelar="Cancelar"
-        tipo="peligro"
-      />
+      <ModalConfirmacion visible={confirmacionVisible} onCerrar={ocultarConfirmacion} onConfirmar={confirmarAccion} titulo={tituloConfirmacion} mensaje={mensajeConfirmacion} textoConfirmar="Confirmar" textoCancelar="Cancelar" tipo="peligro" />
     </div>
   );
 };

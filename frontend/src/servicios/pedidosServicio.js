@@ -22,10 +22,9 @@ export const obtenerPedidoPorMesaServicio = async (idMesa) => {
 
 export const completarPedidoServicio = async (idPedido) => {
   try {
-    const respuesta = await API.patch(`/pedidos/completar/${idPedido}`);
-    if (!respuesta.data.ok) throw new Error(respuesta.data.mensaje || "Error al obtener pedido");
-    return respuesta.data.pedido;
+    const respuesta = await API.post(`/pedidos/pedido/${idPedido}/completar`);
+    return respuesta.data;
   } catch (error) {
-    throw new Error(error.response?.data?.mensaje || error.message || "Error al obtener pedido");
+    throw error;
   }
 };
