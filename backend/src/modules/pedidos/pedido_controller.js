@@ -3,6 +3,7 @@ const {
     insertarPedidoService,
     listarPedidosService,
     obtenerPedidoCompletoService,
+    obtenerPedidoActivoMesaService,
     editarPedidoService,
     cancelarPedidoService,
     completarPedidoService,
@@ -62,6 +63,20 @@ const obtenerPedidoCompletoController = async (req, res) => {
     } catch (err) {
         const statusCode = err.status || 500;
 
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor',
+        });
+    }
+};
+
+const obtenerPedidoActivoMesaController = async (req, res) => {
+    try {
+        const { idMesa } = req.params;
+        const resultado = await obtenerPedidoActivoMesaService(idMesa);
+        return res.status(200).json(resultado);
+    } catch (err) {
+        const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
             mensaje: err.message || 'Error interno del servidor',
@@ -134,6 +149,7 @@ module.exports = {
     insertarPedidoController,
     listarPedidosController,
     obtenerPedidoCompletoController,
+    obtenerPedidoActivoMesaController,
     editarPedidoController,
     cancelarPedidoController,
     completarPedidoController

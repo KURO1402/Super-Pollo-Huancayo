@@ -144,6 +144,19 @@ const obtenerMesasDeUnPedidoModel = async (idPedido) => {
     }
 };
 
+const obtenerUltimoPedidoMesaModel = async (idMesa) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        const [rows] = await conexion.execute('CALL sp_obtener_ultimo_pedido_mesa(?)', [idMesa]);
+        return rows[0][0]; // un solo pedido
+    } catch (err) {
+        throw new Error('Error al obtener el pedido activo de la mesa en la base de datos');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
 // Edición completa — transacción necesaria porque toca mesas_pedido, detalle_pedido y mesas
 const editarPedidoCompletoModel = async (idPedido, precio_precuenta, nuevasMesas, nuevosDetalles) => {
     let conexion;
@@ -228,6 +241,7 @@ module.exports = {
     obtenerDetallePedidoModel,
     obtenerMesasDeUnPedidoModel,
     editarPedidoCompletoModel,
+    obtenerUltimoPedidoMesaModel,
     cancelarPedidoModel,
     completarPedidoModel
 };

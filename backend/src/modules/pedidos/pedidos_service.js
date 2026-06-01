@@ -12,6 +12,7 @@ const {
     obtenerEstadoPedidoModel,
     obtenerDetallePedidoModel,
     obtenerMesasDeUnPedidoModel,
+    obtenerUltimoPedidoMesaModel,
     editarPedidoCompletoModel,
     cancelarPedidoModel,
     completarPedidoModel,
@@ -211,6 +212,26 @@ const obtenerPedidoCompletoService = async (idPedido) => {
             id_mesa: item.id_mesa,
             numero_mesa: item.numero_mesa
         }))
+    };
+};
+
+const obtenerPedidoActivoMesaService = async (idMesa) => {
+    if (!idMesa || isNaN(idMesa)) {
+        throw crearError('Se necesita un idMesa válido.', 400);
+    }
+
+    const pedido = await obtenerUltimoPedidoMesaModel(idMesa);
+
+    if (!pedido) {
+        throw crearError('No hay pedido activo para esta mesa.', 404);
+    }
+
+    const detalle = await obtenerDetallePedidoModel(pedido.id_pedido);
+    pedido.detalles = detalle;
+
+    return {
+        ok: true,
+        pedido
     };
 };
 
@@ -420,6 +441,7 @@ module.exports = {
     insertarPedidoService,
     listarPedidosService,
     obtenerPedidoCompletoService,
+    obtenerPedidoActivoMesaService,
     editarPedidoService,
     cancelarPedidoService,
     completarPedidoService

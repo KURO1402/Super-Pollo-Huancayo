@@ -8,6 +8,7 @@ const {
     insertarPedidoController,
     listarPedidosController,
     obtenerPedidoCompletoController,
+    obtenerPedidoActivoMesaController,
     editarPedidoController,
     cancelarPedidoController,
     completarPedidoController
@@ -17,6 +18,7 @@ router.get('/mesas', autenticacionToken, verificarRoles(2, 3), obtenerMesasPedid
 router.get('/', autenticacionToken, verificarRoles(2, 3), listarPedidosController);
 router.post('/crear-pedido', autenticacionToken, verificarRoles(2, 3), insertarPedidoController);
 router.get('/pedido/:idPedido', autenticacionToken, verificarRoles(2, 3), obtenerPedidoCompletoController);
+router.get('/mesa/:idMesa', autenticacionToken, verificarRoles(2, 3), obtenerPedidoActivoMesaController);
 router.put('/pedido/:idPedido', autenticacionToken, verificarRoles(2, 3), editarPedidoController);
 router.patch('/pedido/:idPedido/cancelar', autenticacionToken, verificarRoles(2, 3), cancelarPedidoController);
 router.post('/pedido/:idPedido/completar', autenticacionToken, verificarRoles(2, 3), completarPedidoController);
