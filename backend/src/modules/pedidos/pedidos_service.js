@@ -393,7 +393,7 @@ const cancelarPedidoService = async (idPedido) => {
     };
 };
 
-const completarPedidoService = async () => {
+const completarPedidoService = async (idPedido) => {
     if (!idPedido || isNaN(idPedido)) {
         throw crearError('Se necesita especificar un pedido válido.', 400);
     }
