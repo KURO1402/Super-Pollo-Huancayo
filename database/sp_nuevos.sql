@@ -14,6 +14,7 @@ DROP PROCEDURE IF EXISTS sp_reporte_inventario_resumen;
 DROP PROCEDURE IF EXISTS sp_reporte_inventario_detalle;
 DROP PROCEDURE IF EXISTS sp_reporte_caja_resumen;
 DROP PROCEDURE IF EXISTS sp_reporte_caja_detalle;
+DROP PROCEDURE IF EXISTS sp_obtener_ultimo_pedido_mesa;
 
 
 DELIMITER //
@@ -291,6 +292,24 @@ BEGIN
     JOIN usuarios u ON mc.id_usuario = u.id_usuario
     WHERE DATE(mc.fecha_movimiento) BETWEEN p_fecha_inicio AND p_fecha_fin
     ORDER BY mc.fecha_movimiento DESC;
+END //
+
+-- Obtiene el último pedido pendiente de una mesa con su detalle
+CREATE PROCEDURE sp_obtener_ultimo_pedido_mesa(
+    IN p_id_mesa INT
+)
+BEGIN
+    SELECT 
+        pm.id_pedido, 
+        pm.fecha_pedido, 
+        pm.estado_pedido, 
+        pm.precio_precuenta
+    FROM pedido_mesa pm
+    INNER JOIN mesas_pedido mp ON mp.id_pedido = pm.id_pedido
+    WHERE mp.id_mesa = p_id_mesa 
+      AND pm.estado_pedido = 'pendiente'
+    ORDER BY pm.id_pedido DESC
+    LIMIT 1;
 END //
 
 DELIMITER ;
