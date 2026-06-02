@@ -57,6 +57,7 @@ const listarPedidosModel = async (fechaHora) => {
         const [rows] = await conexion.execute('CALL sp_listar_pedidos(?)', [fechaHora]);
         return rows[0];
     } catch (err) {
+        console.log(err.message)
         throw new Error('Error al listar los pedidos en la base de datos');
     } finally {
         if (conexion) conexion.release();
