@@ -12,15 +12,13 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
-          FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 5342
           envs: BACKEND_ENV,FRONTEND_ENV
+          command_timeout: 30m
           script: |
             cd /opt/miapp
             git pull origin main
@@ -29,3 +27,6 @@ jobs:
             docker exec -i mysql_db mysql -uroot -p8519 super_pollo_hyo < ./database/sp.sql
             docker exec -i mysql_db mysql -uroot -p8519 super_pollo_hyo < ./database/sp_nuevos.sql
             docker compose up --build -d
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
