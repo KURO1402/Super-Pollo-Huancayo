@@ -90,7 +90,7 @@ const registrarVerificacionCorreoService = async (datos) => {
 };
 
 const validarCodigoCorreoService = async (datos) => {
-  if (!datos, typeof datos !== 'object') {
+  if (!datos || typeof datos !== 'object') {
     throw crearError('Se necesita el codigo y correo para verificar el codigo', 400);
   };
 
