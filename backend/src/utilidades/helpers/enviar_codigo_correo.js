@@ -1,9 +1,9 @@
-const transporter = require('../../config/nodemailer');
+require('dotenv').config();
+const resend = require('../../config/resend'); 
 
 async function enviarCorreoVerificacion(correo, codigo) {
-
-  const info = await transporter.sendMail({
-    from: `'Super Pollo' <${process.env.EMAIL_USER}>`,
+  const { data, error } = await resend.emails.send({
+    from: `Super Pollo <${process.env.EMAIL_FROM || 'notificaciones@superpollohyo.com'}>`,
     to: correo,
     subject: 'Código de verificación 📨',
     html: `
@@ -17,7 +17,12 @@ async function enviarCorreoVerificacion(correo, codigo) {
     `,
   });
 
-  return info;
+  if (error) {
+    console.error("Error enviando verificación:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
 }
 
 module.exports = enviarCorreoVerificacion;

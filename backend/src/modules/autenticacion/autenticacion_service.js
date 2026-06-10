@@ -84,7 +84,8 @@ const registrarVerificacionCorreoService = async (datos) => {
 
   return {
     ok: true,
-    mensaje: `Código de verificación enviado correctamente a ${info.accepted[0]}.`
+    mensaje: `Código de verificación enviado correctamente a ${correo}.`,
+    emailId: info.id
   };
 };
 

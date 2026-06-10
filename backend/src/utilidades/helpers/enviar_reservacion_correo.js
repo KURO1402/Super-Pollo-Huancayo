@@ -1,7 +1,9 @@
-const transporter = require('../../config/nodemailer');
+require('dotenv').config();
+const resend = require('../../config/resend'); 
 
 const enviarCorreoReservacion = async (datos) => {
-    const {  correo, codigoReservacion, fecha, hora, cantidadPersonas, mesas } = datos;
+    const { correo, codigoReservacion, fecha, hora, cantidadPersonas, mesas } = datos;
+    
     const filaMesas = mesas.map(m => `
         <tr>
             <td style='padding: 10px 16px; border-bottom: 1px solid #e0e0e0; color: #444;'>
@@ -10,8 +12,8 @@ const enviarCorreoReservacion = async (datos) => {
         </tr>
     `).join('');
 
-    const info = await transporter.sendMail({
-        from: `'Super Pollo' <${process.env.EMAIL_USER}>`,
+    const { data, error } = await resend.emails.send({
+        from: `Super Pollo <${process.env.EMAIL_FROM || 'notificaciones@superpollohyo.com'}>`,
         to: correo,
         subject: 'Confirmación de reservación 🍗',
         html: `
@@ -45,6 +47,12 @@ const enviarCorreoReservacion = async (datos) => {
         `
     });
 
-    return info;
+    if (error) {
+        console.error("Error enviando reservación:", error);
+        throw new Error(error.message);
+    }
+
+    return data;
 };
+
 module.exports = enviarCorreoReservacion;
