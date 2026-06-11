@@ -15,6 +15,7 @@ DROP PROCEDURE IF EXISTS sp_reporte_inventario_detalle;
 DROP PROCEDURE IF EXISTS sp_reporte_caja_resumen;
 DROP PROCEDURE IF EXISTS sp_reporte_caja_detalle;
 DROP PROCEDURE IF EXISTS sp_obtener_ultimo_pedido_mesa;
+DROP PROCEDURE IF EXISTS sp_eliminar_verificacion;
 
 
 DELIMITER //
@@ -310,6 +311,30 @@ BEGIN
       AND pm.estado_pedido = 'pendiente'
     ORDER BY pm.id_pedido DESC
     LIMIT 1;
+END //
+
+Aquí tienes el procedimiento almacenado para eliminar el registro por su id_verificacion. Incluye la estructura de transacciones con un manejador de excepciones (EXIT HANDLER FOR SQLEXCEPTION) que asegura que, si algo falla, se aplique un ROLLBACK automáticamente para mantener la integridad de los datos.
+
+Procedimiento Almacenado (SQL)
+SQL
+DELIMITER //
+
+CREATE PROCEDURE sp_eliminar_verificacion(
+    IN p_id_verificacion INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    DELETE FROM verificaciones 
+    WHERE id_verificacion = p_id_verificacion;
+    COMMIT;
+
 END //
 
 DELIMITER ;

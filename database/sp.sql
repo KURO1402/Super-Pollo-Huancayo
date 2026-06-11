@@ -3260,7 +3260,6 @@ BEGIN
       AND tipo = p_tipo
     LIMIT 1;
 
-    -- Validaciones de estado
     IF v_id IS NULL THEN
         SELECT 2 AS status, 'El código es incorrecto o no existe para este proceso' AS mensaje;
         ROLLBACK;
@@ -3274,7 +3273,6 @@ BEGIN
         ROLLBACK;
 
     ELSE
-        -- Si todo está bien, lo marcamos como verificado
         UPDATE verificaciones
         SET verificado = 1
         WHERE id_verificacion = v_id;
@@ -3285,13 +3283,14 @@ BEGIN
 END //
 
 
--- Procedimiento para iniciar sesion 
 CREATE PROCEDURE sp_verificar_validacion_correo(
     IN p_correo VARCHAR(100),
     IN p_tipo ENUM('registro', 'recuperacion_password')
 )
 BEGIN
-    SELECT verificado
+    SELECT 
+    id_verificacion,
+    verificado
     FROM verificaciones
     WHERE correo = p_correo
       AND tipo = p_tipo

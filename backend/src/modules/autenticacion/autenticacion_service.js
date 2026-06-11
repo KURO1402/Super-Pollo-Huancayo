@@ -8,9 +8,11 @@ const {
   seleccionarTotalUsuarioPorCorreoModel,
   registrarVerificacionCorreoModel,
   validarCodigoCorreoModel,
-  validarVerificacionCorreo,
-  seleccionarUsuarioCorreoModel
+  validarVerificacionModel,
+  seleccionarUsuarioCorreoModel,
+  eliminarVerificacionModel
 } = require('./autenticacion_model');
+const { actualizarClaveUsuarioModel } = require('../usuarios/usuario_model');
 const { validarRegistroUsuario } = require('./autenticacion_validacion');
 const enviarCorreoVerificacion = require('../../utilidades/helpers/enviar_codigo_correo');
 const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
@@ -26,8 +28,8 @@ const registroUsuarioService = async (datos) => {
   } else {
     telefono = telefonoUsuario;
   }
-  const correoValidado = await validarVerificacionCorreo(correoUsuario, "registro");
-  if (!correoValidado || correoValidado.estado_verificacion == 0) {
+  const correoValidado = await validarVerificacionModel(correoUsuario, "registro");
+  if (!correoValidado || correoValidado.verificado == 0) {
     throw crearError('Verificación pendiente: Primero valide su correo.', 403);
   }
   const coincidenciasCorreo = await seleccionarTotalUsuarioPorCorreoModel(correoUsuario);
@@ -60,26 +62,37 @@ const registroUsuarioService = async (datos) => {
 
 const registrarVerificacionCorreoService = async (datos) => {
   if (!datos || typeof datos !== 'object') {
-    throw crearError('Se necesitan datos(correo) para generar el codigo de verificación.', 400);
+    throw crearError('Se necesitan datos para generar el código de verificación.', 400);
   }
-  const { correo } = datos;
+
+  const { correo, tipoVerificacion } = datos;
 
   if (!correo || typeof correo !== 'string' || !correo.trim()) {
-    throw crearError('Se necesita el correo', 400);
-  };
+    throw crearError('Se necesita el correo.', 400);
+  }
 
   if (!validarCorreo(correo)) {
-    throw crearError('Formato de correo no valido', 400);
-  };
+    throw crearError('Formato de correo no válido.', 400);
+  }
 
-  const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoModel(correo);
-  if (correosCoincidentes > 0) {
-    throw crearError('Ya existe un usuario registrado con el correo ingresado.', 409);
+  if (!tipoVerificacion || typeof tipoVerificacion !== 'number' || (tipoVerificacion !== 1 && tipoVerificacion !== 2)) {
+    throw crearError('Tipo de verificación no válido. Debe ser 1 (registro) o 2 (recuperación).', 400);
+  }
+
+  const tipoTexto = tipoVerificacion === 1 ? 'registro' : 'recuperacion_password';
+
+  if (tipoTexto === 'registro') {
+    const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoModel(correo);
+    if (correosCoincidentes > 0) {
+      throw crearError('Ya existe un usuario registrado con el correo ingresado.', 409);
+    }
   }
 
   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-  await registrarVerificacionCorreoModel(correo, codigo, "registro");
-  const info = await enviarCorreoVerificacion(correo, codigo)
+
+  await registrarVerificacionCorreoModel(correo, codigo, tipoTexto);
+
+  const info = await enviarCorreoVerificacion(correo, codigo);
 
   return {
     ok: true,
@@ -90,23 +103,30 @@ const registrarVerificacionCorreoService = async (datos) => {
 
 const validarCodigoCorreoService = async (datos) => {
   if (!datos || typeof datos !== 'object') {
-    throw crearError('Se necesita el codigo y correo para verificar el codigo', 400);
-  };
+    throw crearError('Se necesitan los datos para verificar el código.', 400);
+  }
 
-  const { correo, codigo } = datos;
+  const { correo, codigo, tipoVerificacion } = datos;
 
   if (!correo || typeof correo !== 'string' || !correo.trim()) {
-    throw crearError('Se necesita el correo', 400)
+    throw crearError('Se necesita el correo.', 400);
   }
 
   if (!codigo || typeof codigo !== 'string' || !codigo.trim() || codigo.length !== 6) {
-    throw crearError('Se necesita el codigo de 6 digitos', 400);
+    throw crearError('Se necesita el código de 6 dígitos.', 400);
   }
+
+  if (!tipoVerificacion || (tipoVerificacion !== 1 && tipoVerificacion !== 2)) {
+    throw crearError('Tipo de verificación no válido. Debe ser 1 (registro) o 2 (recuperación).', 400);
+  }
+
+  const tipoTexto = tipoVerificacion === 1 ? 'registro' : 'recuperacion_password';
+
   const fechaActual = new Date();
-  const resultado = await validarCodigoCorreoModel(correo, codigo, "registro", fechaActual);
+  const resultado = await validarCodigoCorreoModel(correo, codigo, tipoTexto, fechaActual);
 
   if (!resultado) {
-    throw crearError('Ocurrrio un error al verificar el correo', 500);
+    throw crearError('Ocurrió un error al verificar el correo.', 500);
   }
 
   switch (resultado?.status) {
@@ -114,7 +134,7 @@ const validarCodigoCorreoService = async (datos) => {
       return {
         ok: true,
         mensaje: resultado?.mensaje
-      }
+      };
 
     case 2:
       throw crearError(resultado?.mensaje, 404);
@@ -126,7 +146,7 @@ const validarCodigoCorreoService = async (datos) => {
       throw crearError(resultado?.mensaje, 410);
 
     default:
-      throw crearError('Estado desconocido', 500);
+      throw crearError('Estado desconocido.', 500);
   }
 };
 
@@ -144,19 +164,17 @@ const iniciarSesionUsuarioService = async (datos) => {
     throw crearError('Se necesita la clave para iniciar sesión');
   }
 
-  const resultado = await seleccionarUsuarioCorreoModel(email);
+  const usuario = await seleccionarUsuarioCorreoModel(email);
 
-  if (resultado.length === 0) {
+  if (!usuario) {
     throw crearError('Correo o contraseña incorrecto', 401);
   }
-
-  const usuario = resultado[0];
   const contraseñaValida = await bcrypt.compare(clave, usuario.clave_usuario);
 
   if (!contraseñaValida) {
     throw crearError('Correo o contraseña incorrecto', 401);
   }
-  
+
   const payload = {
     id_usuario: usuario.id_usuario,
     nombre_usuario: usuario.nombre_usuario,
@@ -223,13 +241,11 @@ const iniciarSesionMovilService = async (datos) => {
     throw crearError('Se necesita la clave para iniciar sesión', 400);
   }
 
-  const resultado = await seleccionarUsuarioCorreoModel(email);
+  const usuario = await seleccionarUsuarioCorreoModel(email);
 
-  if (resultado.length === 0) {
+  if (!usuario) {
     throw crearError('Correo o contraseña incorrecto', 401);
   }
-
-  const usuario = resultado[0];
   const contraseñaValida = await bcrypt.compare(clave, usuario.clave_usuario);
 
   if (!contraseñaValida) {
@@ -259,9 +275,46 @@ const iniciarSesionMovilService = async (datos) => {
   return {
     usuario: payload,
     accessToken,
-    refreshToken 
+    refreshToken
   };
 };
+
+const restaurarClaveUsuarioService = async (datos) => {
+  if (!datos || typeof datos !== 'object') {
+    throw crearError('Se necesita el correo del usuario para cambiar contraseña', 400);
+  }
+  const { correoUsuario, nuevaClave } = datos;
+
+  if (!correoUsuario || typeof correoUsuario !== 'string' || !correoUsuario.trim()) {
+    throw crearError('Se necesita el correo.', 400);
+  }
+
+  if (!validarCorreo(correoUsuario)) {
+    throw crearError('Formato de correo no válido.', 400);
+  }
+
+  if (!nuevaClave || typeof nuevaClave !== 'string' || !nuevaClave.trim()) {
+    throw crearError('La nueva clave es obligatoria.', 400);
+  }
+  if (nuevaClave.length < 8) {
+    throw crearError('La nueva clave debe tener al menos 8 caracteres.', 400);
+  }
+
+  const validacion = await validarVerificacionModel(correoUsuario, "recuperacion_password");
+  console.log(validacion);
+  if (!validacion || validacion.verificado !== 1) {
+    throw crearError('Revise su correo y verifique el código primero.', 403);
+  }
+  const nuevaClaveEncriptada = await bcrypt.hash(nuevaClave, 10);
+  const usuario = await seleccionarUsuarioCorreoModel(correoUsuario);
+  const resultado = actualizarClaveUsuarioModel(usuario.id_usuario, nuevaClaveEncriptada);
+  await eliminarVerificacionModel(validacion.id_verificacion);
+  return {
+    ok: true,
+    mensaje: "Contraseña actualizada con éxito. Ya puede iniciar sesion con su nueva contraseña."
+  };
+
+}
 
 module.exports = {
   registroUsuarioService,
@@ -269,5 +322,6 @@ module.exports = {
   validarCodigoCorreoService,
   iniciarSesionUsuarioService,
   renovarAccessTokenService,
-  iniciarSesionMovilService
+  iniciarSesionMovilService,
+  restaurarClaveUsuarioService
 }

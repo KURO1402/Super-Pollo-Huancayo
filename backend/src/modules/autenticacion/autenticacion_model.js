@@ -72,7 +72,7 @@ const validarCodigoCorreoModel = async (correo, codigo, tipo, fechaActual) => {
     }
 };
 
-const validarVerificacionCorreo = async (correo, tipo) => {
+const validarVerificacionModel = async (correo, tipo) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
@@ -93,9 +93,24 @@ const seleccionarUsuarioCorreoModel = async (correoUsuario) => {
         conexion = await pool.getConnection();
         const [result] = await conexion.execute('CALL sp_seleccionar_usuario_correo(?)', [correoUsuario]);
 
-        return result[0];
+        return result[0][0];
     } catch (err) {
         throw new Error('Error en la base de datos al buscar usuario');
+    } finally {
+        if (conexion) conexion.release();
+    }
+};
+
+const eliminarVerificacionModel = async (idVerificacion) => {
+    let conexion;
+    try {
+        conexion = await pool.getConnection();
+        
+        await conexion.execute('CALL sp_eliminar_verificacion(?)', [idVerificacion]);
+
+        return true;
+    } catch (err) {
+        throw new Error('Error en la base de datos al eliminar la verificación');
     } finally {
         if (conexion) conexion.release();
     }
@@ -106,6 +121,7 @@ module.exports = {
     seleccionarTotalUsuarioPorCorreoModel,
     registrarVerificacionCorreoModel,
     validarCodigoCorreoModel,
-    validarVerificacionCorreo,
-    seleccionarUsuarioCorreoModel
+    validarVerificacionModel,
+    seleccionarUsuarioCorreoModel,
+    eliminarVerificacionModel
 }

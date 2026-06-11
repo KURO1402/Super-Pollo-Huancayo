@@ -10,7 +10,8 @@ const {
     renovarAccessTokenController,
     renovarAccessTokenMovilController,
     cerrarSesionController,
-    iniciarSesionMovilController
+    iniciarSesionMovilController,
+    restaurarClaveUsuarioController
  } = require('./autenticacion_controller');
 
 router.post('/registro', registroUsuarioController);
@@ -21,5 +22,6 @@ router.post('/renovar-token', renovarAccessTokenController);
 router.post('/logout', cerrarSesionController);
 router.post('/movil/login', verificarClienteMovil, iniciarSesionMovilController);
 router.post('/movil/renovar-token', verificarClienteMovil, renovarAccessTokenMovilController);
+router.post('/restaurar-clave',restaurarClaveUsuarioController);
 
 module.exports = router;
