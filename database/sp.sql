@@ -3176,7 +3176,8 @@ END //
 -- Procedimiento para registrar un codigo de verificación de un correo
 CREATE PROCEDURE sp_registrar_codigo_verificacion (
     IN p_correo VARCHAR(100),
-    IN p_codigo CHAR(6)
+    IN p_codigo CHAR(6),
+    IN p_tipo ENUM('registro', 'recuperacion_password')
 )
 BEGIN
     DECLARE v_existente INT DEFAULT 0;
@@ -3189,26 +3190,35 @@ BEGIN
 
     START TRANSACTION;
 
+    -- Buscamos si ya existe un código pendiente para ese correo Y ese tipo específico
     SELECT COUNT(*) INTO v_existente
-    FROM verificacion_correos
-    WHERE correo_verificacion = p_correo AND estado_verificacion = 0;
+    FROM verificaciones
+    WHERE correo = p_correo 
+      AND tipo = p_tipo 
+      AND verificado = 0;
 
     IF v_existente > 0 THEN
-        UPDATE verificacion_correos
+        -- Si existe, actualizamos el código y renovamos el tiempo de expiración
+        UPDATE verificaciones
         SET 
-            codigo_verificacion = p_codigo,
-            expiracion_verificacion = DATE_ADD(NOW(), INTERVAL 5 MINUTE),
-            registro_verificacion = NOW()
-        WHERE correo_verificacion = p_correo AND estado_verificacion = 0;
+            codigo = p_codigo,
+            fecha_expiracion = DATE_ADD(NOW(), INTERVAL 5 MINUTE),
+            fecha_creacion = NOW()
+        WHERE correo = p_correo 
+          AND tipo = p_tipo 
+          AND verificado = 0;
     ELSE
-        INSERT INTO verificacion_correos (
-            correo_verificacion,
-            codigo_verificacion,
-            expiracion_verificacion
+        -- Si no existe, insertamos el nuevo registro con su tipo
+        INSERT INTO verificaciones (
+            correo,
+            codigo,
+            tipo,
+            fecha_expiracion
         )
         VALUES (
             p_correo,
             p_codigo,
+            p_tipo,
             DATE_ADD(NOW(), INTERVAL 5 MINUTE)
         );
     END IF;
@@ -3219,11 +3229,12 @@ END //
 CREATE PROCEDURE sp_verificar_codigo_correo(
     IN p_correo VARCHAR(100),
     IN p_codigo CHAR(6),
+    IN p_tipo ENUM('registro', 'recuperacion_password'),
     IN p_fecha_actual DATETIME
 )
 BEGIN
-    DECLARE v_id INT;
-    DECLARE v_estado TINYINT(1);
+    DECLARE v_id INT DEFAULT NULL;
+    DECLARE v_verificado TINYINT(1);
     DECLARE v_expiracion DATETIME;
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -3234,25 +3245,28 @@ BEGIN
 
     START TRANSACTION;
 
+    -- Buscamos el registro que coincida con correo, código y TIPO
     SELECT 
         id_verificacion,
-        estado_verificacion,
-        expiracion_verificacion
+        verificado,
+        fecha_expiracion
     INTO 
         v_id,
-        v_estado,
+        v_verificado,
         v_expiracion
-    FROM verificacion_correos
-    WHERE correo_verificacion = p_correo
-      AND codigo_verificacion = p_codigo
+    FROM verificaciones
+    WHERE correo = p_correo
+      AND codigo = p_codigo
+      AND tipo = p_tipo
     LIMIT 1;
 
+    -- Validaciones de estado
     IF v_id IS NULL THEN
-        SELECT 2 AS status, 'El código es incorrecto o no existe' AS mensaje;
+        SELECT 2 AS status, 'El código es incorrecto o no existe para este proceso' AS mensaje;
         ROLLBACK;
 
-    ELSEIF v_estado = 1 THEN
-        SELECT 3 AS status,'Este código ya fue utilizado' AS mensaje;
+    ELSEIF v_verificado = 1 THEN
+        SELECT 3 AS status, 'Este código ya fue utilizado' AS mensaje;
         ROLLBACK;
 
     ELSEIF v_expiracion < p_fecha_actual THEN
@@ -3260,25 +3274,28 @@ BEGIN
         ROLLBACK;
 
     ELSE
-        UPDATE verificacion_correos
-        SET estado_verificacion = 1
+        -- Si todo está bien, lo marcamos como verificado
+        UPDATE verificaciones
+        SET verificado = 1
         WHERE id_verificacion = v_id;
 
         COMMIT;
-        SELECT 1 AS status, 'Correo verificado correctamente' AS mensaje;
+        SELECT 1 AS status, 'Código verificado correctamente' AS mensaje;
     END IF;
 END //
 
 
 -- Procedimiento para iniciar sesion 
 CREATE PROCEDURE sp_verificar_validacion_correo(
-    IN p_correo VARCHAR(100)
+    IN p_correo VARCHAR(100),
+    IN p_tipo ENUM('registro', 'recuperacion_password')
 )
 BEGIN
-    SELECT estado_verificacion
-    FROM verificacion_correos
-    WHERE correo_verificacion = p_correo
-    ORDER BY registro_verificacion DESC
+    SELECT verificado
+    FROM verificaciones
+    WHERE correo = p_correo
+      AND tipo = p_tipo
+    ORDER BY fecha_creacion DESC
     LIMIT 1;
 END //
 

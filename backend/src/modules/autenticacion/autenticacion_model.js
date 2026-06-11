@@ -40,11 +40,11 @@ const seleccionarTotalUsuarioPorCorreoModel = async (correo) => {
     }
 };
 
-const registrarVerificacionCorreoModel = async (correo, codigo) => {
+const registrarVerificacionCorreoModel = async (correo, codigo, tipo) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_registrar_codigo_verificacion(?, ?)', [correo, codigo]);
+        const [result] = await conexion.execute('CALL sp_registrar_codigo_verificacion(?, ?, ?)', [correo, codigo, tipo]);
 
         return result;
     } catch (err) {
@@ -56,11 +56,11 @@ const registrarVerificacionCorreoModel = async (correo, codigo) => {
 };
 
 
-const validarCodigoCorreoModel = async (correo, codigo, fechaActual) => {
+const validarCodigoCorreoModel = async (correo, codigo, tipo, fechaActual) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [result] = await conexion.execute('CALL sp_verificar_codigo_correo(?, ?, ?)', [correo, codigo, fechaActual]);
+        const [result] = await conexion.execute('CALL sp_verificar_codigo_correo(?, ?, ?, ?)', [correo, codigo, tipo, fechaActual]);
 
         return  result[0][0];
 
@@ -72,11 +72,11 @@ const validarCodigoCorreoModel = async (correo, codigo, fechaActual) => {
     }
 };
 
-const validarVerificacionCorreo = async (correo) => {
+const validarVerificacionCorreo = async (correo, tipo) => {
     let conexion;
     try {
         conexion = await pool.getConnection();
-        const [rows] = await conexion.execute('CALL sp_verificar_validacion_correo(?)', [correo]);
+        const [rows] = await conexion.execute('CALL sp_verificar_validacion_correo(?, ?)', [correo, tipo]);
 
         return rows[0]?.[0] || null;
 

@@ -30,7 +30,7 @@ DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS categorias_producto;
 DROP TABLE IF EXISTS usuarios;
 DROP TABLE IF EXISTS rol_usuario;
-DROP TABLE IF EXISTS verificacion_correos;
+DROP TABLE IF EXISTS verificaciones;
 DROP TABLE IF EXISTS tipo_documento;
 DROP TABLE IF EXISTS medio_pago;
 DROP TABLE IF EXISTS tipo_comprobante;
@@ -40,13 +40,15 @@ DROP TABLE IF EXISTS mesas;
 -- CREACIÓN
 -- =========================
 
-CREATE TABLE verificacion_correos(
+-- verificacion_correos
+CREATE TABLE verificaciones (
     id_verificacion INT PRIMARY KEY AUTO_INCREMENT,
-    correo_verificacion VARCHAR(100) NOT NULL,
-    codigo_verificacion CHAR(6) NOT NULL,
-    expiracion_verificacion DATETIME NOT NULL,
-    estado_verificacion TINYINT(1) NOT NULL DEFAULT 0,
-    registro_verificacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    correo VARCHAR(100) NOT NULL,
+    codigo CHAR(6) NOT NULL,
+    tipo ENUM('registro', 'recuperacion_password') NOT NULL,
+    fecha_expiracion DATETIME NOT NULL,
+    verificado TINYINT(1) NOT NULL DEFAULT 0,
+    fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE rol_usuario (

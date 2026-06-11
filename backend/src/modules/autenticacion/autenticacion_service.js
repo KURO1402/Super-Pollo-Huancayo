@@ -26,7 +26,7 @@ const registroUsuarioService = async (datos) => {
   } else {
     telefono = telefonoUsuario;
   }
-  const correoValidado = await validarVerificacionCorreo(correoUsuario);
+  const correoValidado = await validarVerificacionCorreo(correoUsuario, "registro");
   if (!correoValidado || correoValidado.estado_verificacion == 0) {
     throw crearError('Verificación pendiente: Primero valide su correo.', 403);
   }
@@ -78,8 +78,7 @@ const registrarVerificacionCorreoService = async (datos) => {
   }
 
   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-
-  await registrarVerificacionCorreoModel(correo, codigo);
+  await registrarVerificacionCorreoModel(correo, codigo, "registro");
   const info = await enviarCorreoVerificacion(correo, codigo)
 
   return {
@@ -104,8 +103,7 @@ const validarCodigoCorreoService = async (datos) => {
     throw crearError('Se necesita el codigo de 6 digitos', 400);
   }
   const fechaActual = new Date();
-
-  const resultado = await validarCodigoCorreoModel(correo, codigo, fechaActual);
+  const resultado = await validarCodigoCorreoModel(correo, codigo, "registro", fechaActual);
 
   if (!resultado) {
     throw crearError('Ocurrrio un error al verificar el correo', 500);
