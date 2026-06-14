@@ -9,6 +9,7 @@ import EstructuraBase from "../layouts/publico/EstructuraBase";
 import Inicio from "../paginas/publico/Inicio";
 import Registro from "../paginas/publico/Registro";
 import InicioSesion from "../paginas/publico/InicioSesion";
+import RecuperarClave from "../paginas/publico/RecuperarClave";
 import NotFound from "../paginas/publico/NotFound";
 
 import EstructuraBaseUsuario from "../layouts/publico/EstructuraBaseUsuario";
@@ -61,6 +62,7 @@ const AppRutas = () => {
                 { index: true, element: <Inicio /> },
                 { path: '/registro', element: <Registro /> },
                 { path: '/inicio-sesion', element: <InicioSesion /> },
+                { path: '/recuperar-clave', element: <RecuperarClave /> },
                 { path: 'terminos-condiciones', element: <TerminosCondiciones /> },
                 { path: 'politicas-privacidad', element: <PoliticasPrivacidad /> },
             ]

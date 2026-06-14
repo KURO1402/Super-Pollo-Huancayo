@@ -3,6 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import CampoEntrada from '../inputs/CampoEntrada';
 import { InicioSesionValidacion } from '../../../utilidades/InicioSesionValidacion';
+import { Link } from 'react-router-dom';
 
 const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
   const {
@@ -49,6 +50,15 @@ const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
         registro={register}
         error={errors.clave}
       />
+
+      <div className="flex justify-end -mt-3">
+        <Link
+          to="/recuperar-clave"
+          className="text-sm text-azul-primario hover:text-azul-secundario font-medium"
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
 
       <div>
         <button

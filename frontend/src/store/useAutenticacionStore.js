@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { loginUsuario, registrarUsuario, generarCodigoVerificacion, validarCodigoVerificacion, logoutUsuario } from '../servicios/autenticacionServicio';
+import { loginUsuario, registrarUsuario, generarCodigoVerificacion, validarCodigoVerificacion, logoutUsuario, restaurarClave } from '../servicios/autenticacionServicio';
 import { useVentaStore } from './useVentaStore';
 
 export const useAutenticacionStore = create(
@@ -37,10 +37,10 @@ export const useAutenticacionStore = create(
                 }
             },
 
-            verificarCorreo: async (correo) => {
+            verificarCorreo: async (correo, tipoVerificacion = 1) => {
                 try {
                     set({ carga: true, error: null });
-                    const respuesta = await generarCodigoVerificacion(correo);
+                    const respuesta = await generarCodigoVerificacion(correo, tipoVerificacion);
                     return respuesta;
                 } catch (err) {
                     set({ error: err.response?.data?.mensaje || 'Error al enviar código de verificación' });
@@ -57,6 +57,19 @@ export const useAutenticacionStore = create(
                     return respuesta;
                 } catch (err) {
                     set({ error: err.response?.data?.mensaje || 'Error al validar código' });
+                    throw err;
+                } finally {
+                    set({ carga: false });
+                }
+            },
+
+            restaurarClave: async (correoUsuario, nuevaClave) => {
+                try {
+                    set({ carga: true, error: null });
+                    const respuesta = await restaurarClave(correoUsuario, nuevaClave);
+                    return respuesta;
+                } catch (err) {
+                    set({ error: err.response?.data?.mensaje || 'Error al restaurar contraseña' });
                     throw err;
                 } finally {
                     set({ carga: false });

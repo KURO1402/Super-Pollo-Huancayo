@@ -18,18 +18,20 @@ export const loginUsuario = async (datos) => {
     }
 };
 
-export const generarCodigoVerificacion = async (correo) => {
-    try {
-        const respuesta = await API.post('auth/enviar-codigo-verificacion', { correo });
-        return respuesta.data;
-    } catch (error) {
-        throw error;
-    }
+export const generarCodigoVerificacion = async (correo, tipoVerificacion = 1) => {
+    const respuesta = await API.post('/auth/enviar-codigo-verificacion', { 
+        correo, 
+        tipoVerificacion: Number(tipoVerificacion)
+    });
+    return respuesta.data;
 };
 
 export const validarCodigoVerificacion = async (codigo) => {
     try {
-        const respuesta = await API.post('/auth/verificar-codigo', codigo);
+        const respuesta = await API.post('/auth/verificar-codigo', {
+            ...codigo,
+            tipoVerificacion: Number(codigo.tipoVerificacion),
+        });
         return respuesta.data;
     } catch (error) {
         throw error;
@@ -44,3 +46,8 @@ export const logoutUsuario = async () => {
         throw error;
     }
 };
+
+export const restaurarClave = async (correoUsuario, nuevaClave) => {
+    const respuesta = await API.post('/auth/restaurar-clave', { correoUsuario, nuevaClave });
+    return respuesta.data;
+}

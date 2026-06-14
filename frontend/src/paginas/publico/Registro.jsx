@@ -20,7 +20,7 @@ const Registro = () => {
   const [correoVerificacion, setCorreoVerificacion] = useState('');
   const handleRegistroSubmit = async (formularioData) => {
     try {
-      await verificarCorreo(formularioData.correoUsuario);
+      await verificarCorreo(formularioData.correoUsuario, 1);
       setDatosTemporales(formularioData);
       setCorreoVerificacion(formularioData.correoUsuario);
       setPaso(2);
@@ -33,7 +33,8 @@ const Registro = () => {
     try {
       await validarCodigo({
         correo: correoVerificacion,
-        codigo: codigo
+        codigo: codigo,
+        tipoVerificacion: 1,
       });
       const usuarioRegistrado = await registrar(datosTemporales);
       
@@ -49,7 +50,7 @@ const Registro = () => {
 
   const handleReenviarCodigo = async () => {
     try {
-      await verificarCorreo(correoVerificacion);
+      await verificarCorreo(correoVerificacion, 1);
       mostrarAlerta.info('Nuevo código enviado a tu correo');
     } catch (error) {
     }
