@@ -68,6 +68,7 @@ app.use('/api/pedidos', require('./src/modules/pedidos/pedidos_routes'));
 app.use('/api/fuente-datos', require('./src/modules/fuente-datos/fuente_datos_routes'));
 app.use('/api', require('./src/modules/configuracion/configuracion_routes'));
 app.use('/api/reportes', require('./src/modules/reportes/reportes_routes'));
+app.use('/api/ai', require('./src/modules/ai/ai_routes'));
 
 const iniciarJobSunat = require('./src/jobs/sunat_job');
 iniciarJobSunat();
@@ -78,5 +79,8 @@ app.listen(PORT, () => {
 });
 
 app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({ ok: false, mensaje: err.message });
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.status(err.status || 500).json({ ok: false, mensaje: err.message });
 });
