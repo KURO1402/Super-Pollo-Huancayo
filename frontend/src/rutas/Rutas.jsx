@@ -51,6 +51,7 @@ import PagoFallido from "../paginas/usuario/PagoFallido";
 import PagoPendiente from "../paginas/usuario/PagoPendiente";
 import TerminosCondiciones from "../paginas/publico/TerminosCondiciones";
 import PoliticasPrivacidad from "../paginas/publico/PoliticasPrivacidad";
+import AsistenteChatBotPagina from "../paginas/panel-admin/AsistenteChatBotPagina";
 
 const AppRutas = () => {
     useScrollAlInicio();
@@ -114,10 +115,15 @@ const AppRutas = () => {
                     { path: 'categorias-productos', element: <CategoriaProductosPagina /> },
                     { path: 'tipos-documento', element: <TiposDocumentoPagina /> },
                     { path: 'medios-pago', element: <MediosPagoPagina /> },
-                    { path: 'tipos-comprobante', element: <TiposComprobantePagina /> },
+                    { path: 'tipos-comprobante', element: <TiposComprobantePagina /> }
                 ]
                 }
             ]
+        },
+
+        {
+            path: '/admin/asistente',
+            element: <AsistenteChatBotPagina />,
         },
 
         {

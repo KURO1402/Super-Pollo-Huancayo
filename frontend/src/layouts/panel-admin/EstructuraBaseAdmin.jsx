@@ -7,7 +7,7 @@ import MenuLateral from "./MenuLateral";
 import { useAutenticacionStore } from '../../store/useAutenticacionStore';
 import useInactividad from '../../hooks/useInactividad';
 import ModalInactividad from '../../componentes/ui/modal/ModalInactividad';
-import ControladorChatbot from '../../componentes/panel-admin/chatbot/ControladorChatbot'; // ← NUEVO
+import Asistente from '../../componentes/panel-admin/chatbot/Asistente';
 
 const LayoutContent = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -73,9 +73,7 @@ const LayoutContent = () => {
         onSeguir={handleSeguir}
         onCerrarSesion={handleLogout}
       />
-
-      {/* Chatbot - Siempre disponible en cualquier sección */}
-      <ControladorChatbot />
+      <Asistente />
     </div>
   );
 };
