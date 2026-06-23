@@ -14,7 +14,7 @@ const BotonFlotanteChat = ({ abierto, alClick }) => {
       type="button"
       onClick={alClick}
       aria-label={abierto ? 'Cerrar asistente Pollobot' : 'Abrir asistente Pollobot'}
-      className="fixed bottom-6 right-6 z-[999] w-14 h-14 rounded-full
+      className="fixed bottom-6 right-6 z-999 w-14 h-14 rounded-full
         bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600
         text-white shadow-lg hover:shadow-xl
         flex items-center justify-center

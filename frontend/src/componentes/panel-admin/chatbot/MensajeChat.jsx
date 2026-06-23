@@ -15,7 +15,7 @@ const MensajeChat = ({ rol, texto, hora }) => {
     return (
       <div className="flex items-start gap-2">
         <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-900/40
-          flex items-center justify-center flex-shrink-0 mt-0.5">
+          flex items-center justify-center shrink-0 mt-0.5">
           <FaFeather className="text-orange-600 dark:text-orange-400" size={12} />
         </div>
         <div className="max-w-[78%]">
