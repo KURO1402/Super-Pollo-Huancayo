@@ -1,3 +1,4 @@
+// ai/ai_model.js
 const pool = require('../../config/conexion_DB');
 
 const _ejecutar = async (sp, params) => {
@@ -14,6 +15,7 @@ const _ejecutar = async (sp, params) => {
     }
 };
 
+// ── VENTAS 
 const obtenerResumenVentas = (fechaInicio, fechaFin) =>
     _ejecutar('sp_ia_ventas_resumen', [fechaInicio, fechaFin]);
 
@@ -29,10 +31,41 @@ const obtenerCatalogoProductos = (idCategoria = null, nombre = null) =>
 const obtenerProductosConInsumos = (idProducto = null) =>
     _ejecutar('sp_ia_productos_con_insumos', [idProducto]);
 
+// ── CAJA
+const obtenerResumenCaja = (fechaInicio, fechaFin) =>
+    _ejecutar('sp_ia_caja_resumen', [fechaInicio, fechaFin]);
+
+const obtenerMovimientosCaja = (fechaInicio, fechaFin, tipoMovimiento = null) =>
+    _ejecutar('sp_ia_caja_movimientos', [fechaInicio, fechaFin, tipoMovimiento]);
+
+const obtenerArqueosCaja = (fechaInicio, fechaFin) =>
+    _ejecutar('sp_ia_caja_arqueos', [fechaInicio, fechaFin]);
+
+// ── INVENTARIO 
+const obtenerEstadoInventario = (nivelStock = null) =>
+    _ejecutar('sp_ia_inventario_estado', [nivelStock]);
+
+const obtenerMovimientosInventario = (fechaInicio, fechaFin, idInsumo = null) =>
+    _ejecutar('sp_ia_inventario_movimientos', [fechaInicio, fechaFin, idInsumo]);
+
+// ── RESERVAS 
+const obtenerDetalleReservas = (fechaInicio, fechaFin, estado = null) =>
+    _ejecutar('sp_ia_reservas', [fechaInicio, fechaFin, estado]);
+
+const obtenerResumenReservas = (fechaInicio, fechaFin) =>
+    _ejecutar('sp_ia_reservas_resumen', [fechaInicio, fechaFin]);
+
 module.exports = {
     obtenerResumenVentas,
     obtenerDetalleVentas,
     obtenerTopProductosVendidos,
     obtenerCatalogoProductos,
     obtenerProductosConInsumos,
+    obtenerResumenCaja,
+    obtenerMovimientosCaja,
+    obtenerArqueosCaja,
+    obtenerEstadoInventario,
+    obtenerMovimientosInventario,
+    obtenerDetalleReservas,
+    obtenerResumenReservas,
 };

@@ -22,7 +22,7 @@ const VentanaChat = ({ abierto, alCerrar }) => {
   const menuRef = useRef(null);
 
   // Consumimos el Hook Real
-  const { mensajes, cargando, enviarMensaje, limpiarConversacion } = usePollobot();
+  const { mensajes, cargando, idUltimoBot, enviarMensaje, limpiarConversacion } = usePollobot();
 
   const respuestasRapidas = [
     'Ver ventas de hoy',
@@ -51,7 +51,7 @@ const VentanaChat = ({ abierto, alCerrar }) => {
   const handleEnviar = async (e) => {
     e.preventDefault();
     if (!mensaje.trim() || cargando) return;
-    
+
     const mensajeEnviado = mensaje;
     setMensaje(''); // Limpia el input
     await enviarMensaje(mensajeEnviado);
@@ -63,10 +63,9 @@ const VentanaChat = ({ abierto, alCerrar }) => {
         border border-gray-200 dark:border-gray-700
         rounded-2xl shadow-2xl flex flex-col overflow-hidden
         transition-all duration-200 ease-in-out
-        ${
-          expandido
-            ? 'bottom-6 right-6 w-[420px] h-[640px] max-h-[85vh]'
-            : 'bottom-24 right-6 w-[340px] h-[480px] max-h-[70vh]'
+        ${expandido
+          ? 'bottom-6 right-6 w-[420px] h-[640px] max-h-[85vh]'
+          : 'bottom-24 right-6 w-[340px] h-[480px] max-h-[70vh]'
         }`}
     >
       {/* ── Cabecera ───────────────────────────────────────────────── */}
@@ -145,7 +144,15 @@ const VentanaChat = ({ abierto, alCerrar }) => {
       {/* ── Cuerpo de mensajes ─────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50 dark:bg-gray-900/40">
         {mensajes.map((m) => (
-          <MensajeChat key={m.id} rol={m.rol} texto={m.texto} hora={m.hora} />
+          <MensajeChat
+            key={m.id}
+            rol={m.rol}
+            texto={m.texto}
+            hora={m.hora}
+            grafico={m.grafico ?? null}
+            esUltimoBot={m.id === idUltimoBot}
+            cargandoRespuesta={cargando}
+          />
         ))}
 
         {/* Respuestas rápidas */}
