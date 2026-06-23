@@ -16,6 +16,11 @@ DROP PROCEDURE IF EXISTS sp_reporte_caja_resumen;
 DROP PROCEDURE IF EXISTS sp_reporte_caja_detalle;
 DROP PROCEDURE IF EXISTS sp_obtener_ultimo_pedido_mesa;
 DROP PROCEDURE IF EXISTS sp_eliminar_verificacion;
+DROP PROCEDURE IF EXISTS sp_ia_ventas_resumen;
+DROP PROCEDURE IF EXISTS sp_ia_ventas_detalle;
+DROP PROCEDURE IF EXISTS sp_ia_top_productos_vendidos;
+DROP PROCEDURE IF EXISTS sp_ia_productos_catalogo;
+DROP PROCEDURE IF EXISTS sp_ia_productos_con_insumos;
 
 
 DELIMITER //
@@ -335,6 +340,145 @@ BEGIN
     WHERE id_verificacion = p_id_verificacion;
     COMMIT;
 
+END //
+
+-- Resumen consolidado de ventas para un período
+CREATE PROCEDURE sp_ia_ventas_resumen(
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE
+)
+BEGIN
+    SELECT
+        COUNT(v.id_venta)                       AS total_ventas,
+        COALESCE(SUM(v.total_venta), 0)         AS monto_total,
+        COALESCE(AVG(v.total_venta), 0)         AS ticket_promedio,
+        COALESCE(MAX(v.total_venta), 0)         AS venta_maxima,
+        COALESCE(MIN(v.total_venta), 0)         AS venta_minima,
+        COALESCE(SUM(v.total_igv), 0)           AS total_igv,
+        COALESCE(SUM(v.total_gravada), 0)       AS total_gravada,
+        (
+            SELECT mp2.nombre_medio_pago
+            FROM ventas v2
+            JOIN medio_pago mp2 ON v2.id_medio_pago = mp2.id_medio_pago
+            WHERE DATE(v2.fecha_registro) BETWEEN p_fecha_inicio AND p_fecha_fin
+            GROUP BY mp2.id_medio_pago
+            ORDER BY COUNT(*) DESC
+            LIMIT 1
+        )                                       AS medio_pago_mas_usado,
+        (
+            SELECT COUNT(*)
+            FROM ventas v3
+            WHERE DATE(v3.fecha_registro) = CURDATE()
+        )                                       AS ventas_hoy,
+        p_fecha_inicio                          AS periodo_desde,
+        p_fecha_fin                             AS periodo_hasta
+    FROM ventas v
+    WHERE DATE(v.fecha_registro) BETWEEN p_fecha_inicio AND p_fecha_fin;
+END //
+
+-- Detalle de cada venta con comprobante incluido
+CREATE PROCEDURE sp_ia_ventas_detalle(
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE
+)
+BEGIN
+    SELECT
+        v.id_venta,
+        DATE_FORMAT(v.fecha_registro, '%d/%m/%Y %H:%i') AS fecha_hora,
+        COALESCE(v.nombre_cliente, 'Sin nombre')        AS cliente,
+        v.numero_documento_cliente                      AS documento,
+        td.nombre_tipo_documento                        AS tipo_documento,
+        mp.nombre_medio_pago                            AS medio_pago,
+        CONCAT(c.serie, '-', LPAD(c.numero_correlativo, 8, '0')) AS comprobante,
+        tc.nombre_tipo_comprobante                      AS tipo_comprobante,
+        c.estado_sunat,
+        v.total_gravada,
+        v.total_igv,
+        v.total_venta
+    FROM ventas v
+    LEFT JOIN tipo_documento td   ON v.id_tipo_documento  = td.id_tipo_documento
+    LEFT JOIN medio_pago mp       ON v.id_medio_pago      = mp.id_medio_pago
+    LEFT JOIN comprobantes c      ON c.id_venta           = v.id_venta
+    LEFT JOIN tipo_comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante
+    WHERE DATE(v.fecha_registro) BETWEEN p_fecha_inicio AND p_fecha_fin
+    ORDER BY v.fecha_registro DESC;
+END //
+
+-- Top 10 productos más vendidos con monto generado
+CREATE PROCEDURE sp_ia_top_productos_vendidos(
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE
+)
+BEGIN
+    SELECT
+        p.nombre_producto,
+        c.nombre_categoria,
+        SUM(dv.cantidad_producto)   AS unidades_vendidas,
+        ROUND(SUM(dv.total_producto), 2) AS monto_generado,
+        ROUND(AVG(dv.precio_unitario), 2) AS precio_promedio
+    FROM detalle_ventas dv
+    JOIN ventas v    ON dv.id_venta    = v.id_venta
+    JOIN productos p ON dv.id_producto = p.id_producto
+    JOIN categorias_producto c ON p.id_categoria = c.id_categoria
+    WHERE DATE(v.fecha_registro) BETWEEN p_fecha_inicio AND p_fecha_fin
+    GROUP BY p.id_producto, p.nombre_producto, c.nombre_categoria
+    ORDER BY unidades_vendidas DESC
+    LIMIT 10;
+END //
+
+-- Catálogo completo de productos activos con su categoría e imágenes
+CREATE PROCEDURE sp_ia_productos_catalogo(
+    IN p_id_categoria INT,       -- NULL para todos
+    IN p_nombre       VARCHAR(100) -- NULL para todos
+)
+BEGIN
+    SELECT
+        p.id_producto,
+        p.nombre_producto,
+        p.descripcion_producto,
+        p.precio_producto,
+        c.nombre_categoria,
+        CASE WHEN p.usa_insumos = 1 THEN 'Sí' ELSE 'No' END AS usa_insumos,
+        COUNT(ip.id_imagen_producto)    AS total_imagenes
+    FROM productos p
+    JOIN categorias_producto c  ON p.id_categoria       = c.id_categoria
+    LEFT JOIN imagenes_producto ip ON ip.id_producto    = p.id_producto
+    WHERE p.estado_producto = 1
+      AND (p_id_categoria IS NULL OR p.id_categoria = p_id_categoria)
+      AND (p_nombre IS NULL OR p.nombre_producto LIKE CONCAT('%', p_nombre, '%'))
+    GROUP BY
+        p.id_producto, p.nombre_producto, p.descripcion_producto,
+        p.precio_producto, c.nombre_categoria, p.usa_insumos
+    ORDER BY c.nombre_categoria, p.nombre_producto;
+END //
+
+-- Productos con sus insumos y cantidades de uso
+CREATE PROCEDURE sp_ia_productos_con_insumos(
+    IN p_id_producto INT   -- NULL para todos
+)
+BEGIN
+    SELECT
+        p.id_producto,
+        p.nombre_producto,
+        p.precio_producto,
+        c.nombre_categoria,
+        i.nombre_insumo,
+        cip.cantidad_uso,
+        i.unidad_medida,
+        i.stock_insumo                              AS stock_actual,
+        CASE
+            WHEN i.stock_insumo <= 5  THEN 'crítico'
+            WHEN i.stock_insumo <= 10 THEN 'bajo'
+            ELSE 'normal'
+        END                                         AS nivel_stock
+    FROM productos p
+    JOIN categorias_producto c          ON p.id_categoria  = c.id_categoria
+    JOIN cantidad_insumo_producto cip   ON cip.id_producto = p.id_producto
+    JOIN insumos i                      ON cip.id_insumo   = i.id_insumo
+    WHERE p.estado_producto = 1
+      AND p.usa_insumos = 1
+      AND (p_id_producto IS NULL OR p.id_producto = p_id_producto)
+    ORDER BY p.nombre_producto, i.nombre_insumo;
 END //
 
 DELIMITER ;
