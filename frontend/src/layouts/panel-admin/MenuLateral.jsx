@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiGrid, FiShoppingCart, FiArchive, FiCalendar, FiUsers, FiUser, FiChevronDown, FiMoreHorizontal, FiSettings } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import { FaCashRegister, FaChartBar, FaFeather } from "react-icons/fa";
+import { FaCashRegister, FaChartBar } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import Nombre from "../../assets/imagenes/Nombre_Empresa.png";
 import Logo from "../../assets/imagenes/Logo.svg";
@@ -78,12 +78,6 @@ const navItems = [
     icon: <FiUser size={20} />,
     name: "Perfil",
     path: "/admin/perfil",
-    rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
-  },
-  {
-    icon: <FaFeather size={20} />,
-    name: "Asistente IA",
-    path: "/admin/asistente",
     rolesPermitidos: [ROLES.ADMINISTRADOR, ROLES.COLABORADOR],
   },
 ];

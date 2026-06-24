@@ -51,7 +51,6 @@ import PagoFallido from "../paginas/usuario/PagoFallido";
 import PagoPendiente from "../paginas/usuario/PagoPendiente";
 import TerminosCondiciones from "../paginas/publico/TerminosCondiciones";
 import PoliticasPrivacidad from "../paginas/publico/PoliticasPrivacidad";
-import AsistenteChatBotPagina from "../paginas/panel-admin/AsistenteChatBotPagina";
 
 const AppRutas = () => {
     useScrollAlInicio();
@@ -119,11 +118,6 @@ const AppRutas = () => {
                 ]
                 }
             ]
-        },
-
-        {
-            path: '/admin/asistente',
-            element: <AsistenteChatBotPagina />,
         },
 
         {
