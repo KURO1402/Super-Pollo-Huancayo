@@ -44,6 +44,10 @@
   min-height: 50vh;
 }
 
+.curva-circular {
+  clip-path: circle(55% at 25% 50%);
+}
+
 @media (min-width: 1024px) {
   .fondo-cortando-pollo {
     width: 100vw;

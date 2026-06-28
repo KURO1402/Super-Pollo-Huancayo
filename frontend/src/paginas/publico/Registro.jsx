@@ -71,71 +71,74 @@ const Registro = () => {
     }, [error, limpiarError]);
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className={`max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 ${paso === 2 ? 'max-w-2xl' : ''}`}>
-        <div className="md:flex">
-          {paso === 1 && (
-            <div className="hidden md:block md:w-2/5 bg-azul-primario p-12 text-white">
-              <div className="flex flex-col h-full justify-center">
-                <h2 className="text-3xl font-bold mb-6">
-                  Forma parte de nuestro increíble equipo y diviértete con nosotros.
-                </h2>
-                <p className="text-gray-300">
-                  Únete a nuestra comunidad y disfruta de los beneficios de ser parte de Super Pollo.
-                </p>
-                <div className="mt-10">
-                  <div className="w-24 h-2 bg-yellow-400 mb-4"></div>
-                </div>
-              </div>
+    <section className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 fondo-login-registro">
+      <div className={`max-w-4xl w-full bg-black/10 shadow-2xl backdrop-blur-md border border-white/5 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ${paso === 2 ? 'max-w-2xl' : ''}`}>
+      <div className="md:flex relative">
+        {paso === 1 && (
+          <div className="hidden md:block md:w-2/5 bg-black/10 shadow-2xl backdrop-blur-md p-12 text-white relative z-10 overflow-hidden">
+
+            <div className="absolute top-0 bottom-0 left-0 right-[-40px] bg-linear-to-br from-[#0a111e] via-[#680b0b] to-[#dd1717] border-r-0.5 border-red-500/40 pointer-events-none z-0"></div>
+
+            <div className="flex flex-col h-full justify-center relative z-20">
+              <div className="w-16 h-1 bg-yellow-500 mb-6 rounded-full"></div>
+
+              <h2 className="text-3xl font-bold mb-6 leading-tight">
+                Forma parte de nuestro increíble equipo y diviértete con nosotros.
+              </h2>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Únete a nuestra comunidad y disfruta de los beneficios de ser parte de Super Pollo.
+              </p>
             </div>
-          )}
-          
-          <div className={`w-full ${paso === 1 ? 'md:w-3/5' : 'md:w-full'} py-10 px-8`}>
-            {paso === 1 ? (
-              <>
-                <div className="mb-8 text-center">
-                  <h2 className="text-3xl font-bold text-gray-800 mb-2">Crear Cuenta</h2>
-                  <p className="text-gray-600">Completa tus datos para registrarte</p>
-                </div>
-                
-                <FormularioRegistro
-                  alEnviar={handleRegistroSubmit}
-                  estaCargando={carga}
-                />
-                
-                <p className="mt-6 text-center text-sm text-gray-600">
-                  ¿Ya tienes una cuenta?{' '}
-                  <Link to="/inicio-sesion" className="font-medium text-azul-primario hover:text-azul-secundario">
-                    Inicia sesión aquí
-                  </Link>
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="mb-6 text-center">
-                  <button
-                    onClick={handleVolverAlFormulario}
-                    className="text-azul-primario hover:text-azul-secundario font-medium mb-4 flex items-center justify-center mx-auto"
-                  >
-                    <FaArrowLeft className="pr-2 text-2xl"/>
-                     Volver al formulario
-                  </button>
-                  
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Verificación de Correo</h2>
-                  <p className="text-gray-600">Completa la verificación para finalizar tu registro</p>
-                </div>
-                
-                <VerificacionCorreo
-                  correo={correoVerificacion}
-                  onCodigoValidado={handleCodigoValidado}
-                  onReenviarCodigo={handleReenviarCodigo}
-                  estaCargando={carga}
-                />
-              </>
-            )}
           </div>
+        )}
+
+        <div className={`w-full ${paso === 1 ? 'md:w-3/5' : 'md:w-full'} py-10 px-8 relative z-10 bg-black/10 shadow-2xl backdrop-blur-md`}>
+          {paso === 1 ? (
+            <>
+              <div className="mb-8 text-center">
+                <h2 className="text-3xl font-bold text-white mb-2">Crear Cuenta</h2>
+                <p className="text-gray-400 text-sm">Completa tus datos para registrarte</p>
+                <div className="w-12 h-1 bg-red-600 mx-auto mt-3 rounded-full"></div>
+              </div>
+
+              <FormularioRegistro
+                alEnviar={handleRegistroSubmit}
+                estaCargando={carga}
+              />
+
+              <p className="mt-6 text-center text-sm text-gray-400">
+                ¿Ya tienes una cuenta?{' '}
+                <Link to="/inicio-sesion" className="font-medium text-red-500 hover:text-red-400">
+                  Inicia sesión aquí
+                </Link>
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="mb-6 text-center">
+                <button
+                  onClick={handleVolverAlFormulario}
+                  className="text-red-500 hover:text-red-400 font-medium mb-4 flex items-center justify-center mx-auto"
+                >
+                  <FaArrowLeft className="pr-2 text-2xl"/>
+                  Volver al formulario
+                </button>
+
+                <h2 className="text-2xl font-bold text-white mb-2">Verificación de Correo</h2>
+                <p className="text-gray-400 text-sm">Completa la verificación para finalizar tu registro</p>
+              </div>
+
+              <VerificacionCorreo
+                correo={correoVerificacion}
+                onCodigoValidado={handleCodigoValidado}
+                onReenviarCodigo={handleReenviarCodigo}
+                estaCargando={carga}
+              />
+            </>
+          )}
         </div>
       </div>
+    </div>
     </section>
   );
 };

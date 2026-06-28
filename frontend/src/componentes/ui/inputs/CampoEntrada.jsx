@@ -18,7 +18,7 @@ const CampoEntrada = ({
       <div className="relative">
         {Icono && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icono className="text-gray-200" />
+            <Icono className="text-red-500" />
           </div>
         )}
         <input

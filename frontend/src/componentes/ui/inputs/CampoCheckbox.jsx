@@ -7,16 +7,16 @@ const CampoCheckbox = ({ id, nombre, etiqueta, registro, error, className = '' }
           id={id}
           {...registro(nombre)}
           className={`
-            h-4 w-4 text-azul-primario focus:ring-azul-primario border-gray-300 rounded cursor-pointer
+            h-4 w-4 text-gray-200 focus:ring-gray-200 border-gray-300 rounded cursor-pointer
             ${error ? 'border-red-500' : ''}
           `}
         />
       </div>
       <div className="ml-2">
-        <label htmlFor={id} className="text-sm text-gray-900">
+        <label htmlFor={id} className="text-sm text-gray-200">
           {etiqueta}
         </label>
-        <div className="min-h-[20px]">
+        <div className="min-h-5">
           {error && (
             <p className="text-sm text-red-600">
               {error.message}

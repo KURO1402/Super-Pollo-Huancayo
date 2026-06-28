@@ -47,7 +47,7 @@ const InicioSesion = () => {
 
           {/* Contenedor Izquierdo */}
           <div className="hidden md:block md:w-2/5 bg-black/10 backdrop-blur-lg p-12 text-white relative z-10 overflow-hidden"> 
-           <div className="absolute top-0 bottom-0 left-0 right-0 border-r border-red-400 bg-gradient-to-br from-[#0a111e] via-[#680b0b] to-[#dd1717] rounded-r-[100%_51%] shadow-[3px_0_4px_0_#cc0000,inset_-3px_0_4px_0_#cc0000] pointer-events-none z-0 overflow-hidden"></div>
+           <div className="absolute top-0 bottom-0 left-0 right-0 border-r border-red-400 bg-linear-to-br from-[#0a111e] via-[#680b0b] to-[#dd1717] rounded-r-[100%_51%] shadow-[3px_0_4px_0_#cc0000,inset_-3px_0_4px_0_#cc0000] pointer-events-none z-0 overflow-hidden"></div>
            <div className="flex flex-col h-full justify-center relative z-20">
               <div className="w-16 h-1 bg-yellow-500 mb-6 rounded-full"></div>
 
