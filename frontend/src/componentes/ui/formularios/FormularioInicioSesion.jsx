@@ -54,7 +54,7 @@ const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
       <div className="flex justify-end -mt-3">
         <Link
           to="/recuperar-clave"
-          className="text-sm text-azul-primario hover:text-azul-secundario font-medium"
+          className="text-sm underline text-red-500 hover:text-red-400 font-medium"
         >
           ¿Olvidaste tu contraseña?
         </Link>
@@ -67,10 +67,10 @@ const FormularioInicioSesion = ({ alEnviar, estaCargando = false }) => {
           className={`
             w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200
             ${isValid && !estaCargando
-              ? 'bg-azul-primario hover:bg-azul-secundario text-white cursor-pointer'
+              ? 'bg-red-600 hover:bg-red-700 text-white cursor-pointer'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }
-            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-azul-primario
+            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
           `}
         >
           {estaCargando ? (

@@ -36,6 +36,14 @@
   min-height: 50vh;
 }
 
+.fondo-login-registro {
+  background-image: url('/Fondo_login_registro.png');
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  min-height: 50vh;
+}
+
 @media (min-width: 1024px) {
   .fondo-cortando-pollo {
     width: 100vw;
