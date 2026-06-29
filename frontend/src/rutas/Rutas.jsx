@@ -114,7 +114,7 @@ const AppRutas = () => {
                     { path: 'categorias-productos', element: <CategoriaProductosPagina /> },
                     { path: 'tipos-documento', element: <TiposDocumentoPagina /> },
                     { path: 'medios-pago', element: <MediosPagoPagina /> },
-                    { path: 'tipos-comprobante', element: <TiposComprobantePagina /> },
+                    { path: 'tipos-comprobante', element: <TiposComprobantePagina /> }
                 ]
                 }
             ]

@@ -7,6 +7,7 @@ import MenuLateral from "./MenuLateral";
 import { useAutenticacionStore } from '../../store/useAutenticacionStore';
 import useInactividad from '../../hooks/useInactividad';
 import ModalInactividad from '../../componentes/ui/modal/ModalInactividad';
+import Asistente from '../../componentes/panel-admin/chatbot/Asistente';
 
 const LayoutContent = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -32,7 +33,7 @@ const LayoutContent = () => {
     clearInterval(cuentaAtrasRef.current);
     setMostrarAviso(false);
     await logout();
-    navigate('/inicio-sesion', { replace: true,  state: { sesionExpirada: true } });
+    navigate('/inicio-sesion', { replace: true, state: { sesionExpirada: true } });
   }, [logout, navigate]);
 
   const { cancelarLogout } = useInactividad({
@@ -55,8 +56,9 @@ const LayoutContent = () => {
         <FondoOscuro />
       </div>
       <div
-        className={`flex-1 transition-all duration-300 ease-in-out ${isExpanded || isHovered ? "lg:ml-72.5" : "lg:ml-22.5"
-          } ${isMobileOpen ? "ml-0" : ""}`}
+        className={`flex-1 transition-all duration-300 ease-in-out ${
+          isExpanded || isHovered ? "lg:ml-72.5" : "lg:ml-22.5"
+        } ${isMobileOpen ? "ml-0" : ""}`}
       >
         <Cabecera />
         <div className="p-1 mx-auto max-w-(--breakpoint-2xl) md:p-2">
@@ -64,12 +66,14 @@ const LayoutContent = () => {
         </div>
       </div>
 
+      {/* Modal de inactividad */}
       <ModalInactividad
         visible={mostrarAviso}
         segundosRestantes={segundos}
         onSeguir={handleSeguir}
         onCerrarSesion={handleLogout}
       />
+      <Asistente />
     </div>
   );
 };
