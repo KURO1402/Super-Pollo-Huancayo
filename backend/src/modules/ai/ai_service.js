@@ -29,12 +29,21 @@ async function construirGrafico({ tipo_grafico, fecha_inicio, fecha_fin, limite 
         case 'ventas_diarias': {
             const data = await db.obtenerDetalleVentas(fecha_inicio, fecha_fin);
             const porFecha = {};
+
             data.forEach(r => {
-                const f = r.fecha;
+                if (!r.fecha_hora || typeof r.fecha_hora !== 'string') return;
+
+                const [parteFecha] = r.fecha_hora.split(' ');
+                const [dia, mes, anio] = parteFecha.split('/');
+                if (!dia || !mes || !anio) return;
+
+                const f = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+
                 if (!porFecha[f]) porFecha[f] = { fecha: f, total: 0, cantidad: 0 };
                 porFecha[f].total += parseFloat(r.total_venta ?? 0);
                 porFecha[f].cantidad += 1;
             });
+
             return {
                 __tipo: 'grafico',
                 tipo: 'LineChart',
