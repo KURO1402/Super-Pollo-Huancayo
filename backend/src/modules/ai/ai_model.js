@@ -31,6 +31,9 @@ const obtenerCatalogoProductos = (idCategoria = null, nombre = null) =>
 const obtenerProductosConInsumos = (idProducto = null) =>
     _ejecutar('sp_ia_productos_con_insumos', [idProducto]);
 
+const obtenerVentasPorMedioPago = (fechaInicio, fechaFin) =>
+    _ejecutar('sp_ia_ventas_por_medio_pago', [fechaInicio, fechaFin]);
+
 // ── CAJA
 const obtenerResumenCaja = (fechaInicio, fechaFin) =>
     _ejecutar('sp_ia_caja_resumen', [fechaInicio, fechaFin]);
@@ -68,4 +71,5 @@ module.exports = {
     obtenerMovimientosInventario,
     obtenerDetalleReservas,
     obtenerResumenReservas,
+    obtenerVentasPorMedioPago,
 };

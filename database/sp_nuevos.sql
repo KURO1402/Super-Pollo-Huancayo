@@ -28,6 +28,7 @@ DROP PROCEDURE IF EXISTS sp_ia_inventario_estado;
 DROP PROCEDURE IF EXISTS sp_ia_inventario_movimientos;
 DROP PROCEDURE IF EXISTS sp_ia_reservas;
 DROP PROCEDURE IF EXISTS sp_ia_reservas_resumen;
+DROP PROCEDURE IF EXISTS sp_ia_ventas_por_medio_pago;
 
 DELIMITER //
 
@@ -591,6 +592,22 @@ BEGIN
     LEFT JOIN pago_reservacion pp ON pp.id_reservacion = r.id_reservacion
                                   AND pp.estado_pago = 'confirmado'
     WHERE r.fecha_reservacion BETWEEN p_fecha_inicio AND p_fecha_fin;
+END //
+
+CREATE PROCEDURE sp_ia_ventas_por_medio_pago(
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin    DATE
+)
+BEGIN
+    SELECT
+        mp.nombre_medio_pago,
+        COUNT(v.id_venta)                 AS total_ventas,
+        COALESCE(SUM(v.total_venta), 0)   AS monto_total
+    FROM ventas v
+    JOIN medio_pago mp ON v.id_medio_pago = mp.id_medio_pago
+    WHERE DATE(v.fecha_registro) BETWEEN p_fecha_inicio AND p_fecha_fin
+    GROUP BY mp.id_medio_pago, mp.nombre_medio_pago
+    ORDER BY monto_total DESC;
 END //
 
 DELIMITER ;

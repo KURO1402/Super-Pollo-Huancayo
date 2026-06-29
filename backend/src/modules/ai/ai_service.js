@@ -75,18 +75,16 @@ async function construirGrafico({ tipo_grafico, fecha_inicio, fecha_fin, limite 
         }
 
         case 'medios_pago': {
-            const data = await db.obtenerResumenVentas(fecha_inicio, fecha_fin);
+            const data = await db.obtenerVentasPorMedioPago(fecha_inicio, fecha_fin);
             return {
                 __tipo: 'grafico',
                 tipo: 'PieChart',
-                titulo: 'Distribución por medio de pago',
-                data: data
-                    .filter(r => r.nombre_medio_pago)
-                    .map((r, i) => ({
-                        name: r.nombre_medio_pago,
-                        value: parseFloat(r.monto_total ?? 0),
-                        fill: COLORES[i % COLORES.length],
-                    })),
+                titulo: `Distribución por medio de pago ${fecha_inicio} → ${fecha_fin}`,
+                data: data.map((r, i) => ({
+                    name: r.nombre_medio_pago,
+                    value: parseFloat(r.monto_total ?? 0),
+                    fill: COLORES[i % COLORES.length],
+                })),
             };
         }
 
