@@ -3,12 +3,12 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { FaFeather } from 'react-icons/fa';
+import { RiRobot2Line } from "react-icons/ri";
 
 const BurbujaTyping = () => (
   <div className="flex items-end gap-2 max-w-[85%]">
-    <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0 self-end mb-0.5">
-      <FaFeather className="text-orange-600 dark:text-orange-400" size={12} />
+    <div className="w-7 h-7 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0 self-end mb-0.5">
+      <RiRobot2Line className="text-red-600 dark:text-red-400" size={14} />
     </div>
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
       <div className="flex items-center gap-1.5 h-4">
@@ -105,15 +105,15 @@ const MensajeChat = ({ rol, texto, hora, grafico = null, esUltimoBot = false, ca
   return (
     <div className={`flex items-end gap-2 ${esMio ? 'flex-row-reverse' : ''} max-w-[85%] ${esMio ? 'ml-auto' : ''}`}>
       {!esMio && (
-        <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0 self-end mb-0.5">
-          <FaFeather className="text-orange-600 dark:text-orange-400" size={12} />
+        <div className="w-7 h-7 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0 self-end mb-0.5">
+          <RiRobot2Line className="text-red-600 dark:text-red-400" size={14} />
         </div>
       )}
 
       <div className="flex flex-col gap-1">
         <div className={`px-4 py-2.5 rounded-2xl shadow-sm text-sm leading-relaxed
           ${esMio
-            ? 'bg-orange-600 dark:bg-orange-500 text-white rounded-br-sm whitespace-pre-wrap'
+            ? 'bg-red-600 dark:bg-red-500 text-white rounded-br-sm whitespace-pre-wrap'
             : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm'
           }`}
         >

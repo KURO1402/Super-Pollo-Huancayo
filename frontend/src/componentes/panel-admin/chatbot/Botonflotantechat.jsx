@@ -1,13 +1,6 @@
-import { FiMessageSquare, FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
+import pollobotImg from '../../../assets/imagenes/PolloBot.png';
 
-/**
- * Botón flotante fijo en la esquina inferior derecha.
- * Alterna entre el ícono de chat y una "X" cuando la ventana está abierta.
- *
- * Props:
- * - abierto: boolean — si la ventana de chat está visible
- * - alClick: () => void — alterna abierto/cerrado
- */
 const BotonFlotanteChat = ({ abierto, alClick }) => {
   return (
     <button
@@ -15,17 +8,21 @@ const BotonFlotanteChat = ({ abierto, alClick }) => {
       onClick={alClick}
       aria-label={abierto ? 'Cerrar asistente Pollobot' : 'Abrir asistente Pollobot'}
       className="fixed bottom-6 right-6 z-999 w-14 h-14 rounded-full
-        bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600
+        bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600
         text-white shadow-lg hover:shadow-xl
-        flex items-center justify-center
+        flex items-center justify-center overflow-hidden
         transition-all duration-200 ease-in-out
         hover:scale-105 active:scale-95
-        focus:outline-none focus:ring-4 focus:ring-orange-300 dark:focus:ring-orange-800"
+        focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800"
     >
       {abierto ? (
         <FiX size={26} />
       ) : (
-        <FiMessageSquare size={24} />
+        <img
+          src={pollobotImg}
+          alt="PolloBot"
+          className="w-full h-full object-cover scale-110"
+        />
       )}
     </button>
   );
