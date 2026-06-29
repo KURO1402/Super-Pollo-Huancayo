@@ -40,8 +40,8 @@
   background-image: url('/Fondo_login_registro.png');
   background-size: cover;
   background-position: center;
-  width: 100%;
-  min-height: 50vh;
+  width: 100vw;
+  min-height: 100vh;
 }
 
 .curva-circular {
