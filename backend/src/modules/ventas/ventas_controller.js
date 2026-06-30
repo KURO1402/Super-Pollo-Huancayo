@@ -9,7 +9,6 @@ const {
 
 const generarVentaController = async (req, res) => {
     try {
-        console.log(req.body)
         const { id_usuario } = req.usuario;
     
         const resultado = await generarVentaService(req.body, id_usuario);

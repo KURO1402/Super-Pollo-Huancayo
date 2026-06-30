@@ -22,7 +22,7 @@ const procesarComprobante = async (idComprobante) => {
     comprobante = resultado.comprobante;
 
     if (!comprobante) {
-      console.warn(`Comprobante ${idComprobante} no encontrado`);
+      console.warn(`[DEBUG] Comprobante ${idComprobante} no encontrado en la base de datos.`);
       return;
     }
 
@@ -38,13 +38,26 @@ const procesarComprobante = async (idComprobante) => {
     await actualizarEstadoSunatModel(idComprobante, 'enviado_sunat', null, null, null, null, null, null);
 
     const payload = reconstruirPayloadApisPeru(comprobante, detalles);
+    
+    // 1. LOG DE PAYLOAD: Ver si los datos que envías a ApisPeru están completos
+    console.log(`[DEBUG-PAYLOAD] Enviando a ApisPeru para ID ${idComprobante}:`, JSON.stringify(payload, null, 2));
+
     const respuesta = await enviarComprobanteApisPeru(payload);
+    
+    // 2. LOG DE RESPUESTA: Ver qué te devuelve exactamente ApisPeru
+    console.log(`[DEBUG-RESPUESTA] ApisPeru respondió para ID ${idComprobante}:`, JSON.stringify(respuesta, null, 2));
+
     const { xml, hash, sunatResponse } = respuesta;
 
     const aceptado = sunatResponse?.cdrResponse?.code === '0';
     const estado = aceptado ? 'aceptado' : 'rechazado';
 
     const nombreArchivo = `${comprobante.serie}-${comprobante.numero_correlativo}`;
+
+    // Validar que existan los datos antes de intentar subirlos a Cloudinary
+    if (!xml || !sunatResponse?.cdrZip) {
+      throw new Error(`La respuesta de ApisPeru no contiene 'xml' o 'cdrZip'. Estructura inválida.`);
+    }
 
     const [resultadoXml, resultadoCdr] = await Promise.all([
       subirArchivoCloudinary(Buffer.from(xml), `${nombreArchivo}-xml`, 'xml'),
@@ -86,7 +99,18 @@ const procesarComprobante = async (idComprobante) => {
     }
 
   } catch (error) {
-    console.error(`Error procesando comprobante ${idComprobante}:`, error.message);
+    // 3. LOG CRÍTICO DE ERROR: Aquí verás el error real de red, sintaxis o Axios
+    console.error(`================ [ERROR REAL EN ID ${idComprobante}] ================`);
+    console.error("Mensaje:", error.message);
+    if (error.response) {
+      // Si el error viene de una petición HTTP (Axios/Fetch) realizada dentro de enviarComprobanteApisPeru
+      console.error("Data de respuesta del servidor externo:", JSON.stringify(error.response.data, null, 2));
+      console.error("Status del servidor externo:", error.response.status);
+    } else {
+      // Si es un error de código, variable indefinida, o caída de red total
+      console.error("Detalle completo del error:", error);
+    }
+    console.error(`==================================================================`);
 
     try {
       await actualizarEstadoSunatModel(idComprobante, 'pendiente', null, null, null, null, null, null);
