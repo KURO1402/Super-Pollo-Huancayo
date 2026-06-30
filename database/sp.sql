@@ -3611,16 +3611,15 @@ END //
 
 -- ─── SP: Insertar Venta ───────────────────────────────────────────────────────
 CREATE PROCEDURE sp_generar_venta(
-    -- Venta
     IN p_numero_documento_cliente VARCHAR(12),
     IN p_id_tipo_documento INT,
     IN p_nombre_cliente VARCHAR(255),
+    IN p_correo_cliente VARCHAR(150),
     IN p_porcentaje_igv DECIMAL(5,2),
     IN p_total_gravada DECIMAL(10,2),
     IN p_total_igv DECIMAL(10,2),
     IN p_total_venta DECIMAL(10,2),
     IN p_id_medio_pago INT,
-    -- Comprobante
     IN p_id_tipo_comprobante INT,
     IN p_serie VARCHAR(5),
     IN p_numero_correlativo INT,
@@ -3631,9 +3630,7 @@ CREATE PROCEDURE sp_generar_venta(
     IN p_public_id_pdf VARCHAR(150),
     IN p_estado_sunat ENUM('pendiente','enviado_sunat','aceptado','rechazado', 'interno'),
     IN p_fecha_limite_correccion DATETIME,
-    -- Caja y usuario
     IN p_id_usuario INT,
-    -- Detalle en JSON
     IN p_detalles JSON
 )
 BEGIN
@@ -3667,10 +3664,10 @@ BEGIN
 
     -- 2. Insertar venta
     INSERT INTO ventas (
-        numero_documento_cliente, id_tipo_documento, nombre_cliente, porcentaje_igv,
+        numero_documento_cliente, id_tipo_documento, nombre_cliente, correo_cliente, porcentaje_igv,
         total_gravada, total_igv, total_venta, id_medio_pago
     ) VALUES (
-        p_numero_documento_cliente, p_id_tipo_documento, p_nombre_cliente, p_porcentaje_igv,
+        p_numero_documento_cliente, p_id_tipo_documento, p_nombre_cliente, p_correo_cliente, p_porcentaje_igv,
         p_total_gravada, p_total_igv, p_total_venta, p_id_medio_pago
     );
     SET v_id_venta = LAST_INSERT_ID();
@@ -3880,8 +3877,10 @@ SELECT
     c.fecha_emision,
     c.fecha_vencimiento,
     c.sunat_transaccion,
+    c.url_comprobante_pdf,
     v.numero_documento_cliente,
     v.id_tipo_documento,
+    v.correo_cliente,
     td.nombre_tipo_documento, 
     v.total_gravada,
     v.total_igv,
@@ -3889,7 +3888,7 @@ SELECT
 FROM comprobantes c
 INNER JOIN ventas v ON v.id_venta = c.id_venta
 INNER JOIN tipo_comprobante tc ON tc.id_tipo_comprobante = c.id_tipo_comprobante
-INNER JOIN tipo_documento td ON td.id_tipo_documento = v.id_tipo_documento  -- ← agregar
+INNER JOIN tipo_documento td ON td.id_tipo_documento = v.id_tipo_documento 
 WHERE c.id_comprobante = p_id_comprobante;
 
 -- 2. Detalles para reconstruir el payload de ApisPeru

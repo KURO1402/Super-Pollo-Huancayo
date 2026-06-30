@@ -23,11 +23,11 @@ import { ModalComprobanteGenerado } from "../../componentes/panel-admin/ventas/M
 import mostrarAlerta from "../../utilidades/toastUtilidades";
 import { completarPedidoServicio } from "../../servicios/pedidosServicio";
 
-const esFactura  = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('factura');
+const esFactura = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('factura');
 const esNotaVenta = (tipo) => tipo?.nombre_tipo_comprobante?.toLowerCase().includes('nota de venta');
 
 const GenerarVentaPagina = () => {
-  const location  = useLocation();
+  const location = useLocation();
   const { terminoBusqueda, setTerminoBusqueda, filtrarPorBusqueda } = useBusqueda();
   const { detalle, limpiarVenta, agregarProducto } = useVentaStore();
   const { estaAbierto, abrir, cerrar } = useModal();
@@ -36,18 +36,18 @@ const GenerarVentaPagina = () => {
     solicitarConfirmacion, ocultarConfirmacion, confirmarAccion,
   } = useConfirmacion();
 
-  const [tiposComprobante,       setTiposComprobante]       = useState([]);
-  const [cargandoTipos,          setCargandoTipos]          = useState(true);
-  const [tipoSeleccionado,       setTipoSeleccionado]       = useState(null);
-  const [metodosPago,            setMetodosPago]            = useState([]);
-  const [cargandoMetodoPago,     setCargandoMetodoPago]     = useState(true);
+  const [tiposComprobante, setTiposComprobante] = useState([]);
+  const [cargandoTipos, setCargandoTipos] = useState(true);
+  const [tipoSeleccionado, setTipoSeleccionado] = useState(null);
+  const [metodosPago, setMetodosPago] = useState([]);
+  const [cargandoMetodoPago, setCargandoMetodoPago] = useState(true);
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState("");
-  const [datosCliente,           setDatosCliente]           = useState(null);
-  const [cargando,               setCargando]               = useState(false);
-  const [mostrarModalComprobante,setMostrarModalComprobante]= useState(false);
-  const [datosComprobante,       setDatosComprobante]       = useState(null);
-  const [productos,              setProductos]              = useState([]);
-  const [cargandoProductos,      setCargandoProductos]      = useState(true);
+  const [datosCliente, setDatosCliente] = useState(null);
+  const [cargando, setCargando] = useState(false);
+  const [mostrarModalComprobante, setMostrarModalComprobante] = useState(false);
+  const [datosComprobante, setDatosComprobante] = useState(null);
+  const [productos, setProductos] = useState([]);
+  const [cargandoProductos, setCargandoProductos] = useState(true);
 
   // ── Limpiar al cambiar de ruta ────────────────────────────────────────────
   useEffect(() => {
@@ -120,12 +120,12 @@ const GenerarVentaPagina = () => {
         noEncontrados.push(item.nombre_producto);
         agregarProducto({
           id_producto: item.id_producto,
-          id:          item.id_producto,
+          id: item.id_producto,
           nombre_producto: item.nombre_producto,
-          nombre:          item.nombre_producto,
+          nombre: item.nombre_producto,
           precio_producto: 0,
-          precio:          0,
-          cantidad:        item.cantidad,
+          precio: 0,
+          cantidad: item.cantidad,
         });
       }
     }
@@ -172,11 +172,11 @@ const GenerarVentaPagina = () => {
 
   const handleClienteGuardado = (cliente) => {
     if (esFactura(tipoSeleccionado)) {
-      if (cliente.tipoDocumento !== "2")        { mostrarAlerta.error("Para factura solo se acepta RUC"); return; }
-      if (cliente.numeroDocumento?.length !== 11){ mostrarAlerta.error("El RUC debe tener 11 dígitos"); return; }
-      if (!cliente.direccion?.trim())            { mostrarAlerta.error("La dirección es obligatoria para factura"); return; }
+      if (cliente.tipoDocumento !== "2") { mostrarAlerta.error("Para factura solo se acepta RUC"); return; }
+      if (cliente.numeroDocumento?.length !== 11) { mostrarAlerta.error("El RUC debe tener 11 dígitos"); return; }
+      if (!cliente.direccion?.trim()) { mostrarAlerta.error("La dirección es obligatoria para factura"); return; }
     } else {
-      if (cliente.tipoDocumento === "2")         { mostrarAlerta.error("Para boleta o nota de venta use DNI"); return; }
+      if (cliente.tipoDocumento === "2") { mostrarAlerta.error("Para boleta o nota de venta use DNI"); return; }
       if (cliente.numeroDocumento?.length !== 8) { mostrarAlerta.error("El DNI debe tener 8 dígitos"); return; }
     }
     setDatosCliente(cliente);
@@ -203,25 +203,25 @@ const GenerarVentaPagina = () => {
   };
 
   const handleGenerarComprobante = async () => {
-    if (detalle.length === 0)                         { mostrarAlerta.advertencia("Debe agregar al menos un producto"); return; }
+    if (detalle.length === 0) { mostrarAlerta.advertencia("Debe agregar al menos un producto"); return; }
     if (esFactura(tipoSeleccionado) && !datosCliente) { mostrarAlerta.advertencia("Para factura debe seleccionar un cliente con RUC"); return; }
-    if (!metodoPagoSeleccionado)                      { mostrarAlerta.advertencia("Debe seleccionar un método de pago"); return; }
+    if (!metodoPagoSeleccionado) { mostrarAlerta.advertencia("Debe seleccionar un método de pago"); return; }
 
     setCargando(true);
     try {
       const clientePayload = esFactura(tipoSeleccionado) && datosCliente
-        ? { idTipoDoc: 2, numDoc: Number(datosCliente.numeroDocumento), denominacionCliente: datosCliente.nombre, direccionCliente: datosCliente.direccion?.trim() || "" }
+        ? { idTipoDoc: 2, numDoc: Number(datosCliente.numeroDocumento), denominacionCliente: datosCliente.nombre, direccionCliente: datosCliente.direccion?.trim() || "", correoCliente: datosCliente.email?.trim() || null }
         : datosCliente
-          ? { idTipoDoc: 1, numDoc: Number(datosCliente.numeroDocumento), denominacionCliente: datosCliente.nombre }
-          : { idTipoDoc: 1, numDoc: 10000000, denominacionCliente: "Clientes Varios" };
+          ? { idTipoDoc: 1, numDoc: Number(datosCliente.numeroDocumento), denominacionCliente: datosCliente.nombre, correoCliente: datosCliente.email?.trim() || null }
+          : { idTipoDoc: 1, numDoc: 10000000, denominacionCliente: "Clientes Varios", correoCliente: null };
 
       const ventaData = {
         tipoComprobante: Number(tipoSeleccionado.id_tipo_comprobante),
-        medioPago:       Number(metodoPagoSeleccionado),
-        cliente:         clientePayload,
+        medioPago: Number(metodoPagoSeleccionado),
+        cliente: clientePayload,
         productos: detalle.map((item) => ({
           idProducto: item.id_producto || item.idProducto || item.id,
-          cantidad:   item.cantidad,
+          cantidad: item.cantidad,
         })),
       };
 
@@ -245,7 +245,7 @@ const GenerarVentaPagina = () => {
 
         setDatosComprobante({
           ...respuesta,
-          tipoComprobante:      tipoSeleccionado.id_tipo_comprobante,
+          tipoComprobante: tipoSeleccionado.id_tipo_comprobante,
           tipoComprobanteTexto: tipoSeleccionado?.nombre_tipo_comprobante || "Comprobante",
         });
         setMostrarModalComprobante(true);
@@ -268,7 +268,7 @@ const GenerarVentaPagina = () => {
     if (datosComprobante?.urlPdf) window.open(datosComprobante.urlPdf, "_blank");
   };
 
-  const filtrados    = filtrarPorBusqueda(productos, ["nombre_producto", "descripcion_producto"]);
+  const filtrados = filtrarPorBusqueda(productos, ["nombre_producto", "descripcion_producto"]);
   const labelCliente = esFactura(tipoSeleccionado) ? "Cliente (RUC requerido)" : "Cliente (opcional)";
   const placeholderCliente = esFactura(tipoSeleccionado) ? "Seleccione un cliente con RUC" : "Clientes Varios";
 
@@ -327,11 +327,10 @@ const GenerarVentaPagina = () => {
                   <button
                     key={tipo.id_tipo_comprobante}
                     onClick={() => handleTipoComprobante(tipo)}
-                    className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${
-                      tipoSeleccionado?.id_tipo_comprobante === tipo.id_tipo_comprobante
+                    className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${tipoSeleccionado?.id_tipo_comprobante === tipo.id_tipo_comprobante
                         ? "border-blue-500 text-blue-600 dark:text-blue-400"
                         : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400"
-                    }`}
+                      }`}
                   >
                     {tipo.nombre_tipo_comprobante.toUpperCase()}
                   </button>

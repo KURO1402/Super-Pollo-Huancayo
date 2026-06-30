@@ -74,6 +74,7 @@ const generarVentaService = async (datos, idUsuario) => {
             numeroDocumentoCliente: cliente.numDoc,
             idTipoDocumento: cliente.idTipoDoc,
             cliente: cliente.denominacionCliente,
+            correoCliente: cliente.correoCliente ?? null,
             porcentajeIgv: 18,
             totalGravada: datosParaComprobante.mtoOperGravadas,
             totalIgv: datosParaComprobante.totalIgv,
@@ -168,20 +169,20 @@ const obtenerVentasService = async (querys) => {
         if (!ventas || ventas.length === 0) throw crearError('No se encontraron ventas', 404);
         return { ok: true, cantidad_filas: cachedTotal, ventas };
     }
-    
+
     const totalVentas = await contarVentasModel(fechaInicio ?? null, fechaFin ?? null);
-    
+
     cache.set(cacheKey, totalVentas);
-    
+
 
     const ventas = await obtenerVentasModel(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
     if (!ventas || ventas.length === 0) throw crearError('No se encontraron ventas', 404);
-    
 
-    return { 
-        ok: true, 
-        cantidad_filas: totalVentas, 
-        ventas 
+
+    return {
+        ok: true,
+        cantidad_filas: totalVentas,
+        ventas
     };
 };
 
@@ -258,7 +259,7 @@ const reenviarComprobanteService = async (idComprobante) => {
 
         return {
             ok: true,
-            mensaje: aceptado 
+            mensaje: aceptado
                 ? `Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} ACEPTADO por SUNAT`
                 : `Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} RECHAZADO: ${sunatResponse?.error?.message}`,
             nuevoEstado: estado,

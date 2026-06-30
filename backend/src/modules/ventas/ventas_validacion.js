@@ -1,4 +1,5 @@
 const crearError = require('../../utilidades/crear_error');
+const { validarCorreo } = require('../../utilidades/validaciones');
 const validarDatosVenta = (datos) => {
     if (!datos || typeof datos !== 'object') {
         throw crearError('Se necesitan datos para generar la venta', 400);
@@ -9,15 +10,15 @@ const validarDatosVenta = (datos) => {
     if (!tipoComprobante || typeof tipoComprobante !== 'number') {
         throw crearError('Se necesita especificar tipo de comprobante', 400);
     }
-    if(!medioPago || typeof medioPago !== 'number') {
+    if (!medioPago || typeof medioPago !== 'number') {
         throw crearError('Se necesita especificar el medio de pago', 400);
     }
-    
+
     if (!cliente || typeof cliente !== 'object') {
         throw crearError('Se necesita los datos del cliente', 400);
     }
 
-    const { idTipoDoc, numDoc, denominacionCliente } = cliente;
+    const { idTipoDoc, numDoc, denominacionCliente, correoCliente } = cliente;
 
     if (!idTipoDoc || typeof idTipoDoc !== 'number') {
         throw crearError('Se necesita especificar el tipo de documento del cliente', 400);
@@ -29,6 +30,10 @@ const validarDatosVenta = (datos) => {
 
     if (!denominacionCliente || typeof denominacionCliente !== 'string') {
         throw crearError('Se necesita la denominación del cliente', 400);
+    }
+
+    if (correoCliente && !validarCorreo(correoCliente)) {
+        throw crearError('El formato del correo del cliente no es válido', 400);
     }
 
     if (!productos || !Array.isArray(productos) || productos.length === 0) {

@@ -9,6 +9,7 @@ const {
   obtenerComprobantePendientePorIdModel,
   actualizarEstadoSunatModel,
 } = require('../modules/ventas/ventas_model');
+const enviarComprobanteCorreo = require('../utilidades/helpers/enviar_comprobante_correo');
 
 const MAX_INTENTOS = 3;
 const INTERVALO_MS = 30 * 1000;
@@ -63,6 +64,19 @@ const procesarComprobante = async (idComprobante) => {
 
     if (aceptado) {
       console.log(`Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} ACEPTADO por SUNAT`);
+      const correoCliente = comprobante.correo_cliente; 
+      const urlPdf = comprobante.url_comprobante_pdf; 
+
+      if (correoCliente && correoCliente.trim() !== '') {
+        try {
+          await enviarComprobanteCorreo(correoCliente, urlPdf);
+          console.log(`Correo enviado con éxito a: ${correoCliente}`);
+        } catch (errorEmail) {
+          console.error(`Error al enviar el correo para el comprobante ${idComprobante}:`, errorEmail.message);
+        }
+      } else {
+        console.log(`Comprobante ${idComprobante} aceptado, pero no se envió correo (el cliente no registró email o es null).`);
+      }
     } else {
       console.error(`Comprobante ${comprobante.serie}-${comprobante.numero_correlativo} RECHAZADO:`, {
         code: sunatResponse?.error?.code,

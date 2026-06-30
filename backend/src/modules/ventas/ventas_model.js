@@ -1,7 +1,7 @@
 const pool = require('../../config/conexion_DB');
 
 const insertarVentaModel = async ({
-    numeroDocumentoCliente, idTipoDocumento, cliente, porcentajeIgv, totalGravada, totalIgv, totalVenta, idMedioPago,
+    numeroDocumentoCliente, idTipoDocumento, cliente, correoCliente, porcentajeIgv, totalGravada, totalIgv, totalVenta, idMedioPago,
     idTipoComprobante, serie, numeroCorrelativo, fechaEmision, fechaVencimiento, sunatTransaccion,
     urlComprobantePdf, publicIdPdf, estadoSunat, fechaLimiteCorreccion,
     detalles, idUsuario
@@ -10,9 +10,9 @@ const insertarVentaModel = async ({
     try {
         conexion = await pool.getConnection();
         const [result] = await conexion.execute(
-            'CALL sp_generar_venta(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'CALL sp_generar_venta(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
-                numeroDocumentoCliente, idTipoDocumento, cliente, porcentajeIgv,
+                numeroDocumentoCliente, idTipoDocumento, cliente, correoCliente ?? null, porcentajeIgv,
                 totalGravada, totalIgv, totalVenta, idMedioPago,
                 idTipoComprobante, serie, numeroCorrelativo,
                 fechaEmision, fechaVencimiento, sunatTransaccion,

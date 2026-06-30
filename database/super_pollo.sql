@@ -211,8 +211,8 @@ CREATE TABLE reservaciones (
     estado_reservacion ENUM('pendiente','cancelado','completado') DEFAULT 'pendiente',
     codigo_reservacion CHAR(6) UNIQUE,
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    nombre_cliente VARCHAR(250),
-    id_usuario INT,
+    nombre_cliente VARCHAR(250) DEFAULT NULL,
+    id_usuario INT DEFAULT NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
 );
 
@@ -241,6 +241,7 @@ CREATE TABLE ventas (
     numero_documento_cliente VARCHAR(12) NOT NULL,
     id_tipo_documento INT NOT NULL,
     nombre_cliente VARCHAR(250),
+    correo_cliente VARCHAR(150) DEFAULT NULL,
     porcentaje_igv DECIMAL(5,2),
     total_gravada DECIMAL(10,2),
     total_igv DECIMAL(10,2),
