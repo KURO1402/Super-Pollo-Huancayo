@@ -209,6 +209,7 @@ const enviarComprobanteApisPeru = async (payload) => {
         );
         return respuesta.data;
     } catch (error) {
+        console.log(error.message);
         if (error.response) {
             const { status, data } = error.response;
             throw crearError(`ApisPeru respondió con estado ${status}. ${data?.message || 'Error desconocido'}`, 502);
