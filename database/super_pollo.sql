@@ -211,6 +211,7 @@ CREATE TABLE reservaciones (
     estado_reservacion ENUM('pendiente','cancelado','completado') DEFAULT 'pendiente',
     codigo_reservacion CHAR(6) UNIQUE,
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    nombre_cliente VARCHAR(250),
     id_usuario INT,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
 );

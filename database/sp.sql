@@ -2821,6 +2821,7 @@ CREATE PROCEDURE sp_insertar_reservacion(
     IN p_fecha DATE,
     IN p_hora TIME,
     IN p_cantidad_personas INT,
+    IN p_nombre_cliente VARCHAR(250),
     IN p_id_usuario INT,
     IN p_codigo_reservacion CHAR(6)  
 )
@@ -2845,6 +2846,7 @@ BEGIN
             fecha_reservacion,
             hora_reservacion,
             cantidad_personas,
+            nombre_cliente,
             id_usuario,
             codigo_reservacion 
         )
@@ -2852,6 +2854,7 @@ BEGIN
             p_fecha,
             p_hora,
             p_cantidad_personas,
+            p_nombre_cliente,
             p_id_usuario,
             p_codigo_reservacion
         );

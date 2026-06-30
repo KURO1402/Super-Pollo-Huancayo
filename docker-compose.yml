@@ -4,10 +4,12 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 8519
-      MYSQL_DATABASE: super_pollo_hyo
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
       TZ: America/Lima
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d

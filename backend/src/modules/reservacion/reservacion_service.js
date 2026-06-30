@@ -143,7 +143,7 @@ const confirmarPagoReservacionService = async (paymentId) => {
     const fechaHoraReserva = `${fecha} ${hora}:00`;
     const montoPagado = pagoMP.transaction_amount;
 
-    const idReservacion = await registrarReservacionModel(fecha, hora, cantidad_personas, id_usuario, mesas, fechaHoraReserva, codigoReservacion);
+    const idReservacion = await registrarReservacionModel(fecha, hora, cantidad_personas, null, id_usuario, mesas, fechaHoraReserva, codigoReservacion);
 
     await registrarPagoReservacionModel(montoPagado, String(paymentId), idReservacion);
 
@@ -153,8 +153,11 @@ const confirmarPagoReservacionService = async (paymentId) => {
 const registrarReservacionManualService = async (datos) => {
     validarDatosReservacion(datos);
 
-    const { fecha, hora, cantidadPersonas, mesas, correo } = datos;
+    const { fecha, hora, cantidadPersonas, mesas, nombreCliente, correo } = datos;
 
+    if(!nombreCliente || typeof nombreCliente !== 'string' || !nombreCliente.trim()) {
+        throw crearError('Se necesita el nombre del cliente.', 400);
+    }
     if (!correo || typeof correo !== 'string' || !validarCorreo(correo)) {
         throw crearError('Se necesita un correo para enviar el código de reservación.', 400);
     }
@@ -206,7 +209,8 @@ const registrarReservacionManualService = async (datos) => {
     const idReservacion = await registrarReservacionModel(
         fecha, 
         hora, 
-        cantidadPersonas, 
+        cantidadPersonas,
+        nombreCliente, 
         null, 
         mesasFinalesParaDB, 
         fechaHoraReserva, 
@@ -223,10 +227,9 @@ const registrarReservacionManualService = async (datos) => {
         cantidadPersonas, 
         mesas: mesasFinalesParaDB 
     });
-
     return {
         ok: true,
-        mensaje: `Reservación registrada exitosamente y código enviado a ${info.accepted[0]}`
+        mensaje: `Reservación registrada exitosamente y código enviado a ${correo}`
     };
 };
 

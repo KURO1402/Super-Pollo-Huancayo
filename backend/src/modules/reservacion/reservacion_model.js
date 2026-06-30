@@ -62,7 +62,7 @@ const obtenerMesaPorIdModel = async (idMesa) => {
     }
 };
 
-const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuario = null, mesas, fechaHoraReserva, codigoReservacion) =>{
+const registrarReservacionModel = async (fecha, hora, cantidadPersonas, nombreCliente = null, idUsuario = null, mesas, fechaHoraReserva, codigoReservacion) =>{
     let conexion;
 
     try {
@@ -70,8 +70,8 @@ const registrarReservacionModel = async (fecha, hora, cantidadPersonas, idUsuari
         await conexion.beginTransaction();
 
         const [result] = await conexion.execute(
-            'CALL sp_insertar_reservacion(?, ?, ?, ?, ?)',
-            [fecha, hora, cantidadPersonas, idUsuario, codigoReservacion] 
+            'CALL sp_insertar_reservacion(?, ?, ?, ?, ?, ?)',
+            [fecha, hora, cantidadPersonas, nombreCliente, idUsuario, codigoReservacion] 
         );
 
         const reservacion = result[0][0];

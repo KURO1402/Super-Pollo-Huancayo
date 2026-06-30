@@ -24,9 +24,11 @@ jobs:
             git pull origin main
             echo "$BACKEND_ENV" > ./backend/.env
             echo "$FRONTEND_ENV" > ./frontend/.env
+            echo "$MYSQL_ENV" > ./.env
             docker exec -i mysql_db mysql -uroot -p8519 super_pollo_hyo < ./database/sp.sql
             docker exec -i mysql_db mysql -uroot -p8519 super_pollo_hyo < ./database/sp_nuevos.sql
             docker compose up --build -d
         env:
           BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
           FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
+          MYSQL_ENV: ${{ secrets.MYSQL_ENV }}

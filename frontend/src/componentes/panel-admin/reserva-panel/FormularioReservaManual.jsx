@@ -30,26 +30,42 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
     return opciones;
   }, [hoyStr]);
 
-  const [form, setForm] = useState(() => {
-    const fechaIniciada = fechaInicial || (new Date().getHours() >= 18
+  const { fechaIniciada, horaIniciada } = useMemo(() => {
+    let fecha = fechaInicial ?? (new Date().getHours() >= 18
       ? new Date(Date.now() + 86400000).toISOString().split('T')[0]
       : hoyStr);
 
-    const horasDisponibles = generarOpcionesDeHora(fechaIniciada);
+    let horas = generarOpcionesDeHora(fecha);
 
-    return {
-      fecha: fechaIniciada,
-      hora: horasDisponibles[0] ?? "12:00",
-      correo: '',
-      cantidadPersonas: 1,
-      mesasSeleccionadas: [],
-    };
+    if (horas.length === 0) {
+      fecha = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      horas = generarOpcionesDeHora(fecha);
+    }
+
+    return { fechaIniciada: fecha, horaIniciada: horas[0] ?? "12:00" };
+  }, []);
+
+  const [form, setForm] = useState({
+    fecha: fechaIniciada,
+    hora: horaIniciada,
+    nombreCliente: '',
+    correo: '',
+    cantidadPersonas: 1,
+    mesasSeleccionadas: [],
   });
 
   const opcionesHora = useMemo(
     () => generarOpcionesDeHora(form.fecha),
     [form.fecha, generarOpcionesDeHora]
   );
+
+  const fechaMinima = useMemo(() => {
+    const horasHoy = generarOpcionesDeHora(hoyStr);
+    if (horasHoy.length === 0) {
+      return new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    }
+    return hoyStr;
+  }, [hoyStr, generarOpcionesDeHora]);
 
   useEffect(() => {
     if (opcionesHora.length > 0 && !opcionesHora.includes(form.hora)) {
@@ -81,6 +97,7 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
     onSubmit({
       fecha: form.fecha,
       hora: form.hora,
+      nombreCliente: form.nombreCliente,
       correo: form.correo,
       cantidadPersonas: Number(form.cantidadPersonas),
       mesas: form.mesasSeleccionadas.map((id) => ({ idMesa: Number(id) })),
@@ -99,7 +116,7 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
             type="date"
             className={inputClass}
             value={form.fecha}
-            min={hoyStr}
+            min={fechaMinima}
             onChange={(e) => setForm(prev => ({ ...prev, fecha: e.target.value, mesasSeleccionadas: [] }))}
           />
         </div>
@@ -121,7 +138,17 @@ const FormularioReservaManual = ({ fechaInicial, onSubmit, onCancelar, guardando
         </div>
       </div>
 
-      {/* resto del JSX sin cambios... */}
+      <div>
+        <label className={labelClass}>Nombre Completo del Cliente</label>
+        <input
+          type="text"
+          className={inputClass}
+          placeholder="Ej: Jose Zarate"
+          value={form.nombreCliente}
+          onChange={(e) => setForm(prev => ({ ...prev, nombreCliente: e.target.value }))}
+        />
+      </div>
+
       <div>
         <label className={labelClass}>Correo del Cliente</label>
         <input
