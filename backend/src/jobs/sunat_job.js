@@ -39,13 +39,9 @@ const procesarComprobante = async (idComprobante) => {
 
     const payload = reconstruirPayloadApisPeru(comprobante, detalles);
     
-    // 1. LOG DE PAYLOAD: Ver si los datos que envías a ApisPeru están completos
-    console.log(`[DEBUG-PAYLOAD] Enviando a ApisPeru para ID ${idComprobante}:`, JSON.stringify(payload, null, 2));
 
     const respuesta = await enviarComprobanteApisPeru(payload);
     
-    // 2. LOG DE RESPUESTA: Ver qué te devuelve exactamente ApisPeru
-    console.log(`[DEBUG-RESPUESTA] ApisPeru respondió para ID ${idComprobante}:`, JSON.stringify(respuesta, null, 2));
 
     const { xml, hash, sunatResponse } = respuesta;
 
@@ -54,7 +50,6 @@ const procesarComprobante = async (idComprobante) => {
 
     const nombreArchivo = `${comprobante.serie}-${comprobante.numero_correlativo}`;
 
-    // Validar que existan los datos antes de intentar subirlos a Cloudinary
     if (!xml || !sunatResponse?.cdrZip) {
       throw new Error(`La respuesta de ApisPeru no contiene 'xml' o 'cdrZip'. Estructura inválida.`);
     }
@@ -99,19 +94,7 @@ const procesarComprobante = async (idComprobante) => {
     }
 
   } catch (error) {
-    // 3. LOG CRÍTICO DE ERROR: Aquí verás el error real de red, sintaxis o Axios
-    console.error(`================ [ERROR REAL EN ID ${idComprobante}] ================`);
-    console.error("Mensaje:", error.message);
-    if (error.response) {
-      // Si el error viene de una petición HTTP (Axios/Fetch) realizada dentro de enviarComprobanteApisPeru
-      console.error("Data de respuesta del servidor externo:", JSON.stringify(error.response.data, null, 2));
-      console.error("Status del servidor externo:", error.response.status);
-    } else {
-      // Si es un error de código, variable indefinida, o caída de red total
-      console.error("Detalle completo del error:", error);
-    }
-    console.error(`==================================================================`);
-
+    console.error(`Error procesando comprobante ${idComprobante}:`, error.message);
     try {
       await actualizarEstadoSunatModel(idComprobante, 'pendiente', null, null, null, null, null, null);
       console.warn(`Comprobante ${idComprobante} revertido a "pendiente" para reintento`);
@@ -137,7 +120,6 @@ const ejecutarJob = async () => {
     console.error('Error en job SUNAT al obtener pendientes:', error.message);
   }
 };
-
 const loopJob = async () => {
   await ejecutarJob();
   setTimeout(loopJob, INTERVALO_MS);
