@@ -16,7 +16,7 @@ const BotonFlotanteChat = ({ abierto, alClick }) => {
         focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800"
     >
       {abierto ? (
-        <FiX size={26} />
+        <FiX size={27} />
       ) : (
         <img
           src={pollobotImg}
