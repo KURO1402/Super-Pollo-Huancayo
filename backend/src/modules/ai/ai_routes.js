@@ -4,6 +4,6 @@ const {consultarChatbot} = require('./ai_controller');
 
 const { autenticacionToken, verificarRoles } = require('../../middlewares/autenticacion_middleware');
 
-router.post('/chat', consultarChatbot);
+router.post('/chat', autenticacionToken, verificarRoles(3), consultarChatbot);
 
 module.exports = router;
