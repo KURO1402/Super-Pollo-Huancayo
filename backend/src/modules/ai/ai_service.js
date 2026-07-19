@@ -1,6 +1,6 @@
 // modules/ai/ai_service.js
 const { GoogleGenAI } = require('@google/genai');
-const db = require('./ai_model');
+const db = require('./ai_repository');
 const { ALL_TOOLS } = require('./tools/index');
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });

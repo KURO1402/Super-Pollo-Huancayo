@@ -3,7 +3,7 @@ const { preference, payment } = require('../../config/mercado_pago');
 const generarCodigoReservacion = require('../../utilidades/helpers/generar_codigo_reservacion');
 const { validarCorreo } = require('../../utilidades/validaciones');
 const enviarCorreoReservacion = require('../../utilidades/helpers/enviar_reservacion_correo');
-const { obtenerUsuarioPorIdModel } = require('../usuarios/usuario_model');
+const { obtenerUsuarioPorIdModel } = require('../usuarios/usuario_repository');
 
 const {
     ocuparMesasModel,

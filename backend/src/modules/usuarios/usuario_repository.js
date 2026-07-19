@@ -1,47 +1,19 @@
 const pool = require('../../config/conexion_DB');
+const { ejecutarSP } = require('../../utilidades/helpers/db_helper');
 
-const obtenerRolesModel = async () => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-        const [rows] = await conexion.execute("CALL sp_listar_roles()");
-        return rows[0];
-    } catch (err) {
-        throw new Error("Error al obtener roles de la base de datos");
-    } finally {
-        if (conexion) conexion.release();
-    }
+const obtenerRolesUsuario = async () => {
+    const rows = await ejecutarSP('sp_listar_roles');
+    return rows[0];
 };
 
-const contarUsuariosModel = async (idUsuario, idRol = null, valor = null) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-
-        const [result] = await conexion.execute('CALL sp_contar_usuarios(?, ?, ?)',[idUsuario, idRol, valor]);
-
-        return result[0][0]?.total_usuarios;
-
-    } catch (err) {
-        console.error(err.message);
-        throw new Error('Error al contar movimientos de stock');
-    } finally {
-        if (conexion) conexion.release();
-    }
+const contarUsuarios = async (idUsuario, idRol = null, valor = null) => {
+    const rows = await ejecutarSP('sp_contar_usuarios', [idUsuario, idRol, valor]);
+    return rows[0][0]?.total_usuarios;
 };
 
-const obtenerUsuariosModel = async (limite, desplazamiento, idUsuario, idRol = null, valor = null) => {
-    let conexion;
-    try {
-        conexion = await pool.getConnection();
-
-        const [rows] = await conexion.execute('CALL sp_listar_usuarios(?, ?, ?, ?, ?)', [limite, desplazamiento, idUsuario, idRol, valor]);
-        return rows[0];
-    } catch (err) {
-        throw new Error('Ocurrio un error al listar usuarios en la base de datos'); 
-    } finally {
-        if(conexion) conexion.release();
-    }
+const obtenerUsuarios = async (limite, desplazamiento, idUsuario, idRol = null, valor = null) => {
+    const rows = await ejecutarSP('sp_listar_usuarios', [limite, desplazamiento, idUsuario, idRol, valor]);
+    return rows[0];
 };
 
 const contarUsuarioPorIdModel = async (idUsuario) => {
@@ -217,9 +189,9 @@ const actualizarRolUsuarioModel = async (idUsuario, idRolNuevo) => {
 };
 
 module.exports = {
-    obtenerRolesModel,
-    contarUsuariosModel,
-    obtenerUsuariosModel,
+    obtenerRolesUsuario,
+    contarUsuarios,
+    obtenerUsuarios,
     contarUsuarioPorIdModel,
     obtenerUsuarioPorIdModel,
     obtenerHistorialRolesUsuarioModel,

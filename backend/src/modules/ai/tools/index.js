@@ -3,7 +3,7 @@ const { toolCaja } = require('./tool_caja');
 const { toolInventario } = require('./tool_inventario');
 const { toolReservas } = require('./tool_reservas');
 const { toolGraficos } = require('./tool_graficos');
-const aiModel = require('../ai_model');
+const aiModel = require('../ai_repository');
 const chartBuilder = require('../charts/chart_builder');
 
 // Array completo que se le pasa a Gemini en cada llamada

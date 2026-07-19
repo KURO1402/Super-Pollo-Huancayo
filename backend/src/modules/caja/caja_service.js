@@ -20,7 +20,7 @@ const {
     validarDatosArqueoCaja
 } = require('./caja_validacion');
 
-const { contarUsuarioPorIdModel } = require('../usuarios/usuario_model');
+const { contarUsuarioPorIdModel } = require('../usuarios/usuario_repository');
 const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
 
 const crearCajaService = async (datos, idUsuario) => {

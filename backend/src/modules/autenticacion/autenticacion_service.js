@@ -12,7 +12,7 @@ const {
   seleccionarUsuarioCorreoModel,
   eliminarVerificacionModel
 } = require('./autenticacion_model');
-const { actualizarClaveUsuarioModel } = require('../usuarios/usuario_model');
+const { actualizarClaveUsuarioModel } = require('../usuarios/usuario_repository');
 const { validarRegistroUsuario } = require('./autenticacion_validacion');
 const enviarCorreoVerificacion = require('../../utilidades/helpers/enviar_codigo_correo');
 const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
