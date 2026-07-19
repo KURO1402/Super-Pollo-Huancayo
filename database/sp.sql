@@ -3337,8 +3337,7 @@ BEGIN
         AND ur.rol_activo = 1
     LEFT JOIN rol_usuario ru
         ON ur.id_rol = ru.id_rol
-    WHERE u.estado_usuario = 1
-      AND u.id_usuario <> p_id_usuario
+    WHERE u.id_usuario <> p_id_usuario
       AND (p_id_rol IS NULL OR ru.id_rol = p_id_rol)
       AND (
             p_valor IS NULL OR
@@ -3364,15 +3363,15 @@ BEGIN
         u.correo_usuario,
         u.telefono_usuario,
         ru.id_rol,
-        ru.nombre_rol
+        ru.nombre_rol,
+        u.estado_usuario
     FROM usuarios u
     LEFT JOIN usuario_rol ur
         ON u.id_usuario = ur.id_usuario
         AND ur.rol_activo = 1
     LEFT JOIN rol_usuario ru
         ON ur.id_rol = ru.id_rol
-    WHERE u.estado_usuario = 1
-      AND u.id_usuario <> p_id_usuario
+    WHERE u.id_usuario <> p_id_usuario
       AND (p_id_rol IS NULL OR ru.id_rol = p_id_rol)
       AND (
             p_valor IS NULL OR

@@ -63,7 +63,8 @@ CREATE TABLE usuarios (
     correo_usuario VARCHAR(100) NOT NULL,
     clave_usuario CHAR(60) NOT NULL,
     telefono_usuario VARCHAR(15),
-    estado_usuario TINYINT(1) DEFAULT 1
+    estado_usuario TINYINT(1) DEFAULT 1,
+    es_superadmin TINYINT(1) DEFAULT 0
 );
 
 CREATE TABLE usuario_rol (

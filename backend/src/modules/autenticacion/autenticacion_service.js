@@ -11,7 +11,7 @@ const {
   validarVerificacionModel,
   seleccionarUsuarioCorreoModel,
   eliminarVerificacionModel
-} = require('./autenticacion_model');
+} = require('./autenticacion_repository');
 const { actualizarClaveUsuarioModel } = require('../usuarios/usuario_repository');
 const { validarRegistroUsuario } = require('./autenticacion_validacion');
 const enviarCorreoVerificacion = require('../../utilidades/helpers/enviar_codigo_correo');

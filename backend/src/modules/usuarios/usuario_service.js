@@ -19,7 +19,7 @@ const {
 } = require('./usuario_repository');
 const { validarActualizarUsuario, validarActualizarCorreoUsuario } = require('./usuario_validacion');
 
-const { seleccionarTotalUsuarioPorCorreoModel, validarVerificacionCorreo } = require('../autenticacion/autenticacion_model');
+const { seleccionarTotalUsuarioPorCorreoModel, validarVerificacionCorreo } = require('../autenticacion/autenticacion_repository');
 const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
 
 const obtenerRolesService = async () => {
