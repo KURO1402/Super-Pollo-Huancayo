@@ -63,6 +63,19 @@ export const eliminarUsuarioServicio = async (id_usuario) => {
   }
 };
 
+export const reactivarUsuarioServicio = async (id_usuario) => {
+  try {
+    const respuesta = await API.patch(`/usuarios/activar-usuarios/${id_usuario}`);
+    if (respuesta.data && respuesta.data.ok) {
+      return respuesta.data;
+    } else {
+      throw new Error(respuesta.data?.mensaje || "Error al reactivar usuario");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const obtenerUsuarioPorIdServicio = async () => {
   try {
     const respuesta = await API.get(`/usuarios/usuario`);

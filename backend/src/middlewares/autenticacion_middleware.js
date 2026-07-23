@@ -30,7 +30,18 @@ const verificarRoles = (...rolesPermitidos) => {
   };
 };
 
+const verificarSuperadmin = (req, res, next) => {
+  const { es_superadmin } = req.usuario;
+
+  if (!es_superadmin) {
+    return res.status(403).json({ ok: false, message: 'Acceso denegado. No puedes hacer eso.' });
+  }
+
+  next();
+};
+
 module.exports = {
   autenticacionToken,
-  verificarRoles
+  verificarRoles, 
+  verificarSuperadmin
 };

@@ -84,7 +84,7 @@ const ModalEditarUsuario = ({ usuario, onClose }) => {
         <option value="">Selecciona un rol</option>
         {roles.map((r) => (
           <option key={r.id_rol} value={r.id_rol}>
-            {r.nombre_rol}
+            {r.nombre_rol.charAt(0).toUpperCase() + r.nombre_rol.slice(1).toLowerCase()}
           </option>
         ))}
       </select>

@@ -29,6 +29,7 @@ DROP PROCEDURE IF EXISTS sp_ia_inventario_movimientos;
 DROP PROCEDURE IF EXISTS sp_ia_reservas;
 DROP PROCEDURE IF EXISTS sp_ia_reservas_resumen;
 DROP PROCEDURE IF EXISTS sp_ia_ventas_por_medio_pago;
+DROP PROCEDURE IF EXISTS sp_obtener_usuario_id_reactivar;
 
 DELIMITER //
 
@@ -608,6 +609,18 @@ BEGIN
     WHERE DATE(v.fecha_registro) BETWEEN p_fecha_inicio AND p_fecha_fin
     GROUP BY mp.id_medio_pago, mp.nombre_medio_pago
     ORDER BY monto_total DESC;
+END //
+
+CREATE PROCEDURE sp_obtener_usuario_id_reactivar(
+    IN p_id_usuario INT
+)
+BEGIN
+    SELECT 
+        u.nombre_usuario,
+        u.apellido_usuario,
+        u.estado_usuario
+    FROM usuarios u
+    WHERE u.id_usuario = p_id_usuario;
 END //
 
 DELIMITER ;

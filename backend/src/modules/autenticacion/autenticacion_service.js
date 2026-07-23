@@ -4,15 +4,15 @@ const jwt = require('jsonwebtoken');
 const crearError = require('../../utilidades/crear_error');
 const { validarCorreo } = require('../../utilidades/validaciones');
 const {
-  registroUsuarioModel,
-  seleccionarTotalUsuarioPorCorreoModel,
-  registrarVerificacionCorreoModel,
-  validarCodigoCorreoModel,
-  validarVerificacionModel,
-  seleccionarUsuarioCorreoModel,
-  eliminarVerificacionModel
+  registroUsuarioRepository,
+  seleccionarTotalUsuarioPorCorreoRepository,
+  registrarVerificacionCorreoRepository,
+  validarCodigoCorreoRepository,
+  validarVerificacionRepository,
+  seleccionarUsuarioCorreoRepository,
+  eliminarVerificacionRepository
 } = require('./autenticacion_repository');
-const { actualizarClaveUsuarioModel } = require('../usuarios/usuario_repository');
+const { actualizarClaveUsuarioRepository } = require('../usuarios/usuario_repository');
 const { validarRegistroUsuario } = require('./autenticacion_validacion');
 const enviarCorreoVerificacion = require('../../utilidades/helpers/enviar_codigo_correo');
 const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
@@ -28,18 +28,18 @@ const registroUsuarioService = async (datos) => {
   } else {
     telefono = telefonoUsuario;
   }
-  const correoValidado = await validarVerificacionModel(correoUsuario, "registro");
+  const correoValidado = await validarVerificacionRepository(correoUsuario, "registro");
   if (!correoValidado || correoValidado.verificado == 0) {
     throw crearError('Verificación pendiente: Primero valide su correo.', 403);
   }
-  const coincidenciasCorreo = await seleccionarTotalUsuarioPorCorreoModel(correoUsuario);
+  const coincidenciasCorreo = await seleccionarTotalUsuarioPorCorreoRepository(correoUsuario);
   if (coincidenciasCorreo > 0) {
     throw crearError('Correo electrónico ya en uso, ingrese otro correo.', 409);
   }
 
   const claveEncriptada = await bcrypt.hash(claveUsuario, 10);
 
-  const nuevoUsuario = await registroUsuarioModel(nombreUsuario, apellidoUsuario, correoUsuario, claveEncriptada, telefono);
+  const nuevoUsuario = await registroUsuarioRepository(nombreUsuario, apellidoUsuario, correoUsuario, claveEncriptada, telefono);
 
   const accessToken = jwt.sign(
     nuevoUsuario,
@@ -82,7 +82,7 @@ const registrarVerificacionCorreoService = async (datos) => {
   const tipoTexto = tipoVerificacion === 1 ? 'registro' : 'recuperacion_password';
 
   if (tipoTexto === 'registro') {
-    const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoModel(correo);
+    const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoRepository(correo);
     if (correosCoincidentes > 0) {
       throw crearError('Ya existe un usuario registrado con el correo ingresado.', 409);
     }
@@ -90,7 +90,7 @@ const registrarVerificacionCorreoService = async (datos) => {
 
   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
-  await registrarVerificacionCorreoModel(correo, codigo, tipoTexto);
+  await registrarVerificacionCorreoRepository(correo, codigo, tipoTexto);
 
   const info = await enviarCorreoVerificacion(correo, codigo);
 
@@ -123,7 +123,7 @@ const validarCodigoCorreoService = async (datos) => {
   const tipoTexto = tipoVerificacion === 1 ? 'registro' : 'recuperacion_password';
 
   const fechaActual = new Date();
-  const resultado = await validarCodigoCorreoModel(correo, codigo, tipoTexto, fechaActual);
+  const resultado = await validarCodigoCorreoRepository(correo, codigo, tipoTexto, fechaActual);
 
   if (!resultado) {
     throw crearError('Ocurrió un error al verificar el correo.', 500);
@@ -164,7 +164,7 @@ const iniciarSesionUsuarioService = async (datos) => {
     throw crearError('Se necesita la clave para iniciar sesión');
   }
 
-  const usuario = await seleccionarUsuarioCorreoModel(email);
+  const usuario = await seleccionarUsuarioCorreoRepository(email);
 
   if (!usuario) {
     throw crearError('Correo o contraseña incorrecto', 401);
@@ -180,7 +180,8 @@ const iniciarSesionUsuarioService = async (datos) => {
     nombre_usuario: usuario.nombre_usuario,
     apellido_usuario: usuario.apellido_usuario,
     id_rol: usuario.id_rol,
-    nombre_rol: usuario.nombre_rol
+    nombre_rol: usuario.nombre_rol,
+    es_superadmin: usuario.es_superadmin
   };
 
   const accessToken = jwt.sign(
@@ -241,7 +242,7 @@ const iniciarSesionMovilService = async (datos) => {
     throw crearError('Se necesita la clave para iniciar sesión', 400);
   }
 
-  const usuario = await seleccionarUsuarioCorreoModel(email);
+  const usuario = await seleccionarUsuarioCorreoRepository(email);
 
   if (!usuario) {
     throw crearError('Correo o contraseña incorrecto', 401);
@@ -300,15 +301,15 @@ const restaurarClaveUsuarioService = async (datos) => {
     throw crearError('La nueva clave debe tener al menos 8 caracteres.', 400);
   }
 
-  const validacion = await validarVerificacionModel(correoUsuario, "recuperacion_password");
+  const validacion = await validarVerificacionRepository(correoUsuario, "recuperacion_password");
   console.log(validacion);
   if (!validacion || validacion.verificado !== 1) {
     throw crearError('Revise su correo y verifique el código primero.', 403);
   }
   const nuevaClaveEncriptada = await bcrypt.hash(nuevaClave, 10);
-  const usuario = await seleccionarUsuarioCorreoModel(correoUsuario);
-  const resultado = actualizarClaveUsuarioModel(usuario.id_usuario, nuevaClaveEncriptada);
-  await eliminarVerificacionModel(validacion.id_verificacion);
+  const usuario = await seleccionarUsuarioCorreoRepository(correoUsuario);
+  const resultado = actualizarClaveUsuarioRepository(usuario.id_usuario, nuevaClaveEncriptada);
+  await eliminarVerificacionRepository(validacion.id_verificacion);
   return {
     ok: true,
     mensaje: "Contraseña actualizada con éxito. Ya puede iniciar sesion con su nueva contraseña."

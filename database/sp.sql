@@ -3311,6 +3311,7 @@ BEGIN
         u.apellido_usuario,
         u.correo_usuario,
         u.clave_usuario,
+        u.es_superadmin,
         r.id_rol,
         r.nombre_rol
     FROM usuarios u
@@ -3364,6 +3365,7 @@ BEGIN
         u.telefono_usuario,
         ru.id_rol,
         ru.nombre_rol,
+        u.es_superadmin,
         u.estado_usuario
     FROM usuarios u
     LEFT JOIN usuario_rol ur

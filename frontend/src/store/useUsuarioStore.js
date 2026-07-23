@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { actualizarRolUsuarioServicio, eliminarUsuarioServicio, obtenerUsuariosServicio } from '../servicios/usuariosServicios';
+import { actualizarRolUsuarioServicio, eliminarUsuarioServicio, reactivarUsuarioServicio, obtenerUsuariosServicio } from '../servicios/usuariosServicios';
 
 export const useUsuariosStore = create((set, get) => ({
     usuarios: [],
@@ -33,7 +33,13 @@ export const useUsuariosStore = create((set, get) => ({
     actualizarRol: async (id_usuario, id_rol) => {
         try {
             await actualizarRolUsuarioServicio(id_usuario, id_rol);
-            await get().cargarUsuarios();
+            set((state) => ({
+                usuarios: state.usuarios.map((u) =>
+                    u.id_usuario === id_usuario
+                        ? { ...u, id_rol }
+                        : u
+                ),
+            }));
         } catch (err) {
             set({ error: err.message });
             throw err;
@@ -44,7 +50,27 @@ export const useUsuariosStore = create((set, get) => ({
         try {
             await eliminarUsuarioServicio(id_usuario);
             set((state) => ({
-                usuarios: state.usuarios.filter((u) => u.id_usuario !== id_usuario),
+                usuarios: state.usuarios.map((u) =>
+                    u.id_usuario === id_usuario
+                        ? { ...u, estado_usuario: 0, id_rol: 1 }
+                        : u
+                ),
+            }));
+        } catch (err) {
+            set({ error: err.message });
+            throw err;
+        }
+    },
+
+    reactivarUsuario: async (id_usuario) => {
+        try {
+            await reactivarUsuarioServicio(id_usuario);
+            set((state) => ({
+                usuarios: state.usuarios.map((u) =>
+                    u.id_usuario === id_usuario
+                        ? { ...u, estado_usuario: 1 }
+                        : u
+                ),
             }));
         } catch (err) {
             set({ error: err.message });

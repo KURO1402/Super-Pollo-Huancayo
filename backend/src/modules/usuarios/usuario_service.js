@@ -3,27 +3,28 @@ const cache = require('../../config/node_cache');
 
 const crearError = require('../../utilidades/crear_error');
 const {
-    obtenerRolesUsuario,
-    contarUsuarios,
-    obtenerUsuarios,
-    contarUsuarioPorIdModel,
-    actualizarDatosUsuarioModel,
-    obtenerUsuarioPorIdModel,
-    obtenerHistorialRolesUsuarioModel,
-    obtenerClaveUsuarioPorIdModel,
-    actualizarCorreoUsuarioModel,
-    actualizarClaveUsuarioModel,
-    eliminarUsuarioModel,
-    obtenerRolPorIdModel,
-    actualizarRolUsuarioModel
+    obtenerRolesUsuarioRepository,
+    contarUsuariosRepository,
+    obtenerUsuariosRepository,
+    contarUsuarioPorIdRepository,
+    actualizarDatosUsuarioRepository,
+    obtenerUsuarioPorIdRepository,
+    obtenerHistorialRolesUsuarioRepository,
+    obtenerClaveUsuarioPorIdRepository,
+    actualizarCorreoUsuarioRepository,
+    actualizarClaveUsuarioRepository,
+    cambiarEstadoUsuarioRepository,
+    obtenerRolPorIdRepository,
+    actualizarRolUsuarioRepository,
+    obtenerUsuarioReactivarRepository
 } = require('./usuario_repository');
 const { validarActualizarUsuario, validarActualizarCorreoUsuario } = require('./usuario_validacion');
 
-const { seleccionarTotalUsuarioPorCorreoModel, validarVerificacionCorreo } = require('../autenticacion/autenticacion_repository');
+const { seleccionarTotalUsuarioPorCorreoRepository, validarVerificacionCorreo } = require('../autenticacion/autenticacion_repository');
 const limpiarCachePorPrefijo = require('../../utilidades/limpiar_cache');
 
 const obtenerRolesService = async () => {
-    const roles = await obtenerRolesUsuario();
+    const roles = await obtenerRolesUsuarioRepository();
     if (roles.length === 0) {
         throw crearError('No se encontraron roles.', 404);
     }
@@ -58,7 +59,7 @@ const obtenerUsuariosService = async (idUsuario, querys) => {
 
     if (cachedTotal !== undefined) {
 
-        const usuarios = await obtenerUsuarios(limite, desplazamiento, idUsuario, rol, valorFiltro);
+        const usuarios = await obtenerUsuariosRepository(limite, desplazamiento, idUsuario, rol, valorFiltro);
 
         if (!usuarios || usuarios.length === 0) {
             throw crearError('No se encontraron usuarios', 404);
@@ -71,7 +72,7 @@ const obtenerUsuariosService = async (idUsuario, querys) => {
         };
     }
 
-    const totalUsuarios = await contarUsuarios(idUsuario, rol, valorFiltro);
+    const totalUsuarios = await contarUsuariosRepository(idUsuario, rol, valorFiltro);
 
     if (totalUsuarios === 0) {
         throw crearError('No se encontraron usuarios', 404);
@@ -96,8 +97,8 @@ const obtenerUsuarioPorIdService = async (id) => {
         throw crearError('Se requiere un ID de usuario válido.', 400);
     }
 
-    const usuario = await obtenerUsuarioPorIdModel(Number(id));
-    const historialRoles = await obtenerHistorialRolesUsuarioModel(Number(id));
+    const usuario = await obtenerUsuarioPorIdRepository(Number(id));
+    const historialRoles = await obtenerHistorialRolesUsuarioRepository(Number(id));
     usuario.roles = historialRoles;
 
     if (!usuario) {
@@ -119,11 +120,11 @@ const actualizarDatosUsuarioService = async (datos, idUsuario) => {
         datos.telefonoUsuario = null;
     }
 
-    const totalUsuarios = await contarUsuarioPorIdModel(idUsuarioNumerico);
+    const totalUsuarios = await contarUsuarioPorIdRepository(idUsuarioNumerico);
     if (totalUsuarios === 0) {
         throw crearError('El usuario especificado no existe', 404);
     }
-    const respuesta = await actualizarDatosUsuarioModel(datos, idUsuarioNumerico);
+    const respuesta = await actualizarDatosUsuarioRepository(datos, idUsuarioNumerico);
     
     limpiarCachePorPrefijo('usuarios:');
 
@@ -137,12 +138,12 @@ const actualizarCorreoUsuarioService = async (datos, idUsuario) => {
     const { nuevoCorreo, clave } = datos
     const idUsuarioNumerico = Number(idUsuario);
 
-    const usuarioClave = await obtenerClaveUsuarioPorIdModel(idUsuarioNumerico);
+    const usuarioClave = await obtenerClaveUsuarioPorIdRepository(idUsuarioNumerico);
     if (!usuarioClave) {
         throw crearError('El usuario especificado no existe', 404);
     }
 
-    const cantidadUsuariosCorreo = await seleccionarTotalUsuarioPorCorreoModel(nuevoCorreo);
+    const cantidadUsuariosCorreo = await seleccionarTotalUsuarioPorCorreoRepository(nuevoCorreo);
     if (cantidadUsuariosCorreo > 0) {
         throw crearError('Ya existe un usuario registrado con el correo ingresado.', 409);
     }
@@ -158,7 +159,7 @@ const actualizarCorreoUsuarioService = async (datos, idUsuario) => {
         throw crearError('Verificación pendiente: Primero valide su correo.', 403);
     }
 
-    const respuesta = await actualizarCorreoUsuarioModel(idUsuarioNumerico, nuevoCorreo);
+    const respuesta = await actualizarCorreoUsuarioRepository(idUsuarioNumerico, nuevoCorreo);
 
     limpiarCachePorPrefijo('usuarios:');
 
@@ -192,7 +193,7 @@ const actualizarClaveUsuarioService = async (datos, idUsuario) => {
         throw crearError('La nueva clave debe tener al menos 8 caracteres.', 400);
     }
 
-    const usuarioClave = await obtenerClaveUsuarioPorIdModel(idUsuarioNumerico);
+    const usuarioClave = await obtenerClaveUsuarioPorIdRepository(idUsuarioNumerico);
     if (!usuarioClave) {
         throw crearError('El usuario especificado no existe.', 404)
     }
@@ -204,7 +205,7 @@ const actualizarClaveUsuarioService = async (datos, idUsuario) => {
 
     const nuevaClaveEncriptada = await bcrypt.hash(nuevaClave, 10);
 
-    const respuesta = await actualizarClaveUsuarioModel(idUsuarioNumerico, nuevaClaveEncriptada);
+    const respuesta = await actualizarClaveUsuarioRepository(idUsuarioNumerico, nuevaClaveEncriptada);
 
     return {
         ok: true,
@@ -212,33 +213,69 @@ const actualizarClaveUsuarioService = async (datos, idUsuario) => {
     };
 };
 
-const eliminarUsuarioService = async (idUsuario) => {
+const eliminarUsuarioService = async (idUsuario, idActual) => {
     if (!idUsuario || isNaN(Number(idUsuario))) {
-        throw crearError('Se necesita un ID de usuario válido.', 400)
+        throw crearError('Se necesita un ID de usuario válido.', 400);
     }
 
     const idUsuarioNumerico = Number(idUsuario);
 
-    const usuario = await obtenerUsuarioPorIdModel(idUsuarioNumerico);
+    if (idUsuarioNumerico === Number(idActual)) {
+        throw crearError('No puedes desactivarte a ti mismo.', 403);
+    }
+
+    const usuario = await obtenerUsuarioPorIdRepository(idUsuarioNumerico);
 
     if (!usuario) {
-        throw crearError('El usuario especificado no existe', 404)
-    }
-    if(usuario.id_rol == 3 || usuario.nombre_rol == 'administrador') {
-        throw crearError('No puedes eliminar a este usuario', 403);
+        throw crearError('El usuario especificado no existe', 404);
     }
 
-    const respuesta = await eliminarUsuarioModel(idUsuarioNumerico, 0);
+    if (usuario.estado_usuario === 0) {
+        throw crearError('El usuario ya se encuentra inactivo.', 400);
+    }
+    await actualizarRolUsuarioRepository(idUsuarioNumerico, 1);
+    const respuesta = await cambiarEstadoUsuarioRepository(idUsuarioNumerico, 0);
 
     limpiarCachePorPrefijo('usuarios:');
 
     return {
         ok: true,
         mensaje: respuesta
-    }
+    };
 };
 
-const actualizarRolUsuarioService = async (datos, idUsuario, idActual) => {
+const reactivarUsuarioService = async (idUsuario, idActual) => {
+    if (!idUsuario || isNaN(Number(idUsuario))) {
+        throw crearError('Se necesita un ID de usuario válido.', 400);
+    }
+
+    const idUsuarioNumerico = Number(idUsuario);
+
+    if (idUsuarioNumerico === Number(idActual)) {
+        throw crearError('No puedes reactivarte a ti mismo.', 403);
+    }
+
+    const usuario = await obtenerUsuarioReactivarRepository(idUsuarioNumerico);
+
+    if (!usuario) {
+        throw crearError('El usuario especificado no existe', 404);
+    }
+
+    if (usuario.estado_usuario === 1) {
+        throw crearError('El usuario ya se encuentra activo.', 400);
+    }
+
+    const respuesta = await cambiarEstadoUsuarioRepository(idUsuarioNumerico, 1);
+
+    limpiarCachePorPrefijo('usuarios:');
+
+    return {
+        ok: true,
+        mensaje: respuesta
+    };
+};
+
+const actualizarRolUsuarioService = async (datos, idUsuario, idActual, esSuperadminActual) => {
 
     if (!idUsuario || isNaN(Number(idUsuario))) {
         throw crearError("Se necesita un ID de usuario válido.", 400);
@@ -258,12 +295,12 @@ const actualizarRolUsuarioService = async (datos, idUsuario, idActual) => {
         throw crearError("Usted mismo no puede modificar su rol.", 403);
     }
 
-    const usuario = await obtenerUsuarioPorIdModel(idUsuario);
+    const usuario = await obtenerUsuarioPorIdRepository(idUsuario);
     if (!usuario) {
         throw crearError("El usuario especificado no existe.", 404);
     }
 
-    const rol = await obtenerRolPorIdModel(nuevoRol);
+    const rol = await obtenerRolPorIdRepository(nuevoRol);
     if (!rol || rol.length === 0) {
         throw crearError("El rol especificado no existe.", 404);
     }
@@ -272,11 +309,11 @@ const actualizarRolUsuarioService = async (datos, idUsuario, idActual) => {
         throw crearError("El usuario ya tiene asignado este rol.", 400);
     }
 
-    if(usuario.id_rol == 3 || usuario.nombre_rol == 'administrador') {
+    if (!esSuperadminActual && (usuario.id_rol == 3 || usuario.nombre_rol == 'administrador')) {
         throw crearError('No puedes actualizar el rol de este usuario', 403);
     }
 
-    const resultado = await actualizarRolUsuarioModel(idUsuario, nuevoRol);
+    const resultado = await actualizarRolUsuarioRepository(idUsuario, nuevoRol);
 
     limpiarCachePorPrefijo('usuarios:');
 
@@ -295,5 +332,6 @@ module.exports = {
     actualizarCorreoUsuarioService,
     actualizarClaveUsuarioService,
     eliminarUsuarioService,
+    reactivarUsuarioService,
     actualizarRolUsuarioService
 }

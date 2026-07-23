@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useUsuariosStore } from '../../store/useUsuarioStore';
+import { useAutenticacionStore } from '../../store/useAutenticacionStore';
 import { usePaginacion } from '../../hooks/usePaginacion';
 import { useModal } from '../../hooks/useModal';
 import FiltrosUsuarios from '../../componentes/panel-admin/usuario/FiltrosUsuarios';
@@ -17,8 +18,12 @@ const UsuariosPagina = () => {
     usuarios, total, cargando, error,
     paginaActual, limite, filtros,
     cargarUsuarios, setPagina, setLimite,
-    setFiltros, limpiarFiltros, limpiarError, eliminarUsuario,
+    setFiltros, limpiarFiltros, limpiarError,
+    eliminarUsuario, reactivarUsuario,
   } = useUsuariosStore();
+
+  const usuarioLogueado = useAutenticacionStore((state) => state.usuario);
+  const esSuperadmin = Boolean(usuarioLogueado?.es_superadmin);
 
   const { estaAbierto, abrir, cerrar } = useModal();
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
@@ -86,6 +91,26 @@ const UsuariosPagina = () => {
     );
   };
 
+  const handleSolicitarReactivacion = (usuario) => {
+    solicitarConfirmacion(
+      `¿Estás seguro de reactivar al usuario ${usuario.nombre_usuario} ${usuario.apellido_usuario}?`,
+      async () => {
+        try {
+          await reactivarUsuario(usuario.id_usuario);
+          mostrarAlerta.exito('Usuario reactivado correctamente');
+        } catch (err) {
+          mostrarAlerta.error(err.message || 'Error al reactivar usuario');
+        }
+      },
+      {
+        titulo: 'Reactivar Usuario',
+        tipo: 'info',
+        textoConfirmar: 'Reactivar',
+        textoCancelar: 'Cancelar',
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-full p-4">
@@ -125,8 +150,10 @@ const UsuariosPagina = () => {
             <TablaUsuarios
               usuarios={usuarios}
               cargando={false}
+              esSuperadmin={esSuperadmin}
               onEditarRol={handleEditarRol}
               onEliminarUsuario={handleSolicitarEliminacion}
+              onReactivarUsuario={handleSolicitarReactivacion}
             />
             {total > 0 && (
               <div className="mt-4">
