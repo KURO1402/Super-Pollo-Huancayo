@@ -1,3 +1,4 @@
+const registrarError = require('../../utilidades/registrar_error');
 const {
     obtenerRolesService,
     obtenerUsuariosService,
@@ -15,6 +16,7 @@ const obtenerRolesController = async (req, res) => {
         const respuesta = await obtenerRolesService();
         return res.status(200).json(respuesta);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -31,8 +33,9 @@ const obtenerUsuariosController = async (req, res) => {
         const resultado = await obtenerUsuariosService(id_usuario, req.query);
 
         return res.status(200).json(resultado);
-        
+
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -51,6 +54,7 @@ const obtenerUsuarioPorIdController = async (req, res) => {
         return res.status(200).json(usuario);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -66,6 +70,7 @@ const actualizarDatosUsuarioController = async (req, res) => {
         const respuesta = await actualizarDatosUsuarioService(req.body, id_usuario);
         return res.status(200).json(respuesta);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -77,12 +82,12 @@ const actualizarDatosUsuarioController = async (req, res) => {
 
 const actualizarCorreoUsuarioController = async (req, res) => {
     try {
-        const { id_usuario } = req.usuario; 
+        const { id_usuario } = req.usuario;
         const respuesta = await actualizarCorreoUsuarioService(req.body, id_usuario);
 
         return res.status(200).json(respuesta);
     } catch (err) {
-
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -94,11 +99,12 @@ const actualizarCorreoUsuarioController = async (req, res) => {
 
 const actualizarClaveUsuarioController = async (req, res) => {
     try {
-        const { id_usuario } = req.usuario; 
+        const { id_usuario } = req.usuario;
         const respuesta = await actualizarClaveUsuarioService(req.body, id_usuario);
 
         return res.status(200).json(respuesta);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -110,11 +116,13 @@ const actualizarClaveUsuarioController = async (req, res) => {
 
 const eliminarUsuarioController = async (req, res) => {
     try {
-        const { idUsuario } = req.params; 
-        const respuesta = await eliminarUsuarioService(idUsuario);
+        const { idUsuario } = req.params;
+        const { id_usuario } = req.usuario;
+        const respuesta = await eliminarUsuarioService(idUsuario, id_usuario);
 
         return res.status(200).json(respuesta);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -126,11 +134,13 @@ const eliminarUsuarioController = async (req, res) => {
 
 const reactivarUsuarioController = async (req, res) => {
     try {
-        const { idUsuario } = req.params; 
-        const respuesta = await reactivarUsuarioService(idUsuario);
+        const { idUsuario } = req.params;
+        const { id_usuario } = req.usuario;
+        const respuesta = await reactivarUsuarioService(idUsuario, id_usuario);
 
         return res.status(200).json(respuesta);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -150,6 +160,7 @@ const actualizarRolUsuarioController = async (req, res) => {
         return res.status(200).json(respuesta);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

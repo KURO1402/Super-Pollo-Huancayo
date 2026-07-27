@@ -79,7 +79,7 @@ const obtenerUsuariosService = async (idUsuario, querys) => {
     }
     cache.set(cacheKey, totalUsuarios);
 
-    const usuarios = await obtenerUsuarios(limite, desplazamiento, idUsuario, rol, valorFiltro);
+    const usuarios = await obtenerUsuariosRepository(limite, desplazamiento, idUsuario, rol, valorFiltro);
 
     if (!usuarios || usuarios.length === 0) {
         throw crearError('No se encontraron usuarios', 404);

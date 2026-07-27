@@ -330,4 +330,14 @@ CREATE TABLE mesas_pedido (
     FOREIGN KEY (id_pedido) REFERENCES pedido_mesa(id_pedido)
 );
 
+CREATE TABLE registro_errores (
+    id_error INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_error TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    endpoint VARCHAR(255) NOT NULL,
+    status_code INT NOT NULL,
+    mensaje_error TEXT NOT NULL,
+    id_usuario INT NULL,
+    request_data JSON NULL
+);
+
 SET FOREIGN_KEY_CHECKS = 1;

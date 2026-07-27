@@ -20,7 +20,6 @@ const ocuparMesasModel = async (mesas, idUsuario, fechaActual) => {
 
     } catch (err) {
         if (conexion) await conexion.rollback();
-        console.error("Error en el modelo:", err.message);
         throw new Error('Error al procesar el grupo de mesas. No se realizaron cambios.');
     } finally {
         if (conexion) conexion.release();

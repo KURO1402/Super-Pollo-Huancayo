@@ -30,6 +30,7 @@ DROP PROCEDURE IF EXISTS sp_ia_reservas;
 DROP PROCEDURE IF EXISTS sp_ia_reservas_resumen;
 DROP PROCEDURE IF EXISTS sp_ia_ventas_por_medio_pago;
 DROP PROCEDURE IF EXISTS sp_obtener_usuario_id_reactivar;
+DROP PROCEDURE IF EXISTS sp_registrar_error;
 
 DELIMITER //
 
@@ -621,6 +622,18 @@ BEGIN
         u.estado_usuario
     FROM usuarios u
     WHERE u.id_usuario = p_id_usuario;
+END //
+
+CREATE PROCEDURE sp_registrar_error (
+    IN p_endpoint VARCHAR(255),
+    IN p_status_code INT,
+    IN p_mensaje_error TEXT,
+    IN p_id_usuario INT,
+    IN p_request_data JSON
+)
+BEGIN
+    INSERT INTO registro_errores (endpoint, status_code, mensaje_error, id_usuario, request_data)
+    VALUES (p_endpoint, p_status_code, p_mensaje_error, p_id_usuario, p_request_data);
 END //
 
 DELIMITER ;
