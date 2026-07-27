@@ -8,7 +8,8 @@ const registrarError = async (err, req) => {
         const idUsuario = req.usuario?.id_usuario || null;
         const requestData = JSON.stringify({
             params: req.params,
-            query: req.query
+            query: req.query,
+            body: req.body
         });
 
         await ejecutarSP('sp_registrar_error', [endpoint, statusCode, mensajeError, idUsuario, requestData]);
