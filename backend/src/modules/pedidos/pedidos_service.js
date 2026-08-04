@@ -1,6 +1,7 @@
 const crearError = require('../../utilidades/crear_error');
 const { obtenerProductoIdModel } = require('../inventario/productos/producto_model');
 const pusher = require('../../config/pusher');
+const beamsClient = require('../../config/beams');
 
 const {
     obtenerMesasPedidoModel,
@@ -130,6 +131,17 @@ const insertarPedidoService = async (datos) => {
             .catch(err => {
                 console.error('Error al emitir evento a Pusher:', err.message);
             });
+
+        beamsClient.publishToInterests(['pedidos'], {
+            fcm: {
+                notification: {
+                    title: 'Nuevo pedido',
+                    body: payloadPusher.titulo,
+                },
+            },
+        }).catch(err => {
+            console.error('Error al emitir push con Beams:', err.message);
+        });
 
     } catch (err) {
         console.error('Error en emisión de Pusher:', err.message);
@@ -338,6 +350,17 @@ const editarPedidoService = async (idPedido, datos) => {
                 console.error('Error al emitir evento a Pusher:', err.message);
             });
 
+        beamsClient.publishToInterests(['pedidos'], {
+            fcm: {
+                notification: {
+                    title: 'Pedido editado',
+                    body: payloadPusher.titulo,
+                },
+            },
+        }).catch(err => {
+            console.error('Error al emitir push con Beams:', err.message);
+        });
+
     } catch (err) {
         console.error('Error en emisión de Pusher:', err.message);
     }
@@ -382,6 +405,17 @@ const cancelarPedidoService = async (idPedido) => {
                 console.error('Error al emitir evento a Pusher:', err.message);
             });
 
+        beamsClient.publishToInterests(['pedidos'], {
+            fcm: {
+                notification: {
+                    title: 'Pedido cancelado',
+                    body: payloadPusher.titulo,
+                },
+            },
+        }).catch(err => {
+            console.error('Error al emitir push con Beams:', err.message);
+        });
+
     } catch (err) {
         console.error('Error en emisión de Pusher:', err.message);
     }
@@ -424,6 +458,17 @@ const completarPedidoService = async (idPedido) => {
             .catch(err => {
                 console.error('Error al emitir evento a Pusher:', err.message);
             });
+
+        beamsClient.publishToInterests(['pedidos'], {
+            fcm: {
+                notification: {
+                    title: 'Pedido completado',
+                    body: payloadPusher.titulo,
+                },
+            },
+        }).catch(err => {
+            console.error('Error al emitir push con Beams:', err.message);
+        });
 
     } catch (err) {
         console.error('Error en emisión de Pusher:', err.message);

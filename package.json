@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@pusher/push-notifications-server": "^1.2.7"
+  }
+}
