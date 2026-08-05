@@ -3,20 +3,20 @@ const { obtenerProductoIdModel } = require('../inventario/productos/producto_mod
 const pusher = require('../../config/pusher');
 
 const {
-    obtenerMesasPedidoModel,
-    insertarPedidoCompletoModel,
-    listarPedidosModel,
-    listarMesasPorPedidoModel,
-    listarDetallePorPedidoModel,
-    validarMesaDisponibleModel,
-    obtenerEstadoPedidoModel,
-    obtenerDetallePedidoModel,
-    obtenerMesasDeUnPedidoModel,
-    obtenerUltimoPedidoMesaModel,
-    editarPedidoCompletoModel,
-    cancelarPedidoModel,
-    completarPedidoModel,
-} = require('./pedidos_model');
+    obtenerMesasPedidoRepository,
+    insertarPedidoCompletoRepository,
+    listarPedidosRepository,
+    listarMesasPorPedidoRepository,
+    listarDetallePorPedidoRepository,
+    validarMesaDisponibleRepository,
+    obtenerEstadoPedidoRepository,
+    obtenerDetallePedidoRepository,
+    obtenerMesasDeUnPedidoRepository,
+    obtenerUltimoPedidoMesaRepository,
+    editarPedidoCompletoRepository,
+    cancelarPedidoRepository,
+    completarPedidoRepository,
+} = require('./pedidos_repository');
 
 const obtenerMesasPedidoService = async (fecha, hora) => {
 
@@ -34,7 +34,7 @@ const obtenerMesasPedidoService = async (fecha, hora) => {
         throw crearError('La fecha y hora proporcionadas no son válidas.', 400);
     }
 
-    const mesas = await obtenerMesasPedidoModel(fechaHora);
+    const mesas = await obtenerMesasPedidoRepository(fechaHora);
 
     if (mesas.length === 0) {
         throw crearError('No se encontraron mesas disponibles.', 404);
@@ -61,7 +61,6 @@ const insertarPedidoService = async (datos) => {
         throw crearError('Se necesita al menos un producto.', 400);
     }
 
-    // Validar disponibilidad de mesas
     const ahora = new Date();
 
     for (const item of mesas) {
@@ -69,13 +68,12 @@ const insertarPedidoService = async (datos) => {
             throw crearError('Cada mesa debe tener un idMesa válido.', 400);
         }
 
-        const disponible = await validarMesaDisponibleModel(item.idMesa, ahora);
+        const disponible = await validarMesaDisponibleRepository(item.idMesa, ahora);
         if (!disponible) {
             throw crearError(`La mesa ${item.idMesa} no está disponible.`, 400);
         }
     }
 
-    // Calcular precio total obteniendo cada producto
     let precio_precuenta = 0;
 
     for (const item of productos) {
@@ -92,19 +90,15 @@ const insertarPedidoService = async (datos) => {
         precio_precuenta += producto.precio_producto * item.cantidad;
     }
 
-    // Extraer ids de mesas
     const idsMesas = mesas.map((m) => m.idMesa);
 
-    // Formatear detalles para el modelo
     const detalles = productos.map((p) => ({
         id_producto: p.idProducto,
         cantidad: p.cantidad,
     }));
 
-    // Insertar pedido en BD
-    const resultado = await insertarPedidoCompletoModel(precio_precuenta, idsMesas, detalles);
+    const resultado = await insertarPedidoCompletoRepository(precio_precuenta, idsMesas, detalles);
 
-    // Emitir evento a Pusher
     try {
         const numerosDesMesas = idsMesas.map(id => id);
         let textMesas = '';
@@ -157,17 +151,16 @@ const listarPedidosService = async (fecha, hora) => {
         throw crearError('La fecha y hora proporcionadas no son válidas.', 400);
     }
 
-    const pedidos = await listarPedidosModel(fechaHora);
+    const pedidos = await listarPedidosRepository(fechaHora);
 
     if (pedidos.length === 0) {
         throw crearError('No hay pedidos todavia.', 404);
     }
 
-    // Por cada pedido obtener sus mesas y detalles
     const pedidosCompletos = await Promise.all(
         pedidos.map(async (pedido) => {
-            const mesas = await listarMesasPorPedidoModel(pedido.id_pedido);
-            const detalles = await listarDetallePorPedidoModel(pedido.id_pedido);
+            const mesas = await listarMesasPorPedidoRepository(pedido.id_pedido);
+            const detalles = await listarDetallePorPedidoRepository(pedido.id_pedido);
 
             return {
                 ...pedido,
@@ -189,14 +182,14 @@ const obtenerPedidoCompletoService = async (idPedido) => {
         throw crearError('Se necesita especificar un pedido válido.', 400);
     }
 
-    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+    const estadoPedido = await obtenerEstadoPedidoRepository(idPedido);
 
     if (!estadoPedido || estadoPedido.length === 0) {
         throw crearError('No se encontró el pedido.', 404);
     }
 
-    const detallePedido = await obtenerDetallePedidoModel(idPedido);
-    const mesasPedido = await obtenerMesasDeUnPedidoModel(idPedido);
+    const detallePedido = await obtenerDetallePedidoRepository(idPedido);
+    const mesasPedido = await obtenerMesasDeUnPedidoRepository(idPedido);
 
     return {
         ok: true,
@@ -220,13 +213,13 @@ const obtenerPedidoActivoMesaService = async (idMesa) => {
         throw crearError('Se necesita un idMesa válido.', 400);
     }
 
-    const pedido = await obtenerUltimoPedidoMesaModel(idMesa);
+    const pedido = await obtenerUltimoPedidoMesaRepository(idMesa);
 
     if (!pedido) {
         throw crearError('No hay pedido activo para esta mesa.', 404);
     }
 
-    const detalle = await obtenerDetallePedidoModel(pedido.id_pedido);
+    const detalle = await obtenerDetallePedidoRepository(pedido.id_pedido);
     pedido.detalles = detalle;
 
     return {
@@ -255,8 +248,7 @@ const editarPedidoService = async (idPedido, datos) => {
         throw crearError('Se necesita al menos un producto.', 400);
     }
 
-    // Verificar que el pedido existe y está en estado pendiente
-    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+    const estadoPedido = await obtenerEstadoPedidoRepository(idPedido);
 
     if (!estadoPedido || estadoPedido.length === 0) {
         throw crearError('No se encontró el pedido.', 404);
@@ -266,11 +258,9 @@ const editarPedidoService = async (idPedido, datos) => {
         throw crearError(`No se puede editar un pedido en estado "${estadoPedido.estado_pedido}". Solo se permiten pedidos pendientes.`, 409);
     }
 
-    // Obtener mesas actuales del pedido para no revalidarlas como ocupadas
-    const mesasActuales = await obtenerMesasDeUnPedidoModel(idPedido);
+    const mesasActuales = await obtenerMesasDeUnPedidoRepository(idPedido);
     const idsMesasActuales = new Set(mesasActuales.map((m) => m.id_mesa));
 
-    // Validar disponibilidad solo de mesas nuevas (las que no pertenecen ya al pedido)
     const ahora = new Date();
 
     for (const item of mesas) {
@@ -279,14 +269,13 @@ const editarPedidoService = async (idPedido, datos) => {
         }
 
         if (!idsMesasActuales.has(item.idMesa)) {
-            const disponible = await validarMesaDisponibleModel(item.idMesa, ahora);
+            const disponible = await validarMesaDisponibleRepository(item.idMesa, ahora);
             if (!disponible) {
                 throw crearError(`La mesa ${item.idMesa} no está disponible.`, 409);
             }
         }
     }
 
-    // Calcular nuevo precio total
     let precio_precuenta = 0;
 
     for (const item of productos) {
@@ -310,9 +299,8 @@ const editarPedidoService = async (idPedido, datos) => {
         cantidad: p.cantidad,
     }));
 
-    await editarPedidoCompletoModel(idPedido, precio_precuenta, idsMesas, detalles);
+    await editarPedidoCompletoRepository(idPedido, precio_precuenta, idsMesas, detalles);
 
-    // Emitir evento a Pusher
     try {
         let textMesas = '';
 
@@ -355,8 +343,7 @@ const cancelarPedidoService = async (idPedido) => {
         throw crearError('Se necesita especificar un pedido válido.', 400);
     }
 
-    // Verificar que el pedido existe y está en estado pendiente
-    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+    const estadoPedido = await obtenerEstadoPedidoRepository(idPedido);
 
     if (!estadoPedido || estadoPedido.length === 0) {
         throw crearError('No se encontró el pedido.', 404);
@@ -366,9 +353,8 @@ const cancelarPedidoService = async (idPedido) => {
         throw crearError(`No se puede cancelar un pedido en estado "${estadoPedido.estado_pedido}". Solo se permiten pedidos pendientes.`, 409);
     }
 
-    await cancelarPedidoModel(idPedido);
+    await cancelarPedidoRepository(idPedido);
 
-    // Emitir evento a Pusher
     try {
         const payloadPusher = {
             tipo: 'cancelar',
@@ -398,8 +384,7 @@ const completarPedidoService = async (idPedido) => {
         throw crearError('Se necesita especificar un pedido válido.', 400);
     }
 
-    // Verificar que el pedido existe y está en estado pendiente
-    const estadoPedido = await obtenerEstadoPedidoModel(idPedido);
+    const estadoPedido = await obtenerEstadoPedidoRepository(idPedido);
 
     if (!estadoPedido || estadoPedido.length === 0) {
         throw crearError('No se encontró el pedido.', 404);
@@ -409,9 +394,8 @@ const completarPedidoService = async (idPedido) => {
         throw crearError(`No se puede completar un pedido en estado "${estadoPedido.estado_pedido}". Solo se permiten pedidos pendientes.`, 409);
     }
 
-    await completarPedidoModel(idPedido);
+    await completarPedidoRepository(idPedido);
 
-    // Emitir evento a Pusher
     try {
         const payloadPusher = {
             tipo: 'completar',
