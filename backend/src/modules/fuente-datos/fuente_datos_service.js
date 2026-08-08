@@ -1,12 +1,12 @@
 const { 
-    obtenerResumenVentasEgresosMensualModel,
-    obtenerVentasHoyComparacionModel,
-    obtenerReservasMesComparacionModel,
-    obtenerBalanceAnualModel,
-    obtenerPorcentajeMediosPagoModel,
-    obtenerVentasPorMesModel,
-    obtenerTopProductosMasVendidosModel
-} = require('./fuente_datos_model');
+    obtenerResumenVentasEgresosMensualRepository,
+    obtenerVentasHoyComparacionRepository,
+    obtenerReservasMesComparacionRepository,
+    obtenerBalanceAnualRepository,
+    obtenerPorcentajeMediosPagoRepository,
+    obtenerVentasPorMesRepository,
+    obtenerTopProductosMasVendidosRepository
+} = require('./fuente_datos_repository');
 
 const obtenerResumenVentasEgresosMensualService = async (cantidadMeses) => {
     const meses = parseInt(cantidadMeses) || 6;
@@ -15,7 +15,7 @@ const obtenerResumenVentasEgresosMensualService = async (cantidadMeses) => {
         throw crearError('La cantidad de meses debe estar entre 1 y 12.', 400);
     }
 
-    const resultado = await obtenerResumenVentasEgresosMensualModel(meses);
+    const resultado = await obtenerResumenVentasEgresosMensualRepository(meses);
 
     return {
         ok: true,
@@ -24,7 +24,7 @@ const obtenerResumenVentasEgresosMensualService = async (cantidadMeses) => {
 };
 
 const obtenerVentasHoyComparacionService = async () => {
-    const resultado = await obtenerVentasHoyComparacionModel();
+    const resultado = await obtenerVentasHoyComparacionRepository();
     return {
         ok: true,
         resultado
@@ -32,7 +32,7 @@ const obtenerVentasHoyComparacionService = async () => {
 };
 
 const obtenerReservasMesComparacionService = async () => {
-    const resultado = await obtenerReservasMesComparacionModel();
+    const resultado = await obtenerReservasMesComparacionRepository();
     return {
         ok: true,
         resultado
@@ -40,7 +40,7 @@ const obtenerReservasMesComparacionService = async () => {
 };
 
 const obtenerBalanceAnualService = async () => {
-    const resultado = await obtenerBalanceAnualModel();
+    const resultado = await obtenerBalanceAnualRepository();
     return {
         ok: true,
         resultado
@@ -48,7 +48,7 @@ const obtenerBalanceAnualService = async () => {
 };
 
 const obtenerPorcentajeMediosPagoService = async () => {
-    const resultado = await obtenerPorcentajeMediosPagoModel();
+    const resultado = await obtenerPorcentajeMediosPagoRepository();
     return {
         ok: true,
         resultado
@@ -62,7 +62,7 @@ const obtenerVentasPorMesService = async (cantidadMeses) => {
         throw crearError('La cantidad de meses debe estar entre 1 y 12.', 400);
     }
 
-    const resultado = await obtenerVentasPorMesModel(meses);
+    const resultado = await obtenerVentasPorMesRepository(meses);
     return {
         ok: true,
         resultado
@@ -90,7 +90,7 @@ const obtenerTopProductosMasVendidosService = async (fechaInicio, fechaFin) => {
         throw crearError('La fecha de inicio no puede ser mayor a la fecha fin.', 400);
     }
 
-    const resultado = await obtenerTopProductosMasVendidosModel(fechaInicio, fechaFin);
+    const resultado = await obtenerTopProductosMasVendidosRepository(fechaInicio, fechaFin);
     return {
         ok: true,
         resultado
