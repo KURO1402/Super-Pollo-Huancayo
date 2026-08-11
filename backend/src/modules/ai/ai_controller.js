@@ -1,4 +1,5 @@
 const { procesarMensaje } = require('./ai_service');
+const registrarError = require('../../utilidades/registrar_error')
 
 const esHistorialValido = (historial) => {
     if (!Array.isArray(historial)) return false;
@@ -40,6 +41,7 @@ const consultarChatbot = async (req, res) => {
         res.end();
 
     } catch (err) {
+        registrarError(err, req);
         const esErrorServicio = err.status === 503 || err.message?.includes('503') || err.message?.includes('overloaded');
         const mensajeUsuario = esErrorServicio
             ? 'El servidor de IA de Google está temporalmente saturado (503). Inténtalo de nuevo en unos segundos.'

@@ -1,4 +1,4 @@
-require('dotenv').config();
+const registrarError = require('../../utilidades/registrar_error');
 const {
   registroUsuarioService,
   registrarVerificacionCorreoService,
@@ -31,6 +31,8 @@ const registroUsuarioController = async (req, res) => {
     });
 
   } catch (err) {
+    registrarError(err, req);
+    registrarError(err, req);
 
     const statusCode = err.status || 500;
 
@@ -48,6 +50,8 @@ const registrarVerificacionCorreoController = async (req, res) => {
     return res.status(200).json(resultado);
 
   } catch (err) {
+    registrarError(err, req);
+    registrarError(err, req);
 
     const statusCode = err.status || 500;
 
@@ -65,6 +69,7 @@ const validarCodigoCorreoController = async (req, res) => {
     return res.status(200).json(resultado);
 
   } catch (err) {
+    registrarError(err, req);
 
     const statusCode = err.status || 500;
 
@@ -80,10 +85,10 @@ const iniciarSesionUsuarioController = async (req, res) => {
     const resultado = await iniciarSesionUsuarioService(req.body);
     const { usuario, accessToken, refreshToken } = resultado;
     const cookieOptions = {
-      httpOnly: true, 
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: 'Strict', 
-      maxAge: 20 * 60 * 60 * 1000 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 20 * 60 * 60 * 1000
     };
 
     res.cookie('refreshToken', refreshToken, cookieOptions);
@@ -96,6 +101,7 @@ const iniciarSesionUsuarioController = async (req, res) => {
     });
 
   } catch (err) {
+    registrarError(err, req);
 
     const statusCode = err.status || 500;
 
@@ -118,13 +124,14 @@ const renovarAccessTokenController = async (req, res) => {
     return res.status(200).json({ ok: true, accessToken: nuevoAccessToken });
 
   } catch (err) {
+    registrarError(err, req);
     return res.status(403).json({ ok: false, mensaje: 'Refresh token inválido o expirado' });
   }
 };
 
 const renovarAccessTokenMovilController = async (req, res) => {
   try {
-    const { refreshToken } = req.body; 
+    const { refreshToken } = req.body;
     console.log(refreshToken)
 
     if (!refreshToken) {
@@ -136,21 +143,23 @@ const renovarAccessTokenMovilController = async (req, res) => {
     return res.status(200).json({ ok: true, accessToken: nuevoAccessToken });
 
   } catch (err) {
+    registrarError(err, req);
     return res.status(403).json({ ok: false, mensaje: 'Refresh token inválido o expirado' });
   }
 };
 
 const cerrarSesionController = async (req, res) => {
-    try {
-        res.clearCookie('refreshToken', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-        });
-        return res.status(200).json({ ok: true, mensaje: 'Sesión cerrada correctamente' });
-    } catch (err) {
-        return res.status(500).json({ ok: false, mensaje: 'Error al cerrar sesión' });
-    }
+  try {
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+    });
+    return res.status(200).json({ ok: true, mensaje: 'Sesión cerrada correctamente' });
+  } catch (err) {
+    registrarError(err, req);
+    return res.status(500).json({ ok: false, mensaje: 'Error al cerrar sesión' });
+  }
 };
 
 const iniciarSesionMovilController = async (req, res) => {
@@ -162,10 +171,11 @@ const iniciarSesionMovilController = async (req, res) => {
       mensaje: 'Inicio de sesión exitoso',
       usuario,
       accessToken,
-      refreshToken 
+      refreshToken
     });
 
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
     return res.status(statusCode).json({
       ok: false,
@@ -179,6 +189,7 @@ const restaurarClaveUsuarioController = async (req, res) => {
     const resultado = await restaurarClaveUsuarioService(req.body);
     return res.status(200).json(resultado);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
     return res.status(statusCode).json({
       ok: false,
