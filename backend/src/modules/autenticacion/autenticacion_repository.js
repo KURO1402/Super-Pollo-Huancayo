@@ -1,6 +1,6 @@
 const { ejecutarSP } = require('../../utilidades/helpers/db_helper');
 
-const registroUsuarioModel = async (nombre, apellido, correo, clave, telefono) => {
+const registroUsuarioRepository = async (nombre, apellido, correo, clave, telefono) => {
     const result = await ejecutarSP('sp_registrar_usuario', [nombre, apellido, correo, clave, telefono]);
     return result[0][0];
 };
@@ -35,7 +35,7 @@ const eliminarVerificacionRepository = async (idVerificacion) => {
 };
 
 module.exports = {
-    registroUsuarioModel,
+    registroUsuarioRepository,
     seleccionarTotalUsuarioPorCorreoRepository,
     registrarVerificacionCorreoRepository,
     validarCodigoCorreoRepository,

@@ -18,19 +18,19 @@ const { contarMedioPagoPorIdRepository } = require('../configuracion/medios_pago
 const { registrarSalidaStockService, registrarEntradaStockService } = require('../inventario/insumos/insumo_service');
 
 const {
-    insertarVentaModel,
-    obtenerVentaPorIdModel,
-    obtenerDetalleVentaPorIdVentaModel,
-    obtenerComprobantePorIdVentaModel,
-    obtenerVentasModel,
-    contarVentasModel,
-    contarVentaPorIdModel,
-    obtenerVentaParaAnularModel,
-    anularVentaModel,
-    obtenerComprobantePendientePorIdModel,
-    actualizarEstadoSunatModel,
-    reenviarComprobanteModel
-} = require('./ventas_model');
+    insertarVentaRepository,
+    obtenerVentaPorIdRepository,
+    obtenerDetalleVentaPorIdVentaRepository,
+    obtenerComprobantePorIdVentaRepository,
+    obtenerVentasRepository,
+    contarVentasRepository,
+    contarVentaPorIdRepository,
+    obtenerVentaParaAnularRepository,
+    anularVentaRepository,
+    obtenerComprobantePendientePorIdRepository,
+    actualizarEstadoSunatRepository,
+    reenviarComprobanteRepository
+} = require('./ventas_repository');
 
 const MINUTOS_VENTANA = 1;
 
@@ -39,7 +39,7 @@ const generarVentaService = async (datos, idUsuario) => {
     validarDatosVenta(datos);
     const { tipoComprobante, medioPago, cliente, productos } = datos;
 
-    const medioPagoExiste = await contarMedioPagoPorIdModel(medioPago);
+    const medioPagoExiste = await contarMedioPagoPorIdRepository(medioPago);
     if (medioPagoExiste === 0) throw crearError('Medio de pago no valido', 400);
 
     const datosParaComprobante = await generarDatosComprobante(tipoComprobante, cliente, productos);
@@ -70,7 +70,7 @@ const generarVentaService = async (datos, idUsuario) => {
 
     let idVenta;
     try {
-        const resultado = await insertarVentaModel({
+        const resultado = await insertarVentaRepository({
             numeroDocumentoCliente: cliente.numDoc,
             idTipoDocumento: cliente.idTipoDoc,
             cliente: cliente.denominacionCliente,
@@ -109,8 +109,8 @@ const generarVentaService = async (datos, idUsuario) => {
 
     await descontarStockInsumos(insumosNecesarios, registrarSalidaStockService, idUsuario);
 
-    const venta = await obtenerVentaPorIdModel(idVenta);
-    venta.detalles = await obtenerDetalleVentaPorIdVentaModel(idVenta);
+    const venta = await obtenerVentaPorIdRepository(idVenta);
+    venta.detalles = await obtenerDetalleVentaPorIdVentaRepository(idVenta);
 
     return {
         ok: true,
@@ -126,7 +126,7 @@ const anularVentaService = async (idVenta, idUsuario) => {
     if (!idVenta || isNaN(Number(idVenta))) throw crearError('Se necesita especificar la venta', 400);
 
     const ventaID = Number(idVenta);
-    const { venta, detalles, movimientoCaja } = await obtenerVentaParaAnularModel(ventaID);
+    const { venta, detalles, movimientoCaja } = await obtenerVentaParaAnularRepository(ventaID);
 
     if (!venta) throw crearError('Venta no encontrada', 404);
 
@@ -144,7 +144,7 @@ const anularVentaService = async (idVenta, idUsuario) => {
     await eliminarArchivoCloudinary(venta.public_id_pdf);
     if (venta.public_id_xml) await eliminarArchivoCloudinary(venta.public_id_xml);
 
-    await anularVentaModel(ventaID, movimientoCaja.id_movimiento_caja, venta.total_venta, idUsuario);
+    await anularVentaRepository(ventaID, movimientoCaja.id_movimiento_caja, venta.total_venta, idUsuario);
 
     return {
         ok: true,
@@ -165,17 +165,17 @@ const obtenerVentasService = async (querys) => {
     const cachedTotal = cache.get(cacheKey);
 
     if (cachedTotal !== undefined) {
-        const ventas = await obtenerVentasModel(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
+        const ventas = await obtenerVentasRepository(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
         if (!ventas || ventas.length === 0) throw crearError('No se encontraron ventas', 404);
         return { ok: true, cantidad_filas: cachedTotal, ventas };
     }
 
-    const totalVentas = await contarVentasModel(fechaInicio ?? null, fechaFin ?? null);
+    const totalVentas = await contarVentasRepository(fechaInicio ?? null, fechaFin ?? null);
 
     cache.set(cacheKey, totalVentas);
 
 
-    const ventas = await obtenerVentasModel(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
+    const ventas = await obtenerVentasRepository(fechaInicio ?? null, fechaFin ?? null, limite, desplazamiento);
     if (!ventas || ventas.length === 0) throw crearError('No se encontraron ventas', 404);
 
 
@@ -190,10 +190,10 @@ const obtenerDetalleVentaPorIdVentaService = async (idVenta) => {
     if (!idVenta || isNaN(Number(idVenta))) throw crearError('Se necesita especificar la venta', 400);
 
     const ventaID = Number(idVenta);
-    const ventaExiste = await contarVentaPorIdModel(ventaID);
+    const ventaExiste = await contarVentaPorIdRepository(ventaID);
     if (ventaExiste === 0) throw crearError('Venta especificada no existente', 404);
 
-    const detalles_venta = await obtenerDetalleVentaPorIdVentaModel(ventaID);
+    const detalles_venta = await obtenerDetalleVentaPorIdVentaRepository(ventaID);
     return { ok: true, detalles_venta };
 };
 
@@ -201,17 +201,17 @@ const obtenerComprobantePorIdVentaService = async (idVenta) => {
     if (!idVenta || isNaN(Number(idVenta))) throw crearError('Se necesita especificar la venta', 400);
 
     const ventaID = Number(idVenta);
-    const ventaExiste = await contarVentaPorIdModel(ventaID);
+    const ventaExiste = await contarVentaPorIdRepository(ventaID);
     if (ventaExiste === 0) throw crearError('Venta especificada no existente', 404);
 
-    const comprobante = await obtenerComprobantePorIdVentaModel(ventaID);
+    const comprobante = await obtenerComprobantePorIdVentaRepository(ventaID);
     return { ok: true, comprobante };
 };
 
 const reenviarComprobanteService = async (idComprobante) => {
     try {
 
-        const { comprobante, detalles } = await obtenerComprobantePendientePorIdModel(idComprobante);
+        const { comprobante, detalles } = await obtenerComprobantePendientePorIdRepository(idComprobante);
 
         if (!comprobante) {
             throw crearError('Comprobante no encontrado', 404);
@@ -225,7 +225,7 @@ const reenviarComprobanteService = async (idComprobante) => {
             throw crearError('Este comprobante aun no ha cumplido los 5 minutos, espere a que el job automatico lo procese', 400);
         }
 
-        await actualizarEstadoSunatModel(
+        await actualizarEstadoSunatRepository(
             idComprobante,
             'enviado_sunat',
             null,
@@ -249,7 +249,7 @@ const reenviarComprobanteService = async (idComprobante) => {
             publicIdXml = resultado.publicId;
         }
 
-        await actualizarEstadoSunatModel(
+        await actualizarEstadoSunatRepository(
             idComprobante,
             estado,
             urlXml,

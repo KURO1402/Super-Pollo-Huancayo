@@ -3,26 +3,26 @@ const { preference, payment } = require('../../config/mercado_pago');
 const generarCodigoReservacion = require('../../utilidades/helpers/generar_codigo_reservacion');
 const { validarCorreo } = require('../../utilidades/validaciones');
 const enviarCorreoReservacion = require('../../utilidades/helpers/enviar_reservacion_correo');
-const { obtenerUsuarioPorIdModel } = require('../usuarios/usuario_repository');
+const { obtenerUsuarioPorIdRepository } = require('../usuarios/usuario_repository');
 
 const {
-    ocuparMesasModel,
-    verificarMesaDisponibleModel,
-    obtenerMesaPorIdModel,
-    registrarReservacionModel,
-    registrarPagoReservacionModel,
-    confirmarReservacionModel,
-    cancelarReservacionModel,
-    obtenerEstadoReservacionModel,
-    obtenerReservacionPorCodigoModel,
-    contarReservacionPorIdModel,
-    obtenerMesasPorIdReservacionModel,
-    listarMesasDisponibilidadModel,
-    listarReservacionesPorFechaModel,
-    listarReservacionesPorUsuarioModel,
-    obtenerReservacionPorIdModel,
-    obtenerPagoPorReservacionModel
-} = require('./reservacion_model');
+    ocuparMesasRepository,
+    verificarMesaDisponibleRepository,
+    obtenerMesaPorIdRepository,
+    registrarReservacionRepository,
+    registrarPagoReservacionRepository,
+    confirmarReservacionRepository,
+    cancelarReservacionRepository,
+    obtenerEstadoReservacionRepository,
+    obtenerReservacionPorCodigoRepository,
+    contarReservacionPorIdRepository,
+    obtenerMesasPorIdReservacionRepository,
+    listarMesasDisponibilidadRepository,
+    listarReservacionesPorFechaRepository,
+    listarReservacionesPorUsuarioRepository,
+    obtenerReservacionPorIdRepository,
+    obtenerPagoPorReservacionRepository
+} = require('./reservacion_repository');
 
 const { validarDatosReservacion } = require('./reservacion_validacion');
 
@@ -46,7 +46,7 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
         );
     }
 
-    const usuario = await obtenerUsuarioPorIdModel(idUsuario);
+    const usuario = await obtenerUsuarioPorIdRepository(idUsuario);
     if (!usuario) throw crearError('Usuario no encontrado', 404);
     const correo = usuario.correo_usuario;
 
@@ -55,10 +55,10 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     const mesasConInfo = [];
 
     for (const mesa of mesas) {
-        const mesaInfo = await obtenerMesaPorIdModel(mesa.idMesa);
+        const mesaInfo = await obtenerMesaPorIdRepository(mesa.idMesa);
         if (!mesaInfo) throw crearError('Mesa seleccionada no existente', 400);
 
-        const conflictos = await verificarMesaDisponibleModel(mesa.idMesa, fechaHoraReserva, idUsuario);
+        const conflictos = await verificarMesaDisponibleRepository(mesa.idMesa, fechaHoraReserva, idUsuario);
         if (conflictos > 0) mesasOcupadas.push(mesa.idMesa);
 
         capacidadTotal += mesaInfo.capacidad;
@@ -78,7 +78,7 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
         throw crearError('Capacidad de mesas insuficiente. Seleccione más mesas.', 400);
     }
 
-    await ocuparMesasModel(mesas, idUsuario, fechaHoraReserva);
+    await ocuparMesasRepository(mesas, idUsuario, fechaHoraReserva);
 
     const codigoReservacion = generarCodigoReservacion();
     const montoPorMesa = 10;
@@ -136,16 +136,16 @@ const confirmarPagoReservacionService = async (paymentId) => {
 
     const codigoReservacion = pagoMP.external_reference;
 
-    const reservacionExistente = await obtenerReservacionPorCodigoModel(codigoReservacion);
+    const reservacionExistente = await obtenerReservacionPorCodigoRepository(codigoReservacion);
     if (reservacionExistente?.id_reservacion) return;
 
     const { fecha, hora, cantidad_personas, id_usuario, correo, mesas, monto_total } = pagoMP.metadata;
     const fechaHoraReserva = `${fecha} ${hora}:00`;
     const montoPagado = pagoMP.transaction_amount;
 
-    const idReservacion = await registrarReservacionModel(fecha, hora, cantidad_personas, null, id_usuario, mesas, fechaHoraReserva, codigoReservacion);
+    const idReservacion = await registrarReservacionRepository(fecha, hora, cantidad_personas, null, id_usuario, mesas, fechaHoraReserva, codigoReservacion);
 
-    await registrarPagoReservacionModel(montoPagado, String(paymentId), idReservacion);
+    await registrarPagoReservacionRepository(montoPagado, String(paymentId), idReservacion);
 
     await enviarCorreoReservacion({ correo, codigoReservacion, fecha, hora, cantidadPersonas: cantidad_personas, mesas });
 };
@@ -177,10 +177,10 @@ const registrarReservacionManualService = async (datos) => {
     const mesasFinalesParaDB = []; 
 
     for (const mesa of mesas) {
-        const mesaInfo = await obtenerMesaPorIdModel(mesa.idMesa);
+        const mesaInfo = await obtenerMesaPorIdRepository(mesa.idMesa);
         if (!mesaInfo) throw crearError('Mesa seleccionada no existente', 400);
 
-        const conflictos = await verificarMesaDisponibleModel(mesa.idMesa, fechaHoraReserva, null);
+        const conflictos = await verificarMesaDisponibleRepository(mesa.idMesa, fechaHoraReserva, null);
         if (conflictos > 0) mesasOcupadas.push(mesa.idMesa);
 
         capacidadTotal += mesaInfo.capacidad;
@@ -206,7 +206,7 @@ const registrarReservacionManualService = async (datos) => {
 
     const codigoReservacion = generarCodigoReservacion();
 
-    const idReservacion = await registrarReservacionModel(
+    const idReservacion = await registrarReservacionRepository(
         fecha, 
         hora, 
         cantidadPersonas,
@@ -217,7 +217,7 @@ const registrarReservacionManualService = async (datos) => {
         codigoReservacion
     );
 
-    await registrarPagoReservacionModel(10 * mesas.length, null, idReservacion);
+    await registrarPagoReservacionRepository(10 * mesas.length, null, idReservacion);
 
     const info = await enviarCorreoReservacion({ 
         correo, 
@@ -238,10 +238,10 @@ const obtenerReservacionPorCodigoService = async (codigo) => {
         throw crearError('Se necesita el codigo de reserva', 400);
     }
 
-    const reservacion = await obtenerReservacionPorCodigoModel(codigo);
+    const reservacion = await obtenerReservacionPorCodigoRepository(codigo);
     if (!reservacion) throw crearError('Reservación no encontrada', 404);
 
-    const mesas = await obtenerMesasPorIdReservacionModel(reservacion.id_reservacion);
+    const mesas = await obtenerMesasPorIdReservacionRepository(reservacion.id_reservacion);
 
     return { 
         ok: true,
@@ -259,10 +259,10 @@ const confirmarReservacionService = async (idReservacion) => {
 
     const reservacionID = Number(idReservacion);
 
-    const existe = await contarReservacionPorIdModel(reservacionID);
+    const existe = await contarReservacionPorIdRepository(reservacionID);
     if (!existe) throw crearError('Reservación no encontrada', 404);
     
-    const {fecha_reservacion, hora_reservacion} = await obtenerReservacionPorIdModel(reservacionID);
+    const {fecha_reservacion, hora_reservacion} = await obtenerReservacionPorIdRepository(reservacionID);
     
     const [dia, mes, anio] = fecha_reservacion.split('-');
     const fechaISO = `${anio}-${mes}-${dia}`;
@@ -277,13 +277,13 @@ const confirmarReservacionService = async (idReservacion) => {
         throw crearError('Aún no puede confirmar esta reserva.', 400);
     }
 
-    const estado = await obtenerEstadoReservacionModel(reservacionID);
+    const estado = await obtenerEstadoReservacionRepository(reservacionID);
 
     if (estado === 'completado') throw crearError('La reservación ya está confirmada', 400);
 
     if (estado === 'cancelado') throw crearError('No se puede confirmar una reservación cancelada', 400);
 
-    const mensaje = await confirmarReservacionModel(reservacionID);
+    const mensaje = await confirmarReservacionRepository(reservacionID);
 
     return { 
         ok: true, 
@@ -299,15 +299,15 @@ const cancelarReservacionService = async (idReservacion) => {
     const reservacionID = Number(idReservacion);
 
     // Verificar que existe
-    const existe = await contarReservacionPorIdModel(reservacionID);
+    const existe = await contarReservacionPorIdRepository(reservacionID);
     if (!existe) throw crearError('Reservación no encontrada', 404);
 
     // Verificar estado
-    const estado = await obtenerEstadoReservacionModel(reservacionID);
+    const estado = await obtenerEstadoReservacionRepository(reservacionID);
     if (estado === 'cancelado') throw crearError('La reservación ya está cancelada', 400);
     if (estado === 'completado') throw crearError('No se puede cancelar una reservación ya completada', 400);
 
-    const mensaje = await cancelarReservacionModel(reservacionID);
+    const mensaje = await cancelarReservacionRepository(reservacionID);
 
     return { 
         ok: true, 
@@ -337,7 +337,7 @@ const listarMesasDisponibilidadService = async (fecha, hora) => {
 
     const fechaHora = `${fecha} ${hora}`;
 
-    const mesas = await listarMesasDisponibilidadModel(fechaHora);
+    const mesas = await listarMesasDisponibilidadRepository(fechaHora);
 
     if (!mesas || mesas.length === 0) {
         throw crearError('No hay mesas registradas', 404);
@@ -362,7 +362,7 @@ const listarReservacionesPorFechaService = async (fechaInicio, fechaFin) => {
         throw crearError('La fecha de inicio no puede ser mayor a la fecha de fin', 400);
     }
 
-    const reservaciones = await listarReservacionesPorFechaModel(fechaInicio, fechaFin);
+    const reservaciones = await listarReservacionesPorFechaRepository(fechaInicio, fechaFin);
 
     if (!reservaciones || reservaciones.length === 0) {
         throw crearError('No hay reservaciones en este rango de fechas', 404);
@@ -376,7 +376,7 @@ const listarReservacionesPorFechaService = async (fechaInicio, fechaFin) => {
 
 const listarReservacionesPorUsuarioService = async (idUsuario) => {
 
-    const reservacionesBase = await listarReservacionesPorUsuarioModel(idUsuario);
+    const reservacionesBase = await listarReservacionesPorUsuarioRepository(idUsuario);
 
     if (!reservacionesBase || reservacionesBase.length === 0) {
         throw crearError('No hay reservaciones para este usuario', 404);
@@ -384,7 +384,7 @@ const listarReservacionesPorUsuarioService = async (idUsuario) => {
 
     const reservacionesConMesas = await Promise.all(
         reservacionesBase.map(async (reserva) => {
-            const mesas = await obtenerMesasPorIdReservacionModel(reserva.id_reservacion);
+            const mesas = await obtenerMesasPorIdReservacionRepository(reserva.id_reservacion);
             
             return {
                 ...reserva,
@@ -405,7 +405,7 @@ const obtenerReservacionPorIdService = async (idReservacion, idUsuario, rol) => 
     }
     const reservacionID = Number(idReservacion);
 
-    const reservacion = await obtenerReservacionPorIdModel(reservacionID);
+    const reservacion = await obtenerReservacionPorIdRepository(reservacionID);
     if (!reservacion) throw crearError('Reservación no encontrada', 404);
     if (rol !== 2 && rol !== 3) {
         if (reservacion.id_usuario !== idUsuario) {
@@ -413,7 +413,7 @@ const obtenerReservacionPorIdService = async (idReservacion, idUsuario, rol) => 
         }
     }   
 
-    const mesas = await obtenerMesasPorIdReservacionModel(reservacion.id_reservacion);
+    const mesas = await obtenerMesasPorIdReservacionRepository(reservacion.id_reservacion);
 
     const { id_usuario, ...reservacionSinId } = reservacion;
 
@@ -433,7 +433,7 @@ const obtenerPagoPorReservacionService = async (idReservacion, idUsuario, rol) =
 
     const reservacionID = Number(idReservacion);
 
-    const reservacion = await obtenerReservacionPorIdModel(reservacionID);
+    const reservacion = await obtenerReservacionPorIdRepository(reservacionID);
     if (!reservacion) throw crearError('Reservación no encontrada', 404);
 
     if (rol !== 2 && rol !== 3) {
@@ -442,7 +442,7 @@ const obtenerPagoPorReservacionService = async (idReservacion, idUsuario, rol) =
         }
     }
 
-    const pago = await obtenerPagoPorReservacionModel(reservacionID);
+    const pago = await obtenerPagoPorReservacionRepository(reservacionID);
     if (!pago) throw crearError('No se encontró pago para esta reservación', 404);
 
     return { ok: true, pago };

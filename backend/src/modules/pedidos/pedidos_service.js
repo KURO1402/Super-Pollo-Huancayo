@@ -81,7 +81,7 @@ const insertarPedidoService = async (datos) => {
             throw crearError('Se necesita un producto valido y cantidad válida.', 400);
         }
 
-        const producto = await obtenerProductoIdModel(item.idProducto);
+        const producto = await obtenerProductoIdRepository(item.idProducto);
 
         if (!producto) {
             throw crearError('Producto especificado no valido', 404);
@@ -283,7 +283,7 @@ const editarPedidoService = async (idPedido, datos) => {
             throw crearError('Se necesita un producto valido y cantidad válida.', 400);
         }
 
-        const producto = await obtenerProductoIdModel(item.idProducto);
+        const producto = await obtenerProductoIdRepository(item.idProducto);
 
         if (!producto) {
             throw crearError('Producto especificado no valido', 404);
