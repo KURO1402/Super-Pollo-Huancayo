@@ -15,7 +15,7 @@ import { BarraBusqueda } from "../../componentes/busqueda-filtros/BarraBusqueda"
 import { useModal } from "../../hooks/useModal";
 import { useConfirmacion } from "../../hooks/useConfirmacion";
 import { useBusqueda } from "../../hooks/useBusqueda";
-import { TarjetaProducto } from "../../componentes/panel-admin/ventas/TarjetaProducto";
+import { TarjetaProductoVenta } from "../../componentes/panel-admin/ventas/TarjetaProductoVenta";
 import { DetalleVenta } from "../../componentes/panel-admin/ventas/DetalleVenta";
 import { ResumenVenta } from "../../componentes/panel-admin/ventas/ResumenVenta";
 import { FormularioCliente } from "../../componentes/panel-admin/ventas/FormularioCliente";
@@ -305,7 +305,7 @@ const GenerarVentaPagina = () => {
           ) : (
             <div className="grid grid-cols-1 gap-2 max-h-[70vh] overflow-y-auto pr-1">
               {filtrados.map((producto) => (
-                <TarjetaProducto key={producto.id_producto} producto={producto} />
+                <TarjetaProductoVenta key={producto.id_producto} producto={producto} />
               ))}
             </div>
           )}
