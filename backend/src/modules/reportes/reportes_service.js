@@ -1,15 +1,15 @@
 const ExcelJS = require('exceljs');
 
 const {
-    reporteVentasResumenModel,
-    reporteVentasDetalleModel,
-    reporteClientesResumenModel,
-    reporteClientesDetalleModel,
-    reporteInventarioResumenModel,
-    reporteInventarioDetalleModel,
-    reporteCajaResumenModel,
-    reporteCajaDetalleModel,
-} = require('./reportes_model');
+    reporteVentasResumenRepository,
+    reporteVentasDetalleRepository,
+    reporteClientesResumenRepository,
+    reporteClientesDetalleRepository,
+    reporteInventarioResumenRepository,
+    reporteInventarioDetalleRepository,
+    reporteCajaResumenRepository,
+    reporteCajaDetalleRepository,
+} = require('./reportes_repository');
 
 const {
     validarFechas,
@@ -27,20 +27,18 @@ const {
     aplicarEstiloEncabezado
 } = require('./utilidades_reportes');
 
-// REPORTE 1: VENTAS
 const generarReporteVentasService = async (desde, hasta) => {
     validarFechas(desde, hasta);
 
     const [resumen, detalle] = await Promise.all([
-        reporteVentasResumenModel(desde, hasta),
-        reporteVentasDetalleModel(desde, hasta),
+        reporteVentasResumenRepository(desde, hasta),
+        reporteVentasDetalleRepository(desde, hasta),
     ]);
 
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'Super Pollo';
     workbook.created = new Date();
 
-    // ----- HOJA 1: RESUMEN -----
     const hojaResumen = workbook.addWorksheet('Resumen');
     hojaResumen.views = [{ showGridLines: false }];
 
@@ -52,10 +50,8 @@ const generarReporteVentasService = async (desde, hasta) => {
     hojaResumen.getColumn(3).width = 35;
     hojaResumen.getColumn(4).width = 20;
 
-    // KPIs generales (primera fila del SP — totales globales)
     const kpiGlobal = resumen[0] || {};
 
-    // Calcular totales globales acumulando todos los grupos de medio_pago
     const totales = resumen.reduce((acc, row) => {
         acc.total_ventas += Number(row.total_ventas || 0);
         acc.monto_total += Number(row.monto_total || 0);
@@ -88,9 +84,8 @@ const generarReporteVentasService = async (desde, hasta) => {
         fila++;
     });
 
-    fila++; // separador
+    fila++; 
 
-    // Tabla: ventas por medio de pago
     hojaResumen.mergeCells(fila, 1, fila, COL_RESUMEN);
     const celdaSubtitulo = hojaResumen.getCell(fila, 1);
     celdaSubtitulo.value = 'Ventas por medio de pago';
@@ -120,7 +115,6 @@ const generarReporteVentasService = async (desde, hasta) => {
         fila++;
     });
 
-    // ----- HOJA 2: DETALLE -----
     const hojaDetalle = workbook.addWorksheet('Detalle');
     hojaDetalle.views = [{ showGridLines: false }];
 
@@ -186,20 +180,18 @@ const generarReporteVentasService = async (desde, hasta) => {
     return buffer;
 };
 
-// REPORTE 2: CLIENTES
 const generarReporteClientesService = async (desde, hasta) => {
     validarFechas(desde, hasta);
 
     const [resumen, detalle] = await Promise.all([
-        reporteClientesResumenModel(desde, hasta),
-        reporteClientesDetalleModel(desde, hasta),
+        reporteClientesResumenRepository(desde, hasta),
+        reporteClientesDetalleRepository(desde, hasta),
     ]);
 
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'Super Pollo';
     workbook.created = new Date();
 
-    // ----- HOJA 1: RESUMEN -----
     const hojaResumen = workbook.addWorksheet('Resumen');
     hojaResumen.views = [{ showGridLines: false }];
 
@@ -229,7 +221,6 @@ const generarReporteClientesService = async (desde, hasta) => {
         fila++;
     });
 
-    // ----- HOJA 2: DETALLE -----
     const hojaDetalle = workbook.addWorksheet('Detalle');
     hojaDetalle.views = [{ showGridLines: false }];
 
@@ -285,20 +276,18 @@ const generarReporteClientesService = async (desde, hasta) => {
     return buffer;
 };
 
-// REPORTE 3: INVENTARIO
 const generarReporteInventarioService = async (desde, hasta) => {
     validarFechas(desde, hasta);
 
     const [resumen, detalle] = await Promise.all([
-        reporteInventarioResumenModel(desde, hasta),
-        reporteInventarioDetalleModel(desde, hasta),
+        reporteInventarioResumenRepository(desde, hasta),
+        reporteInventarioDetalleRepository(desde, hasta),
     ]);
 
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'Super Pollo';
     workbook.created = new Date();
 
-    // ----- HOJA 1: RESUMEN -----
     const hojaResumen = workbook.addWorksheet('Resumen');
     hojaResumen.views = [{ showGridLines: false }];
 
@@ -328,7 +317,6 @@ const generarReporteInventarioService = async (desde, hasta) => {
         fila++;
     });
 
-    // ----- HOJA 2: DETALLE -----
     const hojaDetalle = workbook.addWorksheet('Detalle');
     hojaDetalle.views = [{ showGridLines: false }];
 
@@ -363,7 +351,6 @@ const generarReporteInventarioService = async (desde, hasta) => {
         detalle.forEach((row, i) => {
             const r = hojaDetalle.getRow(filaD);
 
-            // Resaltar en rojo los insumos con stock bajo
             const esBajo = row.estado_stock === 'BAJO';
 
             r.values = [
@@ -381,7 +368,6 @@ const generarReporteInventarioService = async (desde, hasta) => {
                 'center', 'center', 'center', 'center',
             ]);
 
-            // Si stock bajo → pintar celda estado en rojo suave
             if (esBajo) {
                 const celdaEstado = r.getCell(5);
                 celdaEstado.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFD7D7' } };
@@ -396,20 +382,18 @@ const generarReporteInventarioService = async (desde, hasta) => {
     return buffer;
 };
 
-// REPORTE 4: CAJA
 const generarReporteCajaService = async (desde, hasta) => {
     validarFechas(desde, hasta);
 
     const [resumen, detalle] = await Promise.all([
-        reporteCajaResumenModel(desde, hasta),
-        reporteCajaDetalleModel(desde, hasta),
+        reporteCajaResumenRepository(desde, hasta),
+        reporteCajaDetalleRepository(desde, hasta),
     ]);
 
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'Super Pollo';
     workbook.created = new Date();
 
-    // ----- HOJA 1: RESUMEN -----
     const hojaResumen = workbook.addWorksheet('Resumen');
     hojaResumen.views = [{ showGridLines: false }];
 
@@ -443,7 +427,6 @@ const generarReporteCajaService = async (desde, hasta) => {
         fila++;
     });
 
-    // ----- HOJA 2: DETALLE -----
     const hojaDetalle = workbook.addWorksheet('Detalle');
     hojaDetalle.views = [{ showGridLines: false }];
 
@@ -491,7 +474,6 @@ const generarReporteCajaService = async (desde, hasta) => {
                 'right', 'left', 'left',
             ]);
 
-            // Verde para ingresos, rojo para egresos en la celda "Tipo"
             const celdaTipo = r.getCell(3);
             if (esIngreso) {
                 celdaTipo.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD7F0D7' } };
