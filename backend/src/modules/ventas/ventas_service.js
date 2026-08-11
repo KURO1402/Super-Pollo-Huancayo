@@ -14,7 +14,7 @@ const {
 const generarPdfTermico = require('../../utilidades/helpers/generar_pdf_termico');
 
 const { validarDatosVenta } = require('./ventas_validacion');
-const { contarMedioPagoPorIdModel } = require('../configuracion/medios_pago/medios_pago_model');
+const { contarMedioPagoPorIdRepository } = require('../configuracion/medios_pago/medios_pago_repository');
 const { registrarSalidaStockService, registrarEntradaStockService } = require('../inventario/insumos/insumo_service');
 
 const {

@@ -1,15 +1,15 @@
 const crearError = require('../../../utilidades/crear_error');
 
 const {
-    insertarTipoDocumentoModel,
-    contarTipoDocumentoPorNombreModel,
-    actualizarTipoDocumentoModel,
-    contarTipoDocumentoPorIdModel,
-    contarTipoDocumentoNombreExcluyendoIdModel,
-    eliminarTipoDocumentoModel,
-    listarTiposDocumentoModel,
-    obtenerTipoDocumentoPorIdModel
-} = require('./tipos_documento_model');
+    insertarTipoDocumentoRepository,
+    contarTipoDocumentoPorNombreRepository,
+    actualizarTipoDocumentoRepository,
+    contarTipoDocumentoPorIdRepository,
+    contarTipoDocumentoNombreExcluyendoIdRepository,
+    eliminarTipoDocumentoRepository,
+    listarTiposDocumentoRepository,
+    obtenerTipoDocumentoPorIdRepository
+} = require('./tipos_documento_repository');
 
 const insertarTipoDocumentoService = async (datos) => {
     if(!datos || typeof datos !== 'object'){
@@ -22,12 +22,12 @@ const insertarTipoDocumentoService = async (datos) => {
         throw crearError('Se necesita el nombre de el nuevo tipo de documento', 400);
     }
 
-    const nombreCoincidente = await contarTipoDocumentoPorNombreModel(nombreDocumento);
+    const nombreCoincidente = await contarTipoDocumentoPorNombreRepository(nombreDocumento);
     if(nombreCoincidente > 0) {
         throw crearError('Ya existe un tipo de documento con ese nombre', 409);
     }
 
-    const tipo_documento = await insertarTipoDocumentoModel(nombreDocumento);
+    const tipo_documento = await insertarTipoDocumentoRepository(nombreDocumento);
 
     return {
         ok: true,
@@ -52,17 +52,17 @@ const actualizarTipoDocumentoService = async (datos, idTipoDocumento) => {
     if (!nombreDocumento || typeof nombreDocumento !== 'string' || !nombreDocumento.trim()) {
         throw crearError('El nombre del tipo de documento es obligatorio', 400);
     }
-    const existe = await contarTipoDocumentoPorIdModel(tipoDocumentoID);
+    const existe = await contarTipoDocumentoPorIdRepository(tipoDocumentoID);
     if (existe === 0) {
         throw crearError('El tipo de documento no existe', 404);
     }
 
-    const nombreDuplicado = await contarTipoDocumentoNombreExcluyendoIdModel(nombreDocumento, tipoDocumentoID);
+    const nombreDuplicado = await contarTipoDocumentoNombreExcluyendoIdRepository(nombreDocumento, tipoDocumentoID);
     if (nombreDuplicado > 0) {
         throw crearError('Ya existe otro tipo de documento con ese nombre', 409);
     }
 
-    const tipoDocumentoActualizado = await actualizarTipoDocumentoModel(tipoDocumentoID, nombreDocumento);
+    const tipoDocumentoActualizado = await actualizarTipoDocumentoRepository(tipoDocumentoID, nombreDocumento);
 
     return {
         ok: true,
@@ -78,13 +78,13 @@ const eliminarTipoDocumentoService = async (idTipoDoc) => {
 
     const tipodDocID = Number(idTipoDoc);
 
-    const tipoDocExiste = await contarTipoDocumentoPorIdModel(tipodDocID);
+    const tipoDocExiste = await contarTipoDocumentoPorIdRepository(tipodDocID);
 
     if( tipoDocExiste === 0 ) {
         throw crearError('El tipo de documento no existe', 404);
     }
 
-    const resultado = await eliminarTipoDocumentoModel(tipodDocID);
+    const resultado = await eliminarTipoDocumentoRepository(tipodDocID);
 
     return {
         ok: true,
@@ -94,7 +94,7 @@ const eliminarTipoDocumentoService = async (idTipoDoc) => {
 
 const listarTiposDocumentoService = async () => {
 
-    const tipos_documento = await listarTiposDocumentoModel();
+    const tipos_documento = await listarTiposDocumentoRepository();
 
     if (!tipos_documento || tipos_documento.length === 0) {
         throw crearError('No se encontraron tipos de documento', 404);
@@ -113,7 +113,7 @@ const obtenerTipoDocumentoPorIdService = async (idTipoDocumento) => {
     }
 
     const tipoDocumentoID = Number(idTipoDocumento);
-    const tipo_documento = await obtenerTipoDocumentoPorIdModel(tipoDocumentoID);
+    const tipo_documento = await obtenerTipoDocumentoPorIdRepository(tipoDocumentoID);
 
     if (!tipo_documento) {
         throw crearError('Tipo de documento no encontrado', 404);

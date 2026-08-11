@@ -2,8 +2,8 @@ const axios = require('axios');
 const cloudinaryPdf = require('../../config/cloudinary_pdf_config');
 const generarPdfTermico = require('../../utilidades/helpers/generar_pdf_termico');
 
-const { obtenerTipoComprobantePorIdModel } = require('../configuracion/tipos_comprobante/tipos_comprobante_model');
-const { obtenerTipoDocumentoPorIdModel } = require('../configuracion/tipos_documento/tipos_documento_model');
+const { obtenerTipoComprobantePorIdRepository } = require('../configuracion/tipos_comprobante/tipos_comprobante_repository');
+const { obtenerTipoDocumentoPorIdRepository } = require('../configuracion/tipos_documento/tipos_documento_repository');
 const { obtenerProductoIdModel, obtenerInsumosPorProductoModel } = require('../inventario/productos/producto_model');
 const { obtenerStockActualModel } = require('../inventario/insumos/insumos_model');
 const crearError = require('../../utilidades/crear_error');

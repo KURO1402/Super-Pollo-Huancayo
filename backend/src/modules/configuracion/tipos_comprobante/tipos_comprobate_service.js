@@ -1,14 +1,14 @@
 const crearError = require('../../../utilidades/crear_error');
 
 const {
-    insertarTipoComprobanteModel,
-    contarTipoComprobantePorNombreSerieModel,
-    actualizarTipoComprobanteModel,
-    contarTipoComprobantePorIdModel,
-    contarTipoComprobanteNombreSerieExcluyendoIdModel,
-    eliminarTipoComprobanteModel,
-    listarTiposComprobanteModel
-} = require('./tipos_comprobante_model');
+    insertarTipoComprobanteRepository,
+    contarTipoComprobantePorNombreSerieRepository,
+    actualizarTipoComprobanteRepository,
+    contarTipoComprobantePorIdRepository,
+    contarTipoComprobanteNombreSerieExcluyendoIdRepository,
+    eliminarTipoComprobanteRepository,
+    listarTiposComprobanteRepository
+} = require('./tipos_comprobante_repository');
 
 const insertarTipoComprobanteService = async (datos) => {
     if (!datos || typeof datos !== 'object') {
@@ -25,12 +25,12 @@ const insertarTipoComprobanteService = async (datos) => {
         throw crearError('Se necesita la serie del nuevo tipo de comprobante', 400);
     }
 
-    const nombreSerieActivo = await contarTipoComprobantePorNombreSerieModel(nombreComprobante, serie);
+    const nombreSerieActivo = await contarTipoComprobantePorNombreSerieRepository(nombreComprobante, serie);
     if (nombreSerieActivo > 0) {
         throw crearError('Ya existe un tipo de comprobante activo con ese nombre o serie', 409);
     }
 
-    const tipo_comprobante = await insertarTipoComprobanteModel(nombreComprobante, serie);
+    const tipo_comprobante = await insertarTipoComprobanteRepository(nombreComprobante, serie);
 
     return {
         ok: true,
@@ -60,17 +60,17 @@ const actualizarTipoComprobanteService = async (datos, idTipoComprobante) => {
         throw crearError('La serie del tipo de comprobante es obligatoria', 400);
     }
 
-    const existe = await contarTipoComprobantePorIdModel(tipoComprobanteID);
+    const existe = await contarTipoComprobantePorIdRepository(tipoComprobanteID);
     if (existe === 0) {
         throw crearError('El tipo de comprobante no existe', 404);
     }
 
-    const nombreSerieDuplicado = await contarTipoComprobanteNombreSerieExcluyendoIdModel(nombreComprobante, serie, tipoComprobanteID);
+    const nombreSerieDuplicado = await contarTipoComprobanteNombreSerieExcluyendoIdRepository(nombreComprobante, serie, tipoComprobanteID);
     if (nombreSerieDuplicado > 0) {
         throw crearError('Ya existe otro tipo de comprobante con ese nombre o serie', 409);
     }
 
-    const tipoComprobanteActualizado = await actualizarTipoComprobanteModel(tipoComprobanteID, nombreComprobante, serie);
+    const tipoComprobanteActualizado = await actualizarTipoComprobanteRepository(tipoComprobanteID, nombreComprobante, serie);
 
     return {
         ok: true,
@@ -86,12 +86,12 @@ const eliminarTipoComprobanteService = async (idTipoComprobante) => {
 
     const tipoComprobanteID = Number(idTipoComprobante);
 
-    const tipoComprobanteExiste = await contarTipoComprobantePorIdModel(tipoComprobanteID);
+    const tipoComprobanteExiste = await contarTipoComprobantePorIdRepository(tipoComprobanteID);
     if (tipoComprobanteExiste === 0) {
         throw crearError('El tipo de comprobante no existe', 404);
     }
 
-    const resultado = await eliminarTipoComprobanteModel(tipoComprobanteID);
+    const resultado = await eliminarTipoComprobanteRepository(tipoComprobanteID);
 
     return {
         ok: true,
@@ -100,7 +100,7 @@ const eliminarTipoComprobanteService = async (idTipoComprobante) => {
 };
 
 const listarTiposComprobanteService = async () => {
-    const tipos_comprobante = await listarTiposComprobanteModel();
+    const tipos_comprobante = await listarTiposComprobanteRepository();
 
     if (!tipos_comprobante || tipos_comprobante.length === 0) {
         throw crearError('No se encontraron tipos de comprobante', 404);
