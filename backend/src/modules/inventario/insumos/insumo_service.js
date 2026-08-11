@@ -1,20 +1,20 @@
 const cache = require('../../../config/node_cache');
 const {
-    insertarInsumoModel,
-    contarInsumosPorNombreModel,
-    recuperarInsumoModel,
-    actualizarDatosInsumoModel,
-    actualizarEstadoInsumoModel,
-    contarInsumosPorIdModel,
-    contarInsumosPorNombre2Model,
-    obtenerInsumosModel,
-    contarInsumosModel,
-    obtenerInsumoIDModel,
-    obtenerStockActualModel,
-    registrarMovimientoStockModel,
-    contarMovimientosStockFiltrosModel,
-    obtenerMovimientosStockFiltrosModel
-} = require('./insumos_model');
+    insertarInsumoRepository,
+    contarInsumosPorNombreRepository,
+    recuperarInsumoRepository,
+    actualizarDatosInsumoRepository,
+    actualizarEstadoInsumoRepository,
+    contarInsumosPorIdRepository,
+    contarInsumosPorNombre2Repository,
+    obtenerInsumosRepository,
+    contarInsumosRepository,
+    obtenerInsumoIDRepository,
+    obtenerStockActualRepository,
+    registrarMovimientoStockRepository,
+    contarMovimientosStockFiltrosRepository,
+    obtenerMovimientosStockFiltrosRepository
+} = require('./insumos_repository');
 
 const {
     validarDatosInsumo,
@@ -29,14 +29,14 @@ const insertarInsumoService = async (datos, idUsuario) => {
     const { nombreInsumo, cantidadInicial, unidadMedida } = datos;
     let insumo;
 
-    const coincidenciasNombre = await contarInsumosPorNombreModel(nombreInsumo);
+    const coincidenciasNombre = await contarInsumosPorNombreRepository(nombreInsumo);
 
     if (coincidenciasNombre.total_activos > 0) {
         throw crearError('Ya existe un insumo registrado con ese nombre.', 409);
     } else if (coincidenciasNombre.total_inactivos > 0) {
-        insumo = await recuperarInsumoModel(coincidenciasNombre.id_insumo_inactivo, unidadMedida, 1, cantidadInicial, idUsuario);
+        insumo = await recuperarInsumoRepository(coincidenciasNombre.id_insumo_inactivo, unidadMedida, 1, cantidadInicial, idUsuario);
     } else {
-        insumo = await insertarInsumoModel(nombreInsumo, cantidadInicial, unidadMedida, idUsuario);
+        insumo = await insertarInsumoRepository(nombreInsumo, cantidadInicial, unidadMedida, idUsuario);
     }
 
     limpiarCachePorPrefijo('movimientos_stock:')
@@ -65,16 +65,16 @@ const actualizarDatosInsumoService = async (idInsumo, datos) => {
         throw crearError('Se necesita la unidad de medida del insumo.', 400);
     }
 
-    const totalInsumos = await contarInsumosPorIdModel(idInsumo);
+    const totalInsumos = await contarInsumosPorIdRepository(idInsumo);
     if (totalInsumos === 0) {
         throw crearError('Insumo no existente.', 404);
     }
-    const coincidenciasNombre = await contarInsumosPorNombre2Model(nombreInsumo, idInsumo);
+    const coincidenciasNombre = await contarInsumosPorNombre2Repository(nombreInsumo, idInsumo);
     if (coincidenciasNombre > 0) {
         throw crearError('Ya existe un insumo registrado con ese nombre.', 409);
     }
 
-    const insumo = await actualizarDatosInsumoModel(idInsumo, nombreInsumo, unidadMedida);
+    const insumo = await actualizarDatosInsumoRepository(idInsumo, nombreInsumo, unidadMedida);
 
     limpiarCachePorPrefijo('insumos:');
 
@@ -86,7 +86,7 @@ const actualizarDatosInsumoService = async (idInsumo, datos) => {
 };
 
 const eliminarInsumoService = async (idInsumo) => {
-    const insumo = await obtenerInsumoIDModel(idInsumo);
+    const insumo = await obtenerInsumoIDRepository(idInsumo);
 
     if (!insumo || insumo.length === 0) {
         throw crearError('Insumo no existente.', 404);
@@ -96,7 +96,7 @@ const eliminarInsumoService = async (idInsumo) => {
         throw crearError('El insumo debe estar sin stock para ser eliminado.', 409);
     }
 
-    await actualizarEstadoInsumoModel(idInsumo, 0);
+    await actualizarEstadoInsumoRepository(idInsumo, 0);
 
     limpiarCachePorPrefijo('insumos:');
 
@@ -120,7 +120,7 @@ const obtenerInsumosService = async (limit, offset, nombreInsumo, nivelStock) =>
 
     if (cachedTotal !== undefined) {
         
-        const insumos = await obtenerInsumosModel(limite, desplazamiento, nombreInsumo, nivelStock);
+        const insumos = await obtenerInsumosRepository(limite, desplazamiento, nombreInsumo, nivelStock);
 
         if (!insumos || insumos.length === 0) {
             throw crearError('No se encontraron insumos', 404)
@@ -135,11 +135,11 @@ const obtenerInsumosService = async (limit, offset, nombreInsumo, nivelStock) =>
 
 
 
-    const totalRegistros = await contarInsumosModel(nombreInsumo, nivelStock);
+    const totalRegistros = await contarInsumosRepository(nombreInsumo, nivelStock);
 
     cache.set(cacheKey, totalRegistros);
 
-    const insumos = await obtenerInsumosModel(limite, desplazamiento, nombreInsumo, nivelStock);
+    const insumos = await obtenerInsumosRepository(limite, desplazamiento, nombreInsumo, nivelStock);
     if (!insumos || insumos.length === 0) {
         throw crearError('No se encontraron insumos', 404)
     }
@@ -153,7 +153,7 @@ const obtenerInsumosService = async (limit, offset, nombreInsumo, nivelStock) =>
 
 const obtenerInsumoIDService = async (idInsumo) => {
 
-    const insumo = await obtenerInsumoIDModel(idInsumo);
+    const insumo = await obtenerInsumoIDRepository(idInsumo);
 
     if (!insumo) {
         throw crearError('Insumo no encontrado.', 404);
@@ -170,14 +170,14 @@ const registrarEntradaStockService = async (datos, idUsuario) => {
     validarDatosMovimiento(datos);
     const { idInsumo, cantidadMovimiento, detalleMovimiento } = datos;
 
-    const totalInsumos = await contarInsumosPorIdModel(idInsumo);
+    const totalInsumos = await contarInsumosPorIdRepository(idInsumo);
     if (totalInsumos === 0) {
         throw crearError('Insumo no existente.', 404);
     }
 
     const detalle = detalleMovimiento || null;
 
-    const respuesta = await registrarMovimientoStockModel(idInsumo, cantidadMovimiento, 'entrada', detalle, idUsuario);
+    const respuesta = await registrarMovimientoStockRepository(idInsumo, cantidadMovimiento, 'entrada', detalle, idUsuario);
     limpiarCachePorPrefijo('movimientos_stock:');
     limpiarCachePorPrefijo('insumos:');
     return {
@@ -191,12 +191,12 @@ const registrarSalidaStockService = async (datos, idUsuario) => {
     validarDatosMovimiento(datos);
     const { idInsumo, cantidadMovimiento, detalleMovimiento } = datos;
 
-    const totalInsumos = await contarInsumosPorIdModel(idInsumo);
+    const totalInsumos = await contarInsumosPorIdRepository(idInsumo);
     if (totalInsumos === 0) {
         throw crearError('Insumo no existente.', 404);
     }
 
-    const stockActual = await obtenerStockActualModel(idInsumo);
+    const stockActual = await obtenerStockActualRepository(idInsumo);
 
     if (cantidadMovimiento > stockActual) {
         throw crearError('Stock insuficiente para realizar el descuento del insumo', 409)
@@ -204,7 +204,7 @@ const registrarSalidaStockService = async (datos, idUsuario) => {
 
     const detalle = detalleMovimiento || null;
 
-    const respuesta = await registrarMovimientoStockModel(idInsumo, cantidadMovimiento, 'salida', detalle, idUsuario);
+    const respuesta = await registrarMovimientoStockRepository(idInsumo, cantidadMovimiento, 'salida', detalle, idUsuario);
     limpiarCachePorPrefijo('movimientos_stock:');
     limpiarCachePorPrefijo('insumos:');
     return {
@@ -239,7 +239,7 @@ const obtenerMovimientosStockService = async (querys) => {
 
     if (cachedTotal !== undefined) {
         
-        const movimientos = await obtenerMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo, limite, desplazamiento);
+        const movimientos = await obtenerMovimientosStockFiltrosRepository(fechaInicio, fechaFin, tipoMovimiento, insumo, limite, desplazamiento);
 
         if (!movimientos || movimientos.length === 0) {
             throw crearError('No se encontraron movimientos de stock', 404);
@@ -254,11 +254,11 @@ const obtenerMovimientosStockService = async (querys) => {
 
 
 
-    const totalRegistros = await contarMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo);
+    const totalRegistros = await contarMovimientosStockFiltrosRepository(fechaInicio, fechaFin, tipoMovimiento, insumo);
 
     cache.set(cacheKey, totalRegistros);
 
-    const movimientos = await obtenerMovimientosStockFiltrosModel(fechaInicio, fechaFin, tipoMovimiento, insumo, limite, desplazamiento);
+    const movimientos = await obtenerMovimientosStockFiltrosRepository(fechaInicio, fechaFin, tipoMovimiento, insumo, limite, desplazamiento);
 
     if (!movimientos || movimientos.length === 0) {
         throw crearError('No se encontraron movimientos de stock', 404);

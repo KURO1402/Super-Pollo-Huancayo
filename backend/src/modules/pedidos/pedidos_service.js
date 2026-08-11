@@ -1,5 +1,5 @@
 const crearError = require('../../utilidades/crear_error');
-const { obtenerProductoIdModel } = require('../inventario/productos/producto_model');
+const { obtenerProductoIdRepository } = require('../inventario/productos/producto_repository');
 const pusher = require('../../config/pusher');
 
 const {

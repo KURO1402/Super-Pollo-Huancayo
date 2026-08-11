@@ -4,8 +4,8 @@ const generarPdfTermico = require('../../utilidades/helpers/generar_pdf_termico'
 
 const { obtenerTipoComprobantePorIdRepository } = require('../configuracion/tipos_comprobante/tipos_comprobante_repository');
 const { obtenerTipoDocumentoPorIdRepository } = require('../configuracion/tipos_documento/tipos_documento_repository');
-const { obtenerProductoIdModel, obtenerInsumosPorProductoModel } = require('../inventario/productos/producto_model');
-const { obtenerStockActualModel } = require('../inventario/insumos/insumos_model');
+const { obtenerProductoIdRepository, obtenerInsumosPorProductoRepository } = require('../inventario/productos/producto_repository');
+const { obtenerStockActualRepository } = require('../inventario/insumos/insumos_repository');
 const crearError = require('../../utilidades/crear_error');
 const obtenerFechaActual = require('../../utilidades/obtener_fecha_actual');
 const { company, IGV, TIPO_COMPROBANTE_CODIGO, TIPO_DOCUMENTO_CODIGO } = require('../../utilidades/helpers/constantes_venta');
