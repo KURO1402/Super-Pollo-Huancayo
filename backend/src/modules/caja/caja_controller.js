@@ -1,3 +1,5 @@
+const registrarError = require('../../utilidades/registrar_error');
+
 const {
   crearCajaService,
   registrarIngresoCajaService,
@@ -16,6 +18,7 @@ const crearCajaController = async (req, res) => {
     const resultado = await crearCajaService(req.body, id_usuario);
     return res.status(201).json(resultado);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -31,6 +34,7 @@ const registrarIngresoCajaController = async (req, res) => {
     const resultado = await registrarIngresoCajaService(req.body, id_usuario);
     return res.status(200).json(resultado);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -46,6 +50,7 @@ const registrarEgresoCajaController = async (req, res) => {
     const resultado = await registrarEgresoCajaService(req.body, id_usuario);
     return res.status(200).json(resultado);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -61,6 +66,7 @@ const registrarArqueoCajaController = async (req, res) => {
     const resultado = await registrarArqueoCajaService(req.body, id_usuario);
     return res.status(200).json(resultado);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -76,6 +82,7 @@ const cerrarCajaController = async (req, res) => {
     const resultado = await cerrarCajaService(id_usuario);
     return res.status(200).json(resultado);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -93,6 +100,7 @@ const obtenerCajasController = async (req, res) => {
     return res.status(200).json(resultado);
 
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -106,13 +114,14 @@ const obtenerMovimientosPorCajaController = async (req, res) => {
   const { idCaja } = req.params;
 
   const querys = req.query;
-  
+
   try {
     const { idCaja } = req.params;
     const querys = req.query;
     const resultado = await obtenerMovimientosPorCajaService(idCaja, querys);
     return res.status(200).json(resultado);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -129,6 +138,7 @@ const obtenerArqueosPorCajaController = async (req, res) => {
     const arqueos = await obtenerArqueosPorCajaService(idCaja, req.query);
     return res.status(200).json(arqueos);
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
 
     return res.status(statusCode).json({
@@ -139,19 +149,20 @@ const obtenerArqueosPorCajaController = async (req, res) => {
 };
 
 const obtenerCajaActualController = async (req, res) => {
-    try {
-        const caja = await obtenerCajaActualService();
-        return res.status(200).json({
-            ok: true,
-            caja
-        });
-    } catch (err) {
-        const statusCode = err.status || 500;
-        return res.status(statusCode).json({
-            ok: false,
-            mensaje: err.message || 'Error interno del servidor'
-        });
-    }
+  try {
+    const caja = await obtenerCajaActualService();
+    return res.status(200).json({
+      ok: true,
+      caja
+    });
+  } catch (err) {
+    registrarError(err, req);
+    const statusCode = err.status || 500;
+    return res.status(statusCode).json({
+      ok: false,
+      mensaje: err.message || 'Error interno del servidor'
+    });
+  }
 };
 
 module.exports = {

@@ -4,45 +4,45 @@ const fs = require('fs');
 const { validarDatosProducto, validarDatosActualizarProducto } = require('./producto_validacion');
 
 const {
-    contarProductosNombreActInaModel,
-    contarCategoriasPorIdModel,
-    contarProductosPorIdModel,
-    contarProductosDeshabilitadosPorIdModel,
-    contarProductosNombreV2Model,
-    contarInsumoProductoModel,
-    contarImagenProductoPorIdModel,
-    obtenerPublicIdPorIdImagenModel,
-    contarImagenesPorProductoModel,
-    registraProductoModel,
-    actualizarDatosProductoModel,
-    agregarCantidadInsumoProductoModel,
-    actualizarCantidadInsumoProductoModel,
-    eliminarCantidadInsumoProductoModel,
-    actualizarEstadoProductoModel,
-    insertarImagenProductoModel,
-    actualizarImagenProductoModel,
-    eliminarImagenProductoModel,
-    obtenerImagenProductoPorIdModel,
-    obtenerProductosCatalogoModel,
-    obtenerImagenesPorProductoModel,
-    contarProductosGestionModel,
-    obtenerProductosGestionModel,
-    contarProductosDeshabilitadosModel,
-    obtenerProductosDeshabilitadosModel,
-    obtenerProductoIdModel,
-    contarImagenesProductosModel,
-    obtenerImagenesProductosModel,
-    obtenerInsumosPorProductoModel   
-} = require('./producto_model');
+    contarProductosNombreActInaRepository,
+    contarCategoriasPorIdRepository,
+    contarProductosPorIdRepository,
+    contarProductosDeshabilitadosPorIdRepository,
+    contarProductosNombreV2Repository,
+    contarInsumoProductoRepository,
+    contarImagenProductoPorIdRepository,
+    obtenerPublicIdPorIdImagenRepository,
+    contarImagenesPorProductoRepository,
+    registraProductoRepository,
+    actualizarDatosProductoRepository,
+    agregarCantidadInsumoProductoRepository,
+    actualizarCantidadInsumoProductoRepository,
+    eliminarCantidadInsumoProductoRepository,
+    actualizarEstadoProductoRepository,
+    insertarImagenProductoRepository,
+    actualizarImagenProductoRepository,
+    eliminarImagenProductoRepository,
+    obtenerImagenProductoPorIdRepository,
+    obtenerProductosCatalogoRepository,
+    obtenerImagenesPorProductoRepository,
+    contarProductosGestionRepository,
+    obtenerProductosGestionRepository,
+    contarProductosDeshabilitadosRepository,
+    obtenerProductosDeshabilitadosRepository,
+    obtenerProductoIdRepository,
+    contarImagenesProductosRepository,
+    obtenerImagenesProductosRepository,
+    obtenerInsumosPorProductoRepository   
+} = require('./producto_repository');
 
-const { contarInsumosPorIdModel } = require('../insumos/insumos_model');
+const { contarInsumosPorIdRepository } = require('../insumos/insumos_repository');
 
 const crearError = require('../../../utilidades/crear_error');
 
 const agregarProductoService = async (datos, file) => {
     validarDatosProducto(datos);
     const { nombreProducto, descripcionProducto, precioProducto, usaInsumos, insumos, idCategoria } = datos;
-    const coincidenciasNombre = await contarProductosNombreActInaModel(nombreProducto);
+    const coincidenciasNombre = await contarProductosNombreActInaRepository(nombreProducto);
 
     if (coincidenciasNombre.total_activos > 0) {
         fs.unlinkSync(file.path); 
@@ -52,7 +52,7 @@ const agregarProductoService = async (datos, file) => {
         throw crearError('El nombre de producto coincide con un producto inactivo. Por favor, reactívelo o use otro nombre.', 409);
     };
 
-    const categoriasId = await contarCategoriasPorIdModel(idCategoria);
+    const categoriasId = await contarCategoriasPorIdRepository(idCategoria);
 
     if(!categoriasId || categoriasId === 0){
         fs.unlinkSync(file.path); 
@@ -69,7 +69,7 @@ const agregarProductoService = async (datos, file) => {
 
     fs.unlinkSync(file.path); 
 
-    const producto = await registraProductoModel(nombreProducto, descripcionProducto, precioProducto, usaInsumos, insumos, idCategoria, cloudinaryResult.secure_url, cloudinaryResult.public_id);
+    const producto = await registraProductoRepository(nombreProducto, descripcionProducto, precioProducto, usaInsumos, insumos, idCategoria, cloudinaryResult.secure_url, cloudinaryResult.public_id);
 
     return {
         ok: true,
@@ -87,26 +87,26 @@ const actualizarDatosProductoService = async (datos, idProducto) => {
     validarDatosActualizarProducto(datos);
 
     const { nombreProducto, descripcionProducto, precioProducto, idCategoria} = datos;
-    const productosExistentes = await contarProductosPorIdModel(productoID);
+    const productosExistentes = await contarProductosPorIdRepository(productoID);
 
     if(productosExistentes === 0){
         throw crearError('El producto especificado no existe', 404)
     }
 
-    const categoriasId = await contarCategoriasPorIdModel(idCategoria);
+    const categoriasId = await contarCategoriasPorIdRepository(idCategoria);
 
     if(!categoriasId || categoriasId === 0){
         throw crearError('La categoria especificada no existe', 400);
     }
 
-    const coincidenciasNombre = await contarProductosNombreV2Model(nombreProducto, productoID);
+    const coincidenciasNombre = await contarProductosNombreV2Repository(nombreProducto, productoID);
     if(coincidenciasNombre.total_activos > 0){
         throw crearError('Ese nombre de producto ya esta en uso', 400);
     } else if(coincidenciasNombre.total_inactivos > 0) {
         throw crearError('Ese nombre de producto coincide con un producto inactivo. Por favor, reactívelo o use otro nombre.', 400);
     }
 
-    const productoActualizado = await actualizarDatosProductoModel(productoID, nombreProducto, descripcionProducto, precioProducto, idCategoria);
+    const productoActualizado = await actualizarDatosProductoRepository(productoID, nombreProducto, descripcionProducto, precioProducto, idCategoria);
 
     return {
         ok: true,
@@ -133,22 +133,22 @@ const agregarCantidadInsumoProductoService = async (idProducto, datos) => {
         throw crearError('Especifique cantidad de uso', 400);
     }
 
-    const productoExistente = await contarProductosPorIdModel(productoID);
+    const productoExistente = await contarProductosPorIdRepository(productoID);
     if(!productoExistente || productoExistente === 0){
         throw crearError('Producto especificado no existente', 404);
     }
 
-    const insumoExistente = await contarInsumosPorIdModel(idInsumo);
+    const insumoExistente = await contarInsumosPorIdRepository(idInsumo);
     if(!insumoExistente || insumoExistente === 0){
         throw crearError('Insumo especificado no existente', 404);
     }
 
-    const insumoProductoExistente = await contarInsumoProductoModel(productoID, idInsumo);
+    const insumoProductoExistente = await contarInsumoProductoRepository(productoID, idInsumo);
     if(insumoProductoExistente > 0){
         throw crearError('Insumo ya relacionado a este producto', 409);
     }
 
-    const productoInsumos = await agregarCantidadInsumoProductoModel(productoID, idInsumo, cantidadUso);
+    const productoInsumos = await agregarCantidadInsumoProductoRepository(productoID, idInsumo, cantidadUso);
 
     return {
         ok: true,
@@ -174,22 +174,22 @@ const actualizarCantidadInsumoProductoService = async (idProducto, datos) => {
         throw crearError('Especifique cantidad de uso', 400);
     }
 
-    const productoExistente = await contarProductosPorIdModel(productoID);
+    const productoExistente = await contarProductosPorIdRepository(productoID);
     if(!productoExistente || productoExistente === 0){
         throw crearError('Producto especificado no existente', 404);
     }
 
-    const insumoExistente = await contarInsumosPorIdModel(idInsumo);
+    const insumoExistente = await contarInsumosPorIdRepository(idInsumo);
     if(!insumoExistente || insumoExistente === 0){
         throw crearError('Insumo especificado no existente', 404);
     }
 
-    const insumoProductoExistente = await contarInsumoProductoModel(productoID, idInsumo);
+    const insumoProductoExistente = await contarInsumoProductoRepository(productoID, idInsumo);
     if(insumoProductoExistente === 0){
         throw crearError('Insumo no relacionado a este producto', 422);
     }
 
-    const productoInsumos = await actualizarCantidadInsumoProductoModel(productoID, idInsumo, cantidadUso);
+    const productoInsumos = await actualizarCantidadInsumoProductoRepository(productoID, idInsumo, cantidadUso);
 
     return {
         ok: true,
@@ -208,12 +208,12 @@ const eliminarCantidadInsumoProductoService = async (idProducto, idInsumo) => {
         throw crearError('Especifique el insumo', 400);
     }
 
-    const insumoProductoExistente = await contarInsumoProductoModel(productoID, idInsumo);
+    const insumoProductoExistente = await contarInsumoProductoRepository(productoID, idInsumo);
     if(insumoProductoExistente === 0){
         throw crearError('Insumo no relacionado a este producto', 404);
     }
 
-    const resultado = await eliminarCantidadInsumoProductoModel(productoID, idInsumo);
+    const resultado = await eliminarCantidadInsumoProductoRepository(productoID, idInsumo);
 
     return {
         ok: true,
@@ -228,12 +228,12 @@ const deshabilitarProductoService = async (idProducto) => {
 
     const productoID = Number(idProducto);
 
-    const productoExistente = await contarProductosPorIdModel(productoID);
+    const productoExistente = await contarProductosPorIdRepository(productoID);
     if (!productoExistente || productoExistente === 0) {
         throw crearError('Producto especificado no existente', 404);
     }
 
-    const resultado = await actualizarEstadoProductoModel(productoID, 0);
+    const resultado = await actualizarEstadoProductoRepository(productoID, 0);
 
     return {
         ok: true,
@@ -248,12 +248,12 @@ const habilitarProductoService = async (idProducto) => {
 
     const productoID = Number(idProducto);
     
-    const productoExistente = await contarProductosDeshabilitadosPorIdModel(productoID);
+    const productoExistente = await contarProductosDeshabilitadosPorIdRepository(productoID);
     if (!productoExistente || productoExistente === 0) {
         throw crearError('Producto especificado no existente en productos deshabilitados', 404);
     }
 
-    const resultado = await actualizarEstadoProductoModel(productoID, 1);
+    const resultado = await actualizarEstadoProductoRepository(productoID, 1);
 
     return {
         ok: true,
@@ -268,7 +268,7 @@ const insertarImagenProductoService = async (idProducto, file) => {
     }
 
     const productoID = Number(idProducto);
-    const productoExistente = await contarProductosPorIdModel(productoID);
+    const productoExistente = await contarProductosPorIdRepository(productoID);
     if(!productoExistente || productoExistente === 0){
         fs.unlinkSync(file.path); 
         throw crearError('Producto especificado no existente', 400);
@@ -284,7 +284,7 @@ const insertarImagenProductoService = async (idProducto, file) => {
 
     fs.unlinkSync(file.path); 
 
-    const imagen = await insertarImagenProductoModel(cloudinaryResult.secure_url, cloudinaryResult.public_id, productoID);
+    const imagen = await insertarImagenProductoRepository(cloudinaryResult.secure_url, cloudinaryResult.public_id, productoID);
 
     return {
         ok: true,
@@ -301,13 +301,13 @@ const actualizarImagenProductoService = async (idImagen, file) => {
 
     const imagenID = Number(idImagen);
 
-    const imagenExistente = await contarImagenProductoPorIdModel(imagenID);
+    const imagenExistente = await contarImagenProductoPorIdRepository(imagenID);
 
     if(!imagenExistente || imagenExistente === 0){
         fs.unlinkSync(file.path); 
         throw crearError('Imagen especificada no existente',400)
     }
-    const publicID = await obtenerPublicIdPorIdImagenModel(imagenID);
+    const publicID = await obtenerPublicIdPorIdImagenRepository(imagenID);
 
     let cloudinaryResult;
     try {
@@ -318,7 +318,7 @@ const actualizarImagenProductoService = async (idImagen, file) => {
         throw crearError('Error al actualizar imagen en Cloudinary', 500);
     }
 
-    const imagen = await actualizarImagenProductoModel(imagenID, cloudinaryResult.secure_url, cloudinaryResult.public_id);
+    const imagen = await actualizarImagenProductoRepository(imagenID, cloudinaryResult.secure_url, cloudinaryResult.public_id);
     fs.unlinkSync(file.path);
     return {
         ok: true,
@@ -335,13 +335,13 @@ const eliminarImagenProductoService = async (idImagen) => {
 
     const imagenID = Number(idImagen);
 
-    const imagenExistente = await obtenerImagenProductoPorIdModel(imagenID);
+    const imagenExistente = await obtenerImagenProductoPorIdRepository(imagenID);
 
     if(!imagenExistente || imagenExistente.length === 0){
         throw crearError('Imagen especificada no existente',400)
     }
 
-    const cantidadImagenesProducto = await contarImagenesPorProductoModel(imagenExistente.id_producto);
+    const cantidadImagenesProducto = await contarImagenesPorProductoRepository(imagenExistente.id_producto);
 
     if(cantidadImagenesProducto === 1 || cantidadImagenesProducto === 0){
         throw crearError('La imagen es unica del producto y no puede ser eliminada', 400);
@@ -356,7 +356,7 @@ const eliminarImagenProductoService = async (idImagen) => {
         throw crearError('Error al eliminar imagen en Cloudinary', 500);
     }
 
-    const resultado = await eliminarImagenProductoModel(imagenID);
+    const resultado = await eliminarImagenProductoRepository(imagenID);
 
     return {
         ok: true,
@@ -366,14 +366,14 @@ const eliminarImagenProductoService = async (idImagen) => {
 
 const obtenerProductosCatalogoService = async (idCategoria) => {
 
-    const productos = await obtenerProductosCatalogoModel(idCategoria);
+    const productos = await obtenerProductosCatalogoRepository(idCategoria);
 
     if(!productos || productos.length === 0) {
         throw crearError('No se encontraron productos', 404);
     }
 
     for(const producto of productos) {
-        const imagenes = await obtenerImagenesPorProductoModel(producto.id_producto);
+        const imagenes = await obtenerImagenesPorProductoRepository(producto.id_producto);
         producto.imagenes = imagenes;
     }
 
@@ -384,7 +384,7 @@ const obtenerProductosCatalogoService = async (idCategoria) => {
 };
 
 const obtenerProductosGestionService = async (querys) => {
-    const allowedQuerys = ['limit', 'offset', 'nombre', 'usaInsumos', 'contarCategoriasPorIdModel', 'categoria'];
+    const allowedQuerys = ['limit', 'offset', 'nombre', 'usaInsumos', 'contarCategoriasPorIdRepository', 'categoria'];
 
     const keysInvalidas = Object.keys(querys).filter(
         key => !allowedQuerys.includes(key)
@@ -393,7 +393,7 @@ const obtenerProductosGestionService = async (querys) => {
     if (keysInvalidas.length > 0) {
         throw crearError('Filtro no valido',400);
     }
-    const { limit, offset, nombre, usaInsumos, contarCategoriasPorIdModel, categoria  } = querys;
+    const { limit, offset, nombre, usaInsumos, contarCategoriasPorIdRepository, categoria  } = querys;
 
     const limite = parseInt(limit) || 10;
     const desplazamiento = parseInt(offset) || 0;
@@ -416,7 +416,7 @@ const obtenerProductosGestionService = async (querys) => {
 
     if (cachedTotal !== undefined) {
 
-        const productos = await obtenerProductosGestionModel(nombre, insumosUsa, categoria, limite, desplazamiento);
+        const productos = await obtenerProductosGestionRepository(nombre, insumosUsa, categoria, limite, desplazamiento);
 
         if (!productos || productos.length === 0) {
             throw crearError('No se encontraron productos', 404);
@@ -430,11 +430,11 @@ const obtenerProductosGestionService = async (querys) => {
     }
 
 
-    const totalRegistros = await contarProductosGestionModel(nombre, insumosUsa, categoria);
+    const totalRegistros = await contarProductosGestionRepository(nombre, insumosUsa, categoria);
 
     cache.set(cacheKey, totalRegistros);
 
-    const productos = await obtenerProductosGestionModel(nombre, insumosUsa, categoria, limite, desplazamiento);
+    const productos = await obtenerProductosGestionRepository(nombre, insumosUsa, categoria, limite, desplazamiento);
 
     if (!productos || productos.length === 0) {
         throw crearError('No se encontraron productos', 404);
@@ -470,7 +470,7 @@ const obtenerProductosDeshabilitadosService = async (querys) => {
     if (cachedTotal !== undefined) {
         
 
-        const productos = await obtenerProductosDeshabilitadosModel(nombre, categoria, limite, desplazamiento);
+        const productos = await obtenerProductosDeshabilitadosRepository(nombre, categoria, limite, desplazamiento);
 
         if (!productos || productos.length === 0) {
             throw crearError('No se encontraron productos', 404);
@@ -485,11 +485,11 @@ const obtenerProductosDeshabilitadosService = async (querys) => {
 
     
 
-    const totalRegistros = await contarProductosDeshabilitadosModel(nombre, categoria);
+    const totalRegistros = await contarProductosDeshabilitadosRepository(nombre, categoria);
 
     cache.set(cacheKey, totalRegistros);
 
-    const productos = await obtenerProductosDeshabilitadosModel(nombre, categoria, limite, desplazamiento);
+    const productos = await obtenerProductosDeshabilitadosRepository(nombre, categoria, limite, desplazamiento);
 
     if (!productos || productos.length === 0) {
         throw crearError('No se encontraron productos deshabilitados', 404);
@@ -508,7 +508,7 @@ const obtenerProductoIdService = async (idProducto) => {
     }
 
     const productoID = Number(idProducto);
-    const producto = await obtenerProductoIdModel(productoID);
+    const producto = await obtenerProductoIdRepository(productoID);
     if(!producto) {
         throw crearError('No existe el producto especificado');
     }
@@ -525,11 +525,11 @@ const obtenerImagenesPorProductoService =  async (idProducto) => {
     }
 
     const productoID = Number(idProducto);
-    const productoExistente = await contarProductosPorIdModel(productoID);
+    const productoExistente = await contarProductosPorIdRepository(productoID);
     if(!productoExistente || productoExistente === 0){
         throw crearError('Producto especificado no existente', 404);
     }
-    const imagenes = await obtenerImagenesPorProductoModel(productoID);
+    const imagenes = await obtenerImagenesPorProductoRepository(productoID);
     
     if(!imagenes || imagenes.length === 0) {
         throw  crearError('No se encontraron imagenes para el producto especificado', 404)
@@ -564,7 +564,7 @@ const obtenerImagenesProductosService = async (querys) => {
     if (cachedTotal !== undefined) {
         
 
-        const imagenes = await obtenerImagenesProductosModel(nombre, limite, desplazamiento);
+        const imagenes = await obtenerImagenesProductosRepository(nombre, limite, desplazamiento);
 
         if (!imagenes || imagenes.length === 0) {
             throw crearError('No se encontraron imágenes', 404);
@@ -579,11 +579,11 @@ const obtenerImagenesProductosService = async (querys) => {
 
     
 
-    const totalRegistros = await contarImagenesProductosModel(nombre);
+    const totalRegistros = await contarImagenesProductosRepository(nombre);
 
     cache.set(cacheKey, totalRegistros);
 
-    const imagenes = await obtenerImagenesProductosModel(nombre, limite, desplazamiento);
+    const imagenes = await obtenerImagenesProductosRepository(nombre, limite, desplazamiento);
 
     if (!imagenes || imagenes.length === 0) {
         throw crearError('No se encontraron imágenes', 404);
@@ -602,7 +602,7 @@ const obtenerInsumosPorProductoService = async (idProducto) => {
     }
     const productoID = Number(idProducto);
 
-    const producto = await obtenerProductoIdModel(productoID);
+    const producto = await obtenerProductoIdRepository(productoID);
 
     if(!producto) {
         throw crearError('Producto especificado no existente', 404);
@@ -612,7 +612,7 @@ const obtenerInsumosPorProductoService = async (idProducto) => {
         throw crearError('El producto no tiene activado el inventario');
     }
 
-    const insumos = await obtenerInsumosPorProductoModel(productoID);
+    const insumos = await obtenerInsumosPorProductoRepository(productoID);
 
     if (!insumos || insumos.length === 0) {
         throw crearError('El producto no tiene insumos registrados', 404);

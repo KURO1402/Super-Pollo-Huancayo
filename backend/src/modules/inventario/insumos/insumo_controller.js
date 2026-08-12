@@ -1,3 +1,5 @@
+const registrarError = require('../../../utilidades/registrar_error');
+
 const {
     insertarInsumoService,
     actualizarDatosInsumoService,
@@ -19,6 +21,7 @@ const insertarInsumoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -36,6 +39,7 @@ const actualizarDatosInsumoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -54,6 +58,7 @@ const eliminarInsumoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -72,6 +77,7 @@ const obtenerInsumosController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -89,6 +95,7 @@ const obtenerInsumoIDController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -106,6 +113,7 @@ const registrarEntradaStockController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -123,6 +131,7 @@ const registrarSalidaStockController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -139,6 +148,7 @@ const obtenerMovimientosStockController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

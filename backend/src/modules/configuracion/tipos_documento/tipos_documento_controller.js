@@ -1,3 +1,4 @@
+const registrarError = require('../../../utilidades/registrar_error');
 const {
     insertarTipoDocumentoService,
     actualizarTipoDocumentoService,
@@ -11,6 +12,7 @@ const insertarTipoDocumentoController = async (req, res) => {
         const resultado = await insertarTipoDocumentoService(req.body);
         return res.status(201).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -27,6 +29,7 @@ const actualizarTipoDocumentoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -44,6 +47,7 @@ const eliminarTipoDocumentoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -58,6 +62,7 @@ const listarTiposDocumentoController = async (req, res) => {
         const resultado = await listarTiposDocumentoService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -73,6 +78,7 @@ const obtenerTipoDocumentoPorIdController = async (req, res) => {
         const resultado = await obtenerTipoDocumentoPorIdService(idTipoDocumento);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,

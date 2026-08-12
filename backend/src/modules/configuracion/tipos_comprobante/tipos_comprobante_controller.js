@@ -1,3 +1,4 @@
+const registrarError = require('../../../utilidades/registrar_error');
 const {
     insertarTipoComprobanteService,
     actualizarTipoComprobanteService,
@@ -10,6 +11,7 @@ const insertarTipoComprobanteController = async (req, res) => {
         const resultado = await insertarTipoComprobanteService(req.body);
         return res.status(201).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -26,6 +28,7 @@ const actualizarTipoComprobanteController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -42,6 +45,7 @@ const eliminarTipoComprobanteController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -56,6 +60,7 @@ const listarTiposComprobanteController = async (req, res) => {
         const resultado = await listarTiposComprobanteService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

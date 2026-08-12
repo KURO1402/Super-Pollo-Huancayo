@@ -44,13 +44,11 @@ export const usePollobot = () => {
     setIdUltimoBot(idBot);
     setCargando(true);
 
-    // Historial previo formateado para el backend (sin el placeholder vacío)
     const historialBackend = historialRef.current.map(m => ({
       role: m.rol === 'usuario' ? 'user' : 'model',
       parts: [{ text: m.texto }],
     }));
 
-    // Guardamos el mensaje del usuario en el historial ref antes de llamar
     historialRef.current = [...historialRef.current, msgUsuario];
 
     let textoFinal = '';
@@ -79,14 +77,13 @@ export const usePollobot = () => {
 
         buffer += decoder.decode(value, { stream: true });
 
-        // Partimos por el separador SSE estándar
         const lineas = buffer.split('\n\n');
         buffer = lineas.pop() || '';
 
         for (const linea of lineas) {
           if (!linea.startsWith('data: ')) continue;
           try {
-            const datos = JSON.parse(linea.slice(6).trim()); // slice(6) = quita "data: "
+            const datos = JSON.parse(linea.slice(6).trim()); 
 
             if (datos.tipo === 'grafico') {
               textoFinal = 'Aquí tienes el análisis visual solicitado:';
@@ -104,14 +101,13 @@ export const usePollobot = () => {
         }
       }
 
-      // Guardamos la respuesta del bot en el historial ref
       historialRef.current = [...historialRef.current, { ...msgBot, texto: textoFinal }];
 
     } catch (error) {
       console.error('[usePollobot]', error);
       setMensajes(prev => prev.map(m =>
         m.id === idBot
-          ? { ...m, texto: '❌ Lo siento, hubo un problema al procesar tu consulta. Inténtalo de nuevo.' }
+          ? { ...m, texto: 'Lo siento, hubo un problema al procesar tu consulta. Inténtalo de nuevo.' }
           : m
       ));
     } finally {

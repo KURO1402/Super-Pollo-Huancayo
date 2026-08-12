@@ -1,3 +1,5 @@
+const registrarError = require('../../../utilidades/registrar_error');
+
 const {
     insertarCategoriaProductoService,
     actualizarCategoriaProductoService,
@@ -11,6 +13,7 @@ const insertarCategoriaProductoController = async (req, res) => {
         const resultado = await insertarCategoriaProductoService(req.body);
         return res.status(201).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -26,6 +29,7 @@ const actualizarCategoriaProductoController = async (req, res) => {
         const resultado = await actualizarCategoriaProductoService(req.body, idCategoria);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -43,6 +47,7 @@ const eliminarCategoriaProductoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -57,6 +62,7 @@ const listarCategoriasProductoController = async (req, res) => {
         const resultado = await listarCategoriasProductoService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -72,6 +78,7 @@ const obtenerCategoriaProductoPorIdController = async (req, res) => {
         const resultado = await obtenerCategoriaProductoPorIdService(idCategoria);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,

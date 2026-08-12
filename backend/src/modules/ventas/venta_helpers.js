@@ -2,10 +2,10 @@ const axios = require('axios');
 const cloudinaryPdf = require('../../config/cloudinary_pdf_config');
 const generarPdfTermico = require('../../utilidades/helpers/generar_pdf_termico');
 
-const { obtenerTipoComprobantePorIdModel } = require('../configuracion/tipos_comprobante/tipos_comprobante_model');
-const { obtenerTipoDocumentoPorIdModel } = require('../configuracion/tipos_documento/tipos_documento_model');
-const { obtenerProductoIdModel, obtenerInsumosPorProductoModel } = require('../inventario/productos/producto_model');
-const { obtenerStockActualModel } = require('../inventario/insumos/insumos_model');
+const { obtenerTipoComprobantePorIdRepository } = require('../configuracion/tipos_comprobante/tipos_comprobante_repository');
+const { obtenerTipoDocumentoPorIdRepository } = require('../configuracion/tipos_documento/tipos_documento_repository');
+const { obtenerProductoIdRepository, obtenerInsumosPorProductoRepository } = require('../inventario/productos/producto_repository');
+const { obtenerStockActualRepository } = require('../inventario/insumos/insumos_repository');
 const crearError = require('../../utilidades/crear_error');
 const obtenerFechaActual = require('../../utilidades/obtener_fecha_actual');
 const { company, IGV, TIPO_COMPROBANTE_CODIGO, TIPO_DOCUMENTO_CODIGO } = require('../../utilidades/helpers/constantes_venta');
@@ -76,10 +76,10 @@ const calcularProducto = (productoExiste, cantidad) => {
 };
 
 const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
-    const tipoComprobanteExiste = await obtenerTipoComprobantePorIdModel(tipoComprobante);
+    const tipoComprobanteExiste = await obtenerTipoComprobantePorIdRepository(tipoComprobante);
     if (!tipoComprobanteExiste) throw crearError('Tipo de comprobante no valido', 400);
 
-    const tipoDocumentoExiste = await obtenerTipoDocumentoPorIdModel(cliente.idTipoDoc);
+    const tipoDocumentoExiste = await obtenerTipoDocumentoPorIdRepository(cliente.idTipoDoc);
     if (!tipoDocumentoExiste) throw crearError('Tipo de documento no valido', 400);
 
     const nombreComprobante = tipoComprobanteExiste.nombre_tipo_comprobante.toLowerCase();
@@ -97,7 +97,7 @@ const generarDatosComprobante = async (tipoComprobante, cliente, productos) => {
 
     const productosConData = await Promise.all(
         productos.map(async ({ idProducto, cantidad }) => {
-            const productoExiste = await obtenerProductoIdModel(idProducto);
+            const productoExiste = await obtenerProductoIdRepository(idProducto);
             if (!productoExiste) throw crearError(`Producto con id ${idProducto} no encontrado`, 400);
             return { productoExiste, cantidad };
         })
@@ -253,7 +253,7 @@ const validarStockInsumos = async (productosConData) => {
     const resultadosInsumos = await Promise.all(
         productosConData.map(({ productoExiste, cantidad }) => {
             if (!productoExiste.usa_insumos) return { insumos: [], cantidad };
-            return obtenerInsumosPorProductoModel(productoExiste.id_producto)
+            return obtenerInsumosPorProductoRepository(productoExiste.id_producto)
                 .then(insumos => ({ insumos, cantidad }));
         })
     );
@@ -278,7 +278,7 @@ const validarStockInsumos = async (productosConData) => {
 
     await Promise.all(
         Array.from(insumosNecesarios.entries()).map(async ([idInsumo, { nombreInsumo, cantidadValidacion }]) => {
-            const stockActual = await obtenerStockActualModel(idInsumo);
+            const stockActual = await obtenerStockActualRepository(idInsumo);
             if (cantidadValidacion > stockActual) {
                 throw crearError(
                     `Stock insuficiente del insumo: ${nombreInsumo}. Necesario: ${cantidadValidacion}, disponible: ${stockActual}`,
@@ -306,7 +306,7 @@ const revertirInsumosVenta = async (detalles, registrarEntradaStockService, idUs
     const resultadosInsumos = await Promise.all(
         detalles.map(({ id_producto, cantidad_producto, usa_insumos }) => {
             if (!usa_insumos) return { insumos: [], cantidad_producto };
-            return obtenerInsumosPorProductoModel(id_producto)
+            return obtenerInsumosPorProductoRepository(id_producto)
                 .then(insumos => ({ insumos, cantidad_producto }));
         })
     );

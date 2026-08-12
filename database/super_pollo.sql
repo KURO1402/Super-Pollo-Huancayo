@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS detalle_ventas;
 DROP TABLE IF EXISTS comprobantes;
 DROP TABLE IF EXISTS pago_reservacion;
 DROP TABLE IF EXISTS pedido_mesa;
+DROP TABLE IF EXISTS registro_errores;
 
 -- Intermedias
 DROP TABLE IF EXISTS productos;

@@ -3,10 +3,9 @@ const { toolCaja } = require('./tool_caja');
 const { toolInventario } = require('./tool_inventario');
 const { toolReservas } = require('./tool_reservas');
 const { toolGraficos } = require('./tool_graficos');
-const aiModel = require('../ai_repository');
+const aiRepository = require('../ai_repository');
 const chartBuilder = require('../charts/chart_builder');
 
-// Array completo que se le pasa a Gemini en cada llamada
 const ALL_TOOLS = [
     toolVentas,
     toolTopProductos,
@@ -19,13 +18,13 @@ const ALL_TOOLS = [
 ];
 
 const TOOL_HANDLERS = {
-    consultarVentas: aiModel.obtenerResumenVentas,
-    consultarTopProductos: aiModel.obtenerTopProductosVendidos,
-    consultarProductos: aiModel.obtenerCatalogoProductos,
-    consultarProductosConInsumos: aiModel.obtenerProductosConInsumos,
-    consultarCaja: aiModel.obtenerResumenCaja,
-    consultarInventario: aiModel.obtenerEstadoInventario,
-    consultarReservas: aiModel.obtenerDetalleReservas,
+    consultarVentas: aiRepository.obtenerResumenVentas,
+    consultarTopProductos: aiRepository.obtenerTopProductosVendidos,
+    consultarProductos: aiRepository.obtenerCatalogoProductos,
+    consultarProductosConInsumos: aiRepository.obtenerProductosConInsumos,
+    consultarCaja: aiRepository.obtenerResumenCaja,
+    consultarInventario: aiRepository.obtenerEstadoInventario,
+    consultarReservas: aiRepository.obtenerDetalleReservas,
     generarGrafico: chartBuilder.buildChart,
 };
 

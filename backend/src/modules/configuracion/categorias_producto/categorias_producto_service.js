@@ -1,15 +1,15 @@
 const crearError = require('../../../utilidades/crear_error');
 const {
-    insertarCategoriaProductoModel,
-    contarCategoriaPorNombreModel,
-    actualizarCategoriaProductoModel,
-    contarCategoriaPorNombreExcluyendoIdModel,
-    contarCategoriaPorIdModel,
-    eliminarCategoriaProductoModel,
-    contarProductosPorCategoriaModel,
-    listarCategoriasProductoModel,
-    obtenerCategoriaProductoPorIdModel
-} = require('./categorias_producto_model');
+    insertarCategoriaProductoRepository,
+    contarCategoriaPorNombreRepository,
+    actualizarCategoriaProductoRepository,
+    contarCategoriaPorNombreExcluyendoIdRepository,
+    contarCategoriaPorIdRepository,
+    eliminarCategoriaProductoRepository,
+    contarProductosPorCategoriaRepository,
+    listarCategoriasProductoRepository,
+    obtenerCategoriaProductoPorIdRepository
+} = require('./categorias_producto_repository');
 
 const insertarCategoriaProductoService = async (datos) => {
     if(!datos || typeof datos !== 'object'){
@@ -22,13 +22,13 @@ const insertarCategoriaProductoService = async (datos) => {
         throw crearError('Se necesita el nombre de la nueva categoria', 400);
     }
 
-    const categoriaExistente = await contarCategoriaPorNombreModel(nombreCategoria);
+    const categoriaExistente = await contarCategoriaPorNombreRepository(nombreCategoria);
 
     if(categoriaExistente > 0) {
         throw crearError('Ya existe una categoria con ese nombre', 409);
     }
 
-    const categoria = await insertarCategoriaProductoModel(nombreCategoria);
+    const categoria = await insertarCategoriaProductoRepository(nombreCategoria);
 
     return {
         ok: true,
@@ -55,17 +55,17 @@ const actualizarCategoriaProductoService = async (datos, idCategoria) => {
         throw crearError('El nombre de la categoría es obligatorio', 400);
     }
 
-    const existe = await contarCategoriaPorIdModel(categoriaID);
+    const existe = await contarCategoriaPorIdRepository(categoriaID);
     if (existe === 0) {
         throw crearError('La categoría no existe', 404);
     }
 
-    const nombreDuplicado = await contarCategoriaPorNombreExcluyendoIdModel(categoriaID, nombreCategoria);
+    const nombreDuplicado = await contarCategoriaPorNombreExcluyendoIdRepository(categoriaID, nombreCategoria);
     if (nombreDuplicado > 0) {
         throw crearError('Ya existe otra categoría con ese nombre', 409);
     }
 
-    const categoriaActualizada = await actualizarCategoriaProductoModel(categoriaID, nombreCategoria);
+    const categoriaActualizada = await actualizarCategoriaProductoRepository(categoriaID, nombreCategoria);
 
     return {
         ok: true,
@@ -81,18 +81,18 @@ const eliminarCategoriaProductoService = async (idCategoria) => {
     }
     const categoriaID = Number(idCategoria);
 
-    const existe = await contarCategoriaPorIdModel(categoriaID);
+    const existe = await contarCategoriaPorIdRepository(categoriaID);
     if (existe === 0) {
         throw crearError('La categoría no existe', 404);
     }
 
-    const productosAsociados = await contarProductosPorCategoriaModel(categoriaID);
+    const productosAsociados = await contarProductosPorCategoriaRepository(categoriaID);
 
     if (productosAsociados > 0) {
         throw crearError('Primero elimine los productos asociados a esta categoria o asocialos a otra',409);
     }
 
-    const mensaje = await eliminarCategoriaProductoModel(categoriaID);
+    const mensaje = await eliminarCategoriaProductoRepository(categoriaID);
 
     return {
         ok: true,
@@ -102,7 +102,7 @@ const eliminarCategoriaProductoService = async (idCategoria) => {
 
 const listarCategoriasProductoService = async () => {
 
-    const categorias = await listarCategoriasProductoModel();
+    const categorias = await listarCategoriasProductoRepository();
 
     if(!categorias || categorias.length === 0) {
         throw crearError('No se encontraron categorias para productos', 404);
@@ -120,7 +120,7 @@ const obtenerCategoriaProductoPorIdService = async (idCategoria) => {
         throw crearError('El id de la categoría es obligatorio', 400);
     }
     const categoriaID = Number(idCategoria);
-    const categoria = await obtenerCategoriaProductoPorIdModel(categoriaID);
+    const categoria = await obtenerCategoriaProductoPorIdRepository(categoriaID);
 
     if (!categoria) {
         throw crearError('Categoría no encontrada', 404);

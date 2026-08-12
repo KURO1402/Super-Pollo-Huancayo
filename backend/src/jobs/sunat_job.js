@@ -5,10 +5,10 @@ const {
 } = require('../modules/ventas/venta_helpers');
 
 const {
-  obtenerComprobantesVencidosModel,
-  obtenerComprobantePendientePorIdModel,
-  actualizarEstadoSunatModel,
-} = require('../modules/ventas/ventas_model');
+  obtenerComprobantesVencidosRepository,
+  obtenerComprobantePendientePorIdRepository,
+  actualizarEstadoSunatRepository,
+} = require('../modules/ventas/ventas_repository');
 const enviarComprobanteCorreo = require('../utilidades/helpers/enviar_comprobante_correo');
 
 const MAX_INTENTOS = 3;
@@ -18,7 +18,7 @@ const procesarComprobante = async (idComprobante) => {
   let comprobante;
 
   try {
-    const resultado = await obtenerComprobantePendientePorIdModel(idComprobante);
+    const resultado = await obtenerComprobantePendientePorIdRepository(idComprobante);
     comprobante = resultado.comprobante;
 
     if (!comprobante) {
@@ -35,7 +35,7 @@ const procesarComprobante = async (idComprobante) => {
 
     const detalles = resultado.detalles;
 
-    await actualizarEstadoSunatModel(idComprobante, 'enviado_sunat', null, null, null, null, null, null);
+    await actualizarEstadoSunatRepository(idComprobante, 'enviado_sunat', null, null, null, null, null, null);
 
     const payload = reconstruirPayloadApisPeru(comprobante, detalles);
     
@@ -59,7 +59,7 @@ const procesarComprobante = async (idComprobante) => {
       subirArchivoCloudinary(Buffer.from(sunatResponse.cdrZip, 'base64'), `${nombreArchivo}-cdr`, 'zip'),
     ]);
 
-    await actualizarEstadoSunatModel(
+    await actualizarEstadoSunatRepository(
       idComprobante,
       estado,
       resultadoXml.url,
@@ -96,7 +96,7 @@ const procesarComprobante = async (idComprobante) => {
   } catch (error) {
     console.error(`Error procesando comprobante ${idComprobante}:`, error.message);
     try {
-      await actualizarEstadoSunatModel(idComprobante, 'pendiente', null, null, null, null, null, null);
+      await actualizarEstadoSunatRepository(idComprobante, 'pendiente', null, null, null, null, null, null);
       console.warn(`Comprobante ${idComprobante} revertido a "pendiente" para reintento`);
     } catch (errorRevert) {
       console.error(`No se pudo revertir el comprobante ${idComprobante}:`, errorRevert.message);
@@ -106,7 +106,7 @@ const procesarComprobante = async (idComprobante) => {
 
 const ejecutarJob = async () => {
   try {
-    const pendientes = await obtenerComprobantesVencidosModel();
+    const pendientes = await obtenerComprobantesVencidosRepository();
 
     if (!pendientes || pendientes.length === 0) return;
 

@@ -1,15 +1,15 @@
 const crearError = require('../../../utilidades/crear_error');
 
 const {
-    insertarMedioPagoModel,
-    contarMedioPagoPorNombreModel,
-    actualizarMedioPagoModel,
-    contarMedioPagoPorIdModel,
-    contarMedioPagoNombreExcluyendoIdModel,
-    eliminarMedioPagoModel,
-    listarMediosPagoModel,
-    obtenerMedioPagoPorIdModel
-} = require('./medios_pago_model');
+    insertarMedioPagoRepository,
+    contarMedioPagoPorNombreRepository,
+    actualizarMedioPagoRepository,
+    contarMedioPagoPorIdRepository,
+    contarMedioPagoNombreExcluyendoIdRepository,
+    eliminarMedioPagoRepository,
+    listarMediosPagoRepository,
+    obtenerMedioPagoPorIdRepository
+} = require('./medios_pago_repository');
 
 const insertarMedioPagoService = async (datos) => {
     if (!datos || typeof datos !== 'object') {
@@ -22,12 +22,12 @@ const insertarMedioPagoService = async (datos) => {
         throw crearError('Se necesita el nombre del nuevo medio de pago', 400);
     }
 
-    const nombreActivoCoincidente = await contarMedioPagoPorNombreModel(nombreMedioPago);
+    const nombreActivoCoincidente = await contarMedioPagoPorNombreRepository(nombreMedioPago);
     if (nombreActivoCoincidente > 0) {
         throw crearError('Ya existe un medio de pago activo con ese nombre', 409);
     }
 
-    const medio_pago = await insertarMedioPagoModel(nombreMedioPago);
+    const medio_pago = await insertarMedioPagoRepository(nombreMedioPago);
 
     return {
         ok: true,
@@ -53,17 +53,17 @@ const actualizarMedioPagoService = async (datos, idMedioPago) => {
         throw crearError('El nombre del medio de pago es obligatorio', 400);
     }
 
-    const existe = await contarMedioPagoPorIdModel(medioPagoID);
+    const existe = await contarMedioPagoPorIdRepository(medioPagoID);
     if (existe === 0) {
         throw crearError('El medio de pago no existe', 404);
     }
 
-    const nombreDuplicado = await contarMedioPagoNombreExcluyendoIdModel(nombreMedioPago, medioPagoID);
+    const nombreDuplicado = await contarMedioPagoNombreExcluyendoIdRepository(nombreMedioPago, medioPagoID);
     if (nombreDuplicado > 0) {
         throw crearError('Ya existe otro medio de pago con ese nombre', 409);
     }
 
-    const medioPagoActualizado = await actualizarMedioPagoModel(medioPagoID, nombreMedioPago);
+    const medioPagoActualizado = await actualizarMedioPagoRepository(medioPagoID, nombreMedioPago);
 
     return {
         ok: true,
@@ -79,13 +79,13 @@ const eliminarMedioPagoService = async (idMedioPago) => {
 
     const medioPagoID = Number(idMedioPago);
 
-    const medioPagoExiste = await contarMedioPagoPorIdModel(medioPagoID);
+    const medioPagoExiste = await contarMedioPagoPorIdRepository(medioPagoID);
 
     if (medioPagoExiste === 0) {
         throw crearError('El medio de pago no existe', 404);
     }
 
-    const resultado = await eliminarMedioPagoModel(medioPagoID);
+    const resultado = await eliminarMedioPagoRepository(medioPagoID);
 
     return {
         ok: true,
@@ -95,7 +95,7 @@ const eliminarMedioPagoService = async (idMedioPago) => {
 
 const listarMediosPagoService = async () => {
 
-    const medios_pago = await listarMediosPagoModel();
+    const medios_pago = await listarMediosPagoRepository();
 
     if (!medios_pago || medios_pago.length === 0) {
         throw crearError('No se encontraron medios de pago', 404);
@@ -114,7 +114,7 @@ const obtenerMedioPagoPorIdService = async (idMedioPago) => {
     }
 
     const medioPagoID = Number(idMedioPago);
-    const medio_pago = await obtenerMedioPagoPorIdModel(medioPagoID);
+    const medio_pago = await obtenerMedioPagoPorIdRepository(medioPagoID);
 
     if (!medio_pago) {
         throw crearError('Medio de pago no encontrado', 404);
