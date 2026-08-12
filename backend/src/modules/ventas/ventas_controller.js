@@ -1,3 +1,4 @@
+const registrarError = require('../../utilidades/registrar_error');
 const {
     generarVentaService,
     anularVentaService,
@@ -14,6 +15,7 @@ const generarVentaController = async (req, res) => {
         const resultado = await generarVentaService(req.body, id_usuario);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({ 
             ok: false,
@@ -29,6 +31,7 @@ const anularVentaController = async (req, res) => {
         const resultado = await anularVentaService(idVenta, id_usuario);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({ ok: false, mensaje: err.message || 'Error interno del servidor' });
     }
@@ -39,6 +42,7 @@ const obtenerVentasController = async (req, res) => {
         const ventas = await obtenerVentasService(req.query);
         return res.status(200).json(ventas);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({ ok: false, mensaje: err.message || 'Error interno del servidor' });
     }
@@ -50,6 +54,7 @@ const obtenerDetalleVentaPorIdVentaController = async (req, res) => {
         const resultado = await obtenerDetalleVentaPorIdVentaService(idVenta);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({ ok: false, mensaje: err.message || 'Error interno del servidor' });
     }
@@ -61,6 +66,7 @@ const obtenerComprobantePorIdVentaController = async (req, res) => {
         const resultado = await obtenerComprobantePorIdVentaService(idVenta);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({ ok: false, mensaje: err.message || 'Error interno del servidor' });
     }
@@ -81,6 +87,7 @@ const reenviarComprobanteController = async (req, res) => {
     return res.status(200).json(resultado);
 
   } catch (err) {
+    registrarError(err, req);
     const statusCode = err.status || 500;
     return res.status(statusCode).json({ 
       ok: false, 

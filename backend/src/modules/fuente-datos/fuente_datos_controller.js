@@ -1,3 +1,4 @@
+const registrarError = require('../../utilidades/registrar_error');
 const { 
     obtenerResumenVentasEgresosMensualService,
     obtenerVentasHoyComparacionService,
@@ -14,6 +15,7 @@ const obtenerResumenVentasEgresosMensualController = async (req, res) => {
         const resultado = await obtenerResumenVentasEgresosMensualService(meses);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -27,6 +29,7 @@ const obtenerVentasHoyComparacionController = async (req, res) => {
         const resultado = await obtenerVentasHoyComparacionService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -40,6 +43,7 @@ const obtenerReservasMesComparacionController = async (req, res) => {
         const resultado = await obtenerReservasMesComparacionService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -53,6 +57,7 @@ const obtenerBalanceAnualController = async (req, res) => {
         const resultado = await obtenerBalanceAnualService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -66,6 +71,7 @@ const obtenerPorcentajeMediosPagoController = async (req, res) => {
         const resultado = await obtenerPorcentajeMediosPagoService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -80,6 +86,7 @@ const obtenerVentasPorMesController = async (req, res) => {
         const resultado = await obtenerVentasPorMesService(meses);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -94,6 +101,7 @@ const obtenerTopProductosMasVendidosController = async (req, res) => {
         const resultado = await obtenerTopProductosMasVendidosService(fechaInicio, fechaFin);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,

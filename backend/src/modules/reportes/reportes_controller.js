@@ -1,3 +1,4 @@
+const registrarError = require('../../utilidades/registrar_error');
 const {
     generarReporteVentasService,
     generarReporteClientesService,
@@ -17,6 +18,7 @@ const generarReporteVentasController = async (req, res) => {
 
         return res.status(200).end(buffer);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -26,7 +28,6 @@ const generarReporteVentasController = async (req, res) => {
     }
 };
 
-// REPORTE 2: CLIENTES
 const generarReporteClientesController = async (req, res) => {
     try {
         const { desde, hasta } = req.query;
@@ -38,6 +39,7 @@ const generarReporteClientesController = async (req, res) => {
 
         return res.status(200).end(buffer);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -47,7 +49,6 @@ const generarReporteClientesController = async (req, res) => {
     }
 };
 
-// REPORTE 3: INVENTARIO
 const generarReporteInventarioController = async (req, res) => {
     try {
         const { desde, hasta } = req.query;
@@ -59,6 +60,7 @@ const generarReporteInventarioController = async (req, res) => {
 
         return res.status(200).end(buffer);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -68,7 +70,6 @@ const generarReporteInventarioController = async (req, res) => {
     }
 };
 
-// REPORTE 4: CAJA
 const generarReporteCajaController = async (req, res) => {
     try {
         const { desde, hasta } = req.query;
@@ -80,6 +81,7 @@ const generarReporteCajaController = async (req, res) => {
 
         return res.status(200).end(buffer);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

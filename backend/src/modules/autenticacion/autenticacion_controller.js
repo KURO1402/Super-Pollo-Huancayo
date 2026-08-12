@@ -32,7 +32,6 @@ const registroUsuarioController = async (req, res) => {
 
   } catch (err) {
     registrarError(err, req);
-    registrarError(err, req);
 
     const statusCode = err.status || 500;
 
@@ -50,7 +49,6 @@ const registrarVerificacionCorreoController = async (req, res) => {
     return res.status(200).json(resultado);
 
   } catch (err) {
-    registrarError(err, req);
     registrarError(err, req);
 
     const statusCode = err.status || 500;

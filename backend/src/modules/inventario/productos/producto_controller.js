@@ -1,3 +1,4 @@
+const registrarError = require("../../../utilidades/registrar_error");
 const {
     agregarProductoService,
     actualizarDatosProductoService,
@@ -36,6 +37,7 @@ const agregarProductoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -54,6 +56,7 @@ const actualizarDatosProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -72,6 +75,7 @@ const agregarCantidadInsumoProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -90,6 +94,7 @@ const actualizarCantidadInsumoProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -108,6 +113,7 @@ const eliminarCantidadInsumoProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -126,6 +132,7 @@ const deshabilitarProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -144,6 +151,7 @@ const habilitarProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -163,6 +171,7 @@ const insertarImagenProductoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -182,6 +191,7 @@ const actualizarImagenProductoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -200,6 +210,7 @@ const eliminarImagenProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -218,6 +229,7 @@ const obtenerProductosCatalogoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -235,6 +247,7 @@ const obtenerProductosGestionController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -251,6 +264,7 @@ const obtenerProductosDeshabilitadosController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -268,6 +282,7 @@ const obtenerProductoIdController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -285,6 +300,7 @@ const obtenerImagenesPorProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -301,6 +317,7 @@ const obtenerImagenesProductosController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -318,6 +335,7 @@ const obtenerInsumosPorProductoController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

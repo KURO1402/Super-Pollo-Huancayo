@@ -1,3 +1,4 @@
+const registrarError = require('../../utilidades/registrar_error');
 const {
     crearPreferenciaReservacionService,
     confirmarPagoReservacionService,
@@ -19,6 +20,7 @@ const crearPreferenciaReservacionController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -43,6 +45,7 @@ const webhookReservacionController = async (req, res) => {
 
         return res.sendStatus(200);
     } catch (err) {
+        registrarError(err, req);
         console.error('Error controlado en webhook:', err.message);
         return res.sendStatus(200); 
     }
@@ -54,6 +57,7 @@ const registrarReservacionManualController = async (req, res) => {
         return res.status(200).json(resultado);
 
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -68,6 +72,7 @@ const obtenerReservacionPorCodigoController = async (req, res) => {
         const resultado = await obtenerReservacionPorCodigoService(codigo);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -82,6 +87,7 @@ const confirmarReservacionController = async (req, res) => {
         const resultado = await confirmarReservacionService(Number(idReservacion));
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -96,6 +102,7 @@ const cancelarReservacionController = async (req, res) => {
         const resultado = await cancelarReservacionService(Number(idReservacion));
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -110,6 +117,7 @@ const listarMesasDisponibilidadController = async (req, res) => {
         const resultado = await listarMesasDisponibilidadService(fecha, hora);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -124,6 +132,7 @@ const listarReservacionesPorFechaController = async (req, res) => {
         const resultado = await listarReservacionesPorFechaService(fecha_inicio, fecha_fin);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -138,6 +147,7 @@ const listarReservacionesPorUsuarioController = async (req, res) => {
         const resultado = await listarReservacionesPorUsuarioService(id_usuario);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -153,6 +163,7 @@ const obtenerReservacionPorIdController = async (req, res) => {
         const resultado = await obtenerReservacionPorIdService(id_reservacion, id_usuario, id_rol);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -168,6 +179,7 @@ const obtenerPagoPorReservacionController = async (req, res) => {
         const resultado = await obtenerPagoPorReservacionService(id_reservacion, id_usuario, id_rol);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,

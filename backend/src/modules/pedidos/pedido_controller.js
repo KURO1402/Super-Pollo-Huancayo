@@ -1,3 +1,4 @@
+const registrarError = require("../../utilidades/registrar_error");
 const {
     obtenerMesasPedidoService,
     insertarPedidoService,
@@ -17,6 +18,7 @@ const obtenerMesasPedidoController = async (req, res) => {
 
         res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -31,6 +33,7 @@ const insertarPedidoController = async (req, res) => {
         const resultado = await insertarPedidoService(req.body);
         res.status(201).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -46,6 +49,7 @@ const listarPedidosController = async (req, res) => {
         const resultado = await listarPedidosService(fecha, hora);
         res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -61,6 +65,7 @@ const obtenerPedidoCompletoController = async (req, res) => {
         const resultado = await obtenerPedidoCompletoService(idPedido);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -76,6 +81,7 @@ const obtenerPedidoActivoMesaController = async (req, res) => {
         const resultado = await obtenerPedidoActivoMesaService(idMesa);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -90,6 +96,7 @@ const editarPedidoController = async (req, res) => {
         const resultado = await editarPedidoService(idPedido, req.body);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -105,6 +112,7 @@ const cancelarPedidoController = async (req, res) => {
         const resultado = await cancelarPedidoService(idPedido);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -120,6 +128,7 @@ const completarPedidoController = async (req, res) => {
         const resultado = await completarPedidoService(idPedido);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -135,6 +144,7 @@ const obtenerPedidoCompletoC = async (req, res) => {
         const resultado = await completarPedidoService(idPedido);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({

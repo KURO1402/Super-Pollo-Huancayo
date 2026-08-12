@@ -1,3 +1,4 @@
+const registrarError = require('../../../utilidades/registrar_error');
 const {
     insertarMedioPagoService,
     actualizarMedioPagoService,
@@ -11,6 +12,7 @@ const insertarMedioPagoController = async (req, res) => {
         const resultado = await insertarMedioPagoService(req.body);
         return res.status(201).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -27,6 +29,7 @@ const actualizarMedioPagoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -44,6 +47,7 @@ const eliminarMedioPagoController = async (req, res) => {
 
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
 
         return res.status(statusCode).json({
@@ -58,6 +62,7 @@ const listarMediosPagoController = async (req, res) => {
         const resultado = await listarMediosPagoService();
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
@@ -73,6 +78,7 @@ const obtenerMedioPagoPorIdController = async (req, res) => {
         const resultado = await obtenerMedioPagoPorIdService(idMedioPago);
         return res.status(200).json(resultado);
     } catch (err) {
+        registrarError(err, req);
         const statusCode = err.status || 500;
         return res.status(statusCode).json({
             ok: false,
