@@ -12,7 +12,8 @@ const {
     listarReservacionesPorFechaController,
     listarReservacionesPorUsuarioController,
     obtenerReservacionPorIdController,
-    obtenerPagoPorReservacionController
+    obtenerPagoPorReservacionController,
+    probarPagoController//prueba
 } = require('./reservacion_controller');
 
 router.post('/crear-reserva', autenticacionToken, crearPreferenciaReservacionController);
@@ -24,6 +25,7 @@ router.patch('/cancelar-reservacion/:idReservacion', autenticacionToken, verific
 router.get('/mesas',listarMesasDisponibilidadController);
 router.get('/calendario', autenticacionToken, verificarRoles(2, 3), listarReservacionesPorFechaController);
 router.get('/mis-reservaciones', autenticacionToken, listarReservacionesPorUsuarioController);
+router.post("/probar-pago", probarPagoController);//Esto es de pruebas(borrar antes de subir a produccion)
 router.get('/:id_reservacion', autenticacionToken, obtenerReservacionPorIdController);
 router.get('/:id_reservacion/pago', autenticacionToken, obtenerPagoPorReservacionController);
 

@@ -10,7 +10,8 @@ const {
     listarReservacionesPorFechaService,
     listarReservacionesPorUsuarioService,
     obtenerReservacionPorIdService,
-    obtenerPagoPorReservacionService
+    obtenerPagoPorReservacionService,
+    crearPagoPruebaService,//prueba
 } = require('./reservacion_service');
 
 const crearPreferenciaReservacionController = async (req, res) => {
@@ -188,6 +189,21 @@ const obtenerPagoPorReservacionController = async (req, res) => {
     }
 };
 
+//Esto es de pruebas(borrar antes de subir a produccion)
+const probarPagoController = async (req, res) => {
+    try {
+        const resultado = await crearPagoPruebaService();
+        return res.status(200).json(resultado)
+    } catch (err) {
+        registrarError(err, req);
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
 module.exports = {
     crearPreferenciaReservacionController,
     webhookReservacionController,
@@ -199,5 +215,6 @@ module.exports = {
     listarReservacionesPorFechaController,
     listarReservacionesPorUsuarioController,
     obtenerReservacionPorIdController,
-    obtenerPagoPorReservacionController
+    obtenerPagoPorReservacionController,
+    probarPagoController//prueba
 };
