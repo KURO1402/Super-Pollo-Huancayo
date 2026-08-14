@@ -63,6 +63,15 @@ const obtenerTopProductosMasVendidosRepository = async (fechaInicio, fechaFin) =
     return rows[0];
 };
 
+const obtenerMesasActivasPorcentajeRepository = async () => {
+    const rows = await ejecutarSP(
+        'sp_mesas_activas_porcentaje',
+        [],
+        'Error al obtener las mesas activas.'
+    );
+    return rows[0][0]; 
+};
+
 module.exports = {
     obtenerResumenVentasEgresosMensualRepository,
     obtenerVentasHoyComparacionRepository,
@@ -70,5 +79,6 @@ module.exports = {
     obtenerBalanceAnualRepository,
     obtenerPorcentajeMediosPagoRepository,
     obtenerVentasPorMesRepository,
-    obtenerTopProductosMasVendidosRepository
+    obtenerTopProductosMasVendidosRepository,
+    obtenerMesasActivasPorcentajeRepository
 };
