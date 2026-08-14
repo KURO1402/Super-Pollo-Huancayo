@@ -72,6 +72,15 @@ const obtenerMesasActivasPorcentajeRepository = async () => {
     return rows[0][0]; 
 };
 
+const obtenerVentasHoyMovilRepository = async () => {
+    const rows = await ejecutarSP(
+        'sp_ventas_hoy_monto_comparacion',
+        [],
+        'Error al obtener el monto de ventas de hoy.'
+    );
+    return rows[0][0];
+};
+
 module.exports = {
     obtenerResumenVentasEgresosMensualRepository,
     obtenerVentasHoyComparacionRepository,
@@ -80,5 +89,6 @@ module.exports = {
     obtenerPorcentajeMediosPagoRepository,
     obtenerVentasPorMesRepository,
     obtenerTopProductosMasVendidosRepository,
-    obtenerMesasActivasPorcentajeRepository
+    obtenerMesasActivasPorcentajeRepository,
+    obtenerVentasHoyMovilRepository
 };

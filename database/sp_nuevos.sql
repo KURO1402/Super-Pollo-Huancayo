@@ -31,6 +31,8 @@ DROP PROCEDURE IF EXISTS sp_ia_reservas_resumen;
 DROP PROCEDURE IF EXISTS sp_ia_ventas_por_medio_pago;
 DROP PROCEDURE IF EXISTS sp_obtener_usuario_id_reactivar;
 DROP PROCEDURE IF EXISTS sp_registrar_error;
+DROP PROCEDURE IF EXISTS sp_mesas_activas_porcentaje;
+DROP PROCEDURE IF EXISTS sp_ventas_hoy_monto_comparacion;
 
 DELIMITER //
 
@@ -634,6 +636,51 @@ CREATE PROCEDURE sp_registrar_error (
 BEGIN
     INSERT INTO registro_errores (endpoint, status_code, mensaje_error, id_usuario, request_data)
     VALUES (p_endpoint, p_status_code, p_mensaje_error, p_id_usuario, p_request_data);
+END //
+
+CREATE PROCEDURE sp_mesas_activas_porcentaje()
+BEGIN
+    SELECT
+        COUNT(*) AS total_mesas,
+        SUM(CASE WHEN estado_local = 'ocupado' THEN 1 ELSE 0 END) AS mesas_activas,
+        ROUND(
+            (SUM(CASE WHEN estado_local = 'ocupado' THEN 1 ELSE 0 END) / COUNT(*)) * 100,
+            0
+        ) AS porcentaje_ocupacion
+    FROM mesas;
+END //
+
+CREATE PROCEDURE sp_ventas_hoy_monto_comparacion()
+BEGIN
+    DECLARE v_monto_hoy DECIMAL(10,2);
+    DECLARE v_monto_ayer DECIMAL(10,2);
+    DECLARE v_porcentaje_variacion DECIMAL(6,2);
+
+    SELECT COALESCE(SUM(total_venta), 0) INTO v_monto_hoy
+    FROM ventas
+    WHERE DATE(fecha_registro) = CURDATE();
+
+    SELECT COALESCE(SUM(total_venta), 0) INTO v_monto_ayer
+    FROM ventas
+    WHERE DATE(fecha_registro) = CURDATE() - INTERVAL 1 DAY;
+
+    IF v_monto_ayer = 0 THEN
+        IF v_monto_hoy = 0 THEN
+            SET v_porcentaje_variacion = 0;
+        ELSE
+            SET v_porcentaje_variacion = 100;
+        END IF;
+    ELSE
+        SET v_porcentaje_variacion = ROUND(
+            ((v_monto_hoy - v_monto_ayer) / v_monto_ayer) * 100,
+            2
+        );
+    END IF;
+
+    SELECT
+        v_monto_hoy AS monto_ventas_hoy,
+        v_monto_ayer AS monto_ventas_ayer,
+        v_porcentaje_variacion AS porcentaje_variacion;
 END //
 
 DELIMITER ;

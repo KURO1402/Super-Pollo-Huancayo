@@ -7,7 +7,8 @@ const {
     obtenerPorcentajeMediosPagoService,
     obtenerVentasPorMesService,
     obtenerTopProductosMasVendidosService,
-    obtenerMesasActivasPorcentajeService
+    obtenerMesasActivasPorcentajeService,
+    obtenerVentasHoyMovilService,
 } = require('./fuente_datos_service');
 
 const obtenerResumenVentasEgresosMensualController = async (req, res) => {
@@ -125,6 +126,20 @@ const obtenerMesasActivasPorcentajeController = async (req, res) => {
     }
 };
 
+const obtenerVentasHoyMovilController = async (req, res) => {
+    try {
+        const resultado = await obtenerVentasHoyMovilService();
+        return res.status(200).json(resultado);
+    } catch (err) {
+        registrarError(err, req);
+        const statusCode = err.status || 500;
+        return res.status(statusCode).json({
+            ok: false,
+            mensaje: err.message || 'Error interno del servidor'
+        });
+    }
+};
+
 module.exports = { 
     obtenerResumenVentasEgresosMensualController,
     obtenerVentasHoyComparacionController,
@@ -133,5 +148,6 @@ module.exports = {
     obtenerPorcentajeMediosPagoController,
     obtenerVentasPorMesController,
     obtenerTopProductosMasVendidosController,
-    obtenerMesasActivasPorcentajeController
+    obtenerMesasActivasPorcentajeController,
+    obtenerVentasHoyMovilController
 };

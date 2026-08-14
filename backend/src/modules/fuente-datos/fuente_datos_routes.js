@@ -10,7 +10,8 @@ const {
   obtenerPorcentajeMediosPagoController,
   obtenerVentasPorMesController,
   obtenerTopProductosMasVendidosController,
-  obtenerMesasActivasPorcentajeController
+  obtenerMesasActivasPorcentajeController,
+  obtenerVentasHoyMovilController
 } = require('./fuente_datos_controller');
 
 router.get('/ingresos-egresos', autenticacionToken, verificarRoles(3), obtenerResumenVentasEgresosMensualController);
@@ -21,5 +22,6 @@ router.get('/porcentaje-medios-pago', autenticacionToken, verificarRoles(3), obt
 router.get('/ventas-mes', autenticacionToken, verificarRoles(3), obtenerVentasPorMesController);
 router.get('/top-productos', autenticacionToken, verificarRoles(3), obtenerTopProductosMasVendidosController);
 router.get('/mesas-activas', autenticacionToken, verificarRoles(2, 3), obtenerMesasActivasPorcentajeController);
+router.get('/ventas-hoy-movil', autenticacionToken, verificarRoles(2, 3), obtenerVentasHoyMovilController);
 
 module.exports = router;

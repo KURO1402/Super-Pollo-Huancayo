@@ -6,7 +6,8 @@ const {
     obtenerPorcentajeMediosPagoRepository,
     obtenerVentasPorMesRepository,
     obtenerTopProductosMasVendidosRepository,
-    obtenerMesasActivasPorcentajeRepository
+    obtenerMesasActivasPorcentajeRepository,
+    obtenerVentasHoyMovilRepository
 } = require('./fuente_datos_repository');
 
 const obtenerResumenVentasEgresosMensualService = async (cantidadMeses) => {
@@ -106,6 +107,14 @@ const obtenerMesasActivasPorcentajeService = async () => {
     };
 };
 
+const obtenerVentasHoyMovilService = async () => {
+    const resultado = await obtenerVentasHoyMovilRepository();
+    return {
+        ok: true,
+        resultado
+    };
+};
+
 module.exports = { 
     obtenerResumenVentasEgresosMensualService,
     obtenerVentasHoyComparacionService,
@@ -114,5 +123,6 @@ module.exports = {
     obtenerPorcentajeMediosPagoService,
     obtenerVentasPorMesService,
     obtenerTopProductosMasVendidosService,
-    obtenerMesasActivasPorcentajeService
+    obtenerMesasActivasPorcentajeService,
+    obtenerVentasHoyMovilService
 };
