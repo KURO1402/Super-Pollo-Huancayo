@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FiImage, FiPlusCircle } from 'react-icons/fi';
 import { useProductos } from '../../hooks/useProductos';
-import { TarjetaProducto } from '../../componentes/panel-admin/productos/TarjetaProducto';
+import { TarjetaProductoAdmin } from '../../componentes/panel-admin/productos/TarjetaProductoAdmin';
 import { ModalModificarImagen } from '../../componentes/panel-admin/productos/ModalModificarImagen';
 import { ModalAgregarImagen } from '../../componentes/panel-admin/productos/ModalAgregarImagen';
 import { ModalConfirmacion } from '../../componentes/ui/modal/ModalConfirmacion';
@@ -105,7 +105,7 @@ const GestionImagenesPagina = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {imagenesProductos.map((imagen) => (
-          <TarjetaProducto
+          <TarjetaProductoAdmin
             key={imagen.id_imagen_producto}
             imagen={imagen}
             onModificarImagen={handleModificarImagen}

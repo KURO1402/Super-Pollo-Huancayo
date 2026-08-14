@@ -1,6 +1,6 @@
 import API from "./axiosConfiguracion";
 export const obtenerTiposComprobantes = async () => {
-    const respuesta = await API.get(`${apiUrl}/ventas/tipos-comprobantes`)
+    const respuesta = await API.get(`/ventas/tipos-comprobantes`)
     if(!respuesta.data.ok){
         throw new Error(respuesta.data.mensaje || "Error al obtener los tipos de comprobantes");
     }

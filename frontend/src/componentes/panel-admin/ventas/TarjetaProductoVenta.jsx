@@ -1,6 +1,6 @@
 import { useVentaStore } from "../../../store/useVentaStore"
 
-export const TarjetaProducto = ({ producto }) => {
+export const TarjetaProductoVenta = ({ producto }) => {
   const { agregarProducto } = useVentaStore((state) => state);
   return (
     <button

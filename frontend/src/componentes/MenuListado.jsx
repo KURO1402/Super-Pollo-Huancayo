@@ -1,4 +1,4 @@
-import TarjetaProducto from "./ui/tarjetas/TarjetaProducto";
+import TarjetaProductoPublico from "./ui/tarjetas/TarjetaProductoPublico";
 
 const MenuListado = ({ productos, cargando, error, categoriaSeleccionada }) => {
 
@@ -48,7 +48,7 @@ const MenuListado = ({ productos, cargando, error, categoriaSeleccionada }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
       {productos.map((producto) => (
-        <TarjetaProducto 
+        <TarjetaProductoPublico 
           key={producto.id_producto || producto.id} 
           producto={producto} 
         />

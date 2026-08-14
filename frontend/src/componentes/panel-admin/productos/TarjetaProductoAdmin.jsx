@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 
-export const TarjetaProducto = ({ imagen, onModificarImagen, onEliminarImagen }) => {
+export const TarjetaProductoAdmin = ({ imagen, onModificarImagen, onEliminarImagen }) => {
   const [mostrarBotones, setMostrarBotones] = useState(false);
 
   return (

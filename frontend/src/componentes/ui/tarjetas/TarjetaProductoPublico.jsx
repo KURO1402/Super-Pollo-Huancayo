@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-const TarjetaProducto = ({ producto }) => {
+const TarjetaProductoPublico = ({ producto }) => {
   const [imagenActual, setImagenActual] = useState(0);
   const [touchInicio, setTouchInicio] = useState(null);
   const intervaloRef = useRef(null);
@@ -167,4 +167,4 @@ const TarjetaProducto = ({ producto }) => {
   );
 };
 
-export default TarjetaProducto;
+export default TarjetaProductoPublico;
