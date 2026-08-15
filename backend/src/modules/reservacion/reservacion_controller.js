@@ -199,6 +199,5 @@ module.exports = {
     listarReservacionesPorFechaController,
     listarReservacionesPorUsuarioController,
     obtenerReservacionPorIdController,
-    obtenerPagoPorReservacionController,
-    probarPagoController
+    obtenerPagoPorReservacionController
 };
