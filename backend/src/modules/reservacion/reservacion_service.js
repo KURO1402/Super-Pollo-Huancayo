@@ -448,34 +448,6 @@ const obtenerPagoPorReservacionService = async (idReservacion, idUsuario, rol) =
     return { ok: true, pago };
 };
 
-//Esto es de pruebas(borrar antes de subir a produccion)
-const crearPagoPruebaService = async () => {
-    console.log(process.env.CLIENT_URL)
-    const result = await preference.create({
-        body: {
-            items: [
-                {
-                    title: 'Pago de prueba - Super Pollo',
-                    quantity: 1,
-                    unit_price: 1,
-                    currency_id: 'PEN'
-                }
-            ],
-            back_urls: {
-                success: `${process.env.CLIENT_URL}/usuario/pago-exitoso`,
-                failure: `${process.env.CLIENT_URL}/usuario/pago-fallido`,
-                pending: `${process.env.CLIENT_URL}/usuario/pago-pendiente`
-            },
-            auto_return: 'approved'
-        }
-    });
-
-    return {
-        ok: true,
-        init_point: result.sandbox_init_point
-    };
-};
-
 module.exports = {
     crearPreferenciaReservacionService,
     confirmarPagoReservacionService,
@@ -487,6 +459,5 @@ module.exports = {
     listarReservacionesPorFechaService,
     listarReservacionesPorUsuarioService,
     obtenerReservacionPorIdService,
-    obtenerPagoPorReservacionService,
-    crearPagoPruebaService//prueba
+    obtenerPagoPorReservacionService
 };
