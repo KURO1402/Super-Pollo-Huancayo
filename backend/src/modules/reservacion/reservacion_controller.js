@@ -10,7 +10,7 @@ const {
     listarReservacionesPorFechaService,
     listarReservacionesPorUsuarioService,
     obtenerReservacionPorIdService,
-    obtenerPagoPorReservacionService
+    obtenerPagoPorReservacionService,
 } = require('./reservacion_service');
 
 const crearPreferenciaReservacionController = async (req, res) => {
@@ -199,5 +199,6 @@ module.exports = {
     listarReservacionesPorFechaController,
     listarReservacionesPorUsuarioController,
     obtenerReservacionPorIdController,
-    obtenerPagoPorReservacionController
+    obtenerPagoPorReservacionController,
+    probarPagoController
 };

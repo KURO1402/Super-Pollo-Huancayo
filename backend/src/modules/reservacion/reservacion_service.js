@@ -108,9 +108,9 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
                 monto_total: montoTotal
             },
             back_urls: {
-                success: `${process.env.CLIENT_URL}usuario/pago-exitoso`,
-                failure: `${process.env.CLIENT_URL}usuario/pago-fallido`,
-                pending: `${process.env.CLIENT_URL}usuario/pago-pendiente`
+                success: `${process.env.CLIENT_URL}/usuario/pago-exitoso`,
+                failure: `${process.env.CLIENT_URL}/usuario/pago-fallido`,
+                pending: `${process.env.CLIENT_URL}/usuario/pago-pendiente`
             },
             auto_return: 'approved',
             external_reference: codigoReservacion,

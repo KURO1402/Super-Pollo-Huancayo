@@ -12,7 +12,7 @@ const {
     listarReservacionesPorFechaController,
     listarReservacionesPorUsuarioController,
     obtenerReservacionPorIdController,
-    obtenerPagoPorReservacionController
+    obtenerPagoPorReservacionController,
 } = require('./reservacion_controller');
 
 router.post('/crear-reserva', autenticacionToken, crearPreferenciaReservacionController);
