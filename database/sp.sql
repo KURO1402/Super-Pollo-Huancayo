@@ -793,17 +793,13 @@ CREATE PROCEDURE sp_crear_caja_con_evento(
 )
 BEGIN
     DECLARE v_id_caja INT;
-    -- v_fecha_actual ahora solo se usa para eventos y movimientos (que suelen ser DATETIME)
     DECLARE v_fecha_actual DATETIME DEFAULT NOW();
-
-    -- Manejo de errores
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
         RESIGNAL;
     END;
 
-    -- Validar que no exista una caja abierta
     IF EXISTS (SELECT 1 FROM caja WHERE estado_caja = 'abierta') THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Ya existe una caja abierta. No se puede crear otra.';
@@ -843,8 +839,7 @@ BEGIN
         c.saldo_inicial,
         c.monto_actual,
         IFNULL(c.saldo_final, '---') AS saldo_final,
-        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_caja,
-        IFNULL(TIME_FORMAT(c.hora_cierre, '%H:%i:%s'), '--') AS hora_cierre,
+        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y %H:%i:%s') AS fecha_caja,
         c.estado_caja
     FROM caja c
     WHERE c.id_caja = v_id_caja;
@@ -858,8 +853,6 @@ CREATE PROCEDURE sp_cerrar_caja_registrar_evento(
 )
 BEGIN
     DECLARE v_fecha_actual DATETIME;
-
-    -- Manejo de errores: rollback automático si algo falla
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
@@ -868,21 +861,16 @@ BEGIN
 
     SET v_fecha_actual = NOW();
 
-    -- Iniciar transacción
     START TRANSACTION;
     
-    -- Cerrar la caja (actualizar saldo_final, hora_cierre y estado)
     UPDATE caja
-    SET saldo_final = p_saldo_final, 
-        hora_cierre = CURTIME(),
+    SET saldo_final = p_saldo_final,
         estado_caja = 'cerrada'
     WHERE id_caja = p_id_caja;
     
-    -- Registrar el evento de cierre
     INSERT INTO eventos_caja (tipo_evento, fecha_evento, id_caja, id_usuario)
     VALUES ('cierre', v_fecha_actual, p_id_caja, p_id_usuario);
     
-    -- Confirmar transacción
     COMMIT;
 
     SELECT 'Caja cerrada correctamente' AS mensaje;
@@ -1166,16 +1154,24 @@ CREATE PROCEDURE sp_listar_cajas (
     IN p_fechaFin DATE
 )
 BEGIN
-    SELECT
+    SELECT 
         c.id_caja,
-        c.saldo_inicial,
-        c.monto_actual,
-        IFNULL(c.saldo_final, '---') AS saldo_final,
-        DATE_FORMAT(c.fecha_caja, '%d-%m-%Y') AS fecha_caja,
-        IFNULL(TIME_FORMAT(c.hora_cierre, '%H:%i:%s'), '--') AS hora_cierre,
-        c.estado_caja
+        DATE_FORMAT(ea.fecha_evento, '%d/%m/%Y %H:%i') AS fecha_apertura,
+        CONCAT(ua.nombre_usuario, ' ', ua.apellido_usuario) AS usuario_apertura,
+        DATE_FORMAT(ec.fecha_evento, '%d/%m/%Y %H:%i') AS fecha_cierre,
+        CONCAT(ua.nombre_usuario, ' ', ua.apellido_usuario)  AS usuario_cierre,
+        FORMAT(c.saldo_inicial, 2) AS saldo_inicial,
+        FORMAT(c.saldo_final, 2) AS saldo_final
     FROM caja c
-    WHERE
+    LEFT JOIN eventos_caja ea 
+        ON c.id_caja = ea.id_caja AND ea.tipo_evento = 'apertura'
+    LEFT JOIN usuarios ua 
+        ON ea.id_usuario = ua.id_usuario
+    LEFT JOIN eventos_caja ec 
+        ON c.id_caja = ec.id_caja AND ec.tipo_evento = 'cierre'
+    LEFT JOIN usuarios uc 
+        ON ec.id_usuario = uc.id_usuario
+    WHERE 
         (p_fechaInicio IS NULL OR c.fecha_caja >= p_fechaInicio)
         AND (p_fechaFin IS NULL OR c.fecha_caja <= p_fechaFin)
         AND c.estado_caja <> 'abierta'
