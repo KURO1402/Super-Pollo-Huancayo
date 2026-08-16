@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 const app = express();
 
@@ -46,6 +47,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
+
+app.use('/descargas', express.static(path.join(__dirname, 'descargas')));
 
 
 const autenticacionRoutes = require('./src/modules/autenticacion/autenticacion_routes');
