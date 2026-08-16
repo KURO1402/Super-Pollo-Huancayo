@@ -48,7 +48,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/descargas', express.static(path.join(__dirname, 'descargas')));
+app.use('/api/descargas', express.static(path.join(__dirname, 'descargas')));
 
 
 const autenticacionRoutes = require('./src/modules/autenticacion/autenticacion_routes');

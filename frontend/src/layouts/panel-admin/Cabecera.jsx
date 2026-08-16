@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSidebar } from "../../context/SidebarContext";
 import { BotonCambioTema } from "../../componentes/panel-admin/BotonCambioTema";
 import DesplegableUsuario from "../../componentes/panel-admin/DesplegableUsuario";
+import DesplegableDescargaApp from "../../componentes/panel-admin/DesplegableDescargaApp";
 
 const Cabecera = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -92,6 +93,7 @@ const Cabecera = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <DesplegableDescargaApp />
           <BotonCambioTema />
           <DesplegableUsuario />
         </div>
