@@ -6,11 +6,20 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 const app = express();
 
 app.use(helmet());
-app.use(compression()); 
+app.use(compression({
+  filter: (req, res) => {
+    if (req.path.endsWith('.apk')) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
+
 app.use(morgan('dev'));
 app.set('trust proxy', 1); 
 
@@ -47,6 +56,14 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use('/api/descargas', express.static(path.join(__dirname, 'descargas'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.apk')) {
+      res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+      res.setHeader('Content-Disposition', 'attachment; filename="super_pollo.apk"');
+    }
+  }
+}));
 
 const autenticacionRoutes = require('./src/modules/autenticacion/autenticacion_routes');
 const usuarioRoutes = require('./src/modules/usuarios/usuario_routes');
