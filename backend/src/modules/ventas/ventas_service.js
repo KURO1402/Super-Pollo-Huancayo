@@ -88,7 +88,7 @@ const generarVentaService = async (datos, idUsuario) => {
             sunatTransaccion: esNotaVenta ? 0 : datosParaComprobante.tipoOperacion,
             urlComprobantePdf: urlPdf,
             publicIdPdf,
-            estadoSunat: esNotaVenta ? 'enviado' : 'pendiente',
+            estadoSunat: esNotaVenta ? 'interno' : 'pendiente',
             fechaLimiteCorreccion: esNotaVenta ? null : fechaLimiteCorreccion,
             idUsuario,
             detalles: datosParaComprobante.details.map(d => ({
