@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const URL_APK = `${import.meta.env.VITE_BACKEND_URL}/api/descargas/super_pollo.apk`;
+const URL_APK = `${import.meta.env.VITE_BACKEND_URL}/descargas/super_pollo.apk`;
 const VERSION_APP = "1.0.1";
 
 const DesplegableDescargaApp = () => {
