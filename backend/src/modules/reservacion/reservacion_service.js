@@ -51,8 +51,10 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     const correo = usuario.correo_usuario;
 
     let capacidadTotal = 0;
+    let montoTotal = 0;
     const mesasOcupadas = [];
     const mesasConInfo = [];
+    const items = [];
 
     for (const mesa of mesas) {
         const mesaInfo = await obtenerMesaPorIdRepository(mesa.idMesa);
@@ -61,8 +63,18 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
         const conflictos = await verificarMesaDisponibleRepository(mesa.idMesa, fechaHoraReserva, idUsuario);
         if (conflictos > 0) mesasOcupadas.push(mesa.idMesa);
 
+        const precioMesa = mesaInfo.capacidad >= 8 ? 20 : 10;
+        montoTotal += precioMesa;
         capacidadTotal += mesaInfo.capacidad;
+
         mesasConInfo.push({ idMesa: mesa.idMesa, numeroMesa: mesaInfo.numero_mesa });
+
+        items.push({
+            title: `Reservación Pollería - Mesa ${mesaInfo.numero_mesa}`,
+            quantity: 1,
+            unit_price: precioMesa,
+            currency_id: 'PEN'
+        });
     }
 
     if (mesasOcupadas.length > 0) {
@@ -81,15 +93,6 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     await ocuparMesasRepository(mesas, idUsuario, fechaHoraReserva);
 
     const codigoReservacion = generarCodigoReservacion();
-    const montoPorMesa = 10;
-    const montoTotal = mesas.length * montoPorMesa;
-
-    const items = mesasConInfo.map((mesa, index) => ({
-        title: `Reservación Pollería - Mesa ${mesa.numeroMesa}`, 
-        quantity: 1,
-        unit_price: montoPorMesa,
-        currency_id: 'PEN'
-    }));
 
     const result = await preference.create({
         body: {
@@ -155,7 +158,7 @@ const registrarReservacionManualService = async (datos) => {
 
     const { fecha, hora, cantidadPersonas, mesas, nombreCliente, correo } = datos;
 
-    if(!nombreCliente || typeof nombreCliente !== 'string' || !nombreCliente.trim()) {
+    if (!nombreCliente || typeof nombreCliente !== 'string' || !nombreCliente.trim()) {
         throw crearError('Se necesita el nombre del cliente.', 400);
     }
     if (!correo || typeof correo !== 'string' || !validarCorreo(correo)) {
@@ -173,6 +176,7 @@ const registrarReservacionManualService = async (datos) => {
     }
 
     let capacidadTotal = 0;
+    let montoTotal = 0;
     const mesasOcupadas = [];
     const mesasFinalesParaDB = []; 
 
@@ -183,6 +187,8 @@ const registrarReservacionManualService = async (datos) => {
         const conflictos = await verificarMesaDisponibleRepository(mesa.idMesa, fechaHoraReserva, null);
         if (conflictos > 0) mesasOcupadas.push(mesa.idMesa);
 
+        const precioMesa = mesaInfo.capacidad >= 8 ? 20 : 10;
+        montoTotal += precioMesa;
         capacidadTotal += mesaInfo.capacidad;
         
         mesasFinalesParaDB.push({ 
@@ -217,7 +223,7 @@ const registrarReservacionManualService = async (datos) => {
         codigoReservacion
     );
 
-    await registrarPagoReservacionRepository(10 * mesas.length, null, idReservacion);
+    await registrarPagoReservacionRepository(montoTotal, null, idReservacion);
 
     const info = await enviarCorreoReservacion({ 
         correo, 
@@ -227,6 +233,7 @@ const registrarReservacionManualService = async (datos) => {
         cantidadPersonas, 
         mesas: mesasFinalesParaDB 
     });
+
     return {
         ok: true,
         mensaje: `Reservación registrada exitosamente y código enviado a ${correo}`
