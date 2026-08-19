@@ -323,7 +323,6 @@ const cancelarReservacionService = async (idReservacion) => {
 };
 
 const listarMesasDisponibilidadService = async (fecha, hora) => {
-
     if (!fecha || isNaN(Date.parse(fecha))) {
         throw crearError('La fecha es obligatoria y debe tener formato válido (YYYY-MM-DD)', 400);
     }

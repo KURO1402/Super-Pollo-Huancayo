@@ -197,7 +197,10 @@ const iniciarSesionUsuarioService = async (datos) => {
   );
 
   return {
-    usuario: payload,
+    usuario: {
+      ...payload, 
+      correo_usuario: usuario.correo_usuario
+    },
     accessToken,
     refreshToken
   };

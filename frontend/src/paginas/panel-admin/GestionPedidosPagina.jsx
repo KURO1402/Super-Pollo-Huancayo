@@ -156,9 +156,9 @@ const GestionPedidosPagina = () => {
           numeroMesa: numeroMesa,
           // Lista con id_producto, nombre y cantidad para precargar el POS
           productosPedido: pedidoActivo.productos.map((p) => ({
-            id_producto:     p.id_producto,
+            id_producto: p.id_producto,
             nombre_producto: p.nombre_producto,
-            cantidad:        p.cantidad,
+            cantidad: p.cantidad,
           })),
         },
       });
@@ -171,8 +171,10 @@ const GestionPedidosPagina = () => {
     }
   };
 
-  const estadoDisplay = (mesa) =>
-    mesa.estado_local || mesa.estado_mesa || "disponible";
+  const estadoDisplay = (mesa) => {
+    if (mesa.estado_mesa && mesa.estado_mesa !== "disponible") return mesa.estado_mesa;
+    return mesa.estado_local || "disponible";
+  };
 
   const resumen = {
     total: mesas.length,
@@ -236,9 +238,9 @@ const GestionPedidosPagina = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
             { label: "Disponibles", valor: resumen.disponible, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-            { label: "Ocupadas",    valor: resumen.ocupada,    color: "text-red-500",     bg: "bg-red-50 dark:bg-red-900/20" },
-            { label: "Reservadas",  valor: resumen.reservada,  color: "text-yellow-500",  bg: "bg-yellow-50 dark:bg-yellow-900/20" },
-            { label: "Total",       valor: resumen.total,      color: "text-blue-500",    bg: "bg-blue-50 dark:bg-blue-900/20" },
+            { label: "Ocupadas", valor: resumen.ocupada, color: "text-red-500", bg: "bg-red-50 dark:bg-red-900/20" },
+            { label: "Reservadas", valor: resumen.reservada, color: "text-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-900/20" },
+            { label: "Total", valor: resumen.total, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
           ].map(({ label, valor, color, bg }) => (
             <div key={label} className={`${bg} rounded-xl p-4 border border-gray-100 dark:border-gray-800`}>
               <p className={`text-2xl font-bold ${color}`}>{valor}</p>

@@ -130,6 +130,11 @@ const Paso1DatosBasicos = () => {
     return { tipo: 'error', texto: 'Para grupos mayores a 16 personas, contacta directamente con el restaurante', icono: '📞' };
   };
 
+  const parsearFechaLocal = (fechaStr) => {
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    return new Date(year, month - 1, day); // constructor local, no UTC
+  };
+
   const mensajePersonas = calcularMensajePersonas(personasForm);
   const esHoy = () => fechaSeleccionada === new Date().toISOString().split('T')[0];
   const hoyDisponible = hoyEstaDisponible();
@@ -171,7 +176,7 @@ const Paso1DatosBasicos = () => {
           required: "La fecha es requerida",
           validate: {
             fechaValida: (value) => {
-              const fechaSel = new Date(value);
+              const fechaSel = parsearFechaLocal(value);
               const hoy = new Date();
               hoy.setHours(0, 0, 0, 0);
               if (!hoyDisponible && fechaSel <= hoy) {
@@ -222,16 +227,15 @@ const Paso1DatosBasicos = () => {
             type="button"
             onClick={handleAnterior}
             disabled={indiceInicio === 0}
-            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${
-              indiceInicio === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'
-            }`}
+            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${indiceInicio === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
           >
             <FiChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <div className="flex gap-1 sm:gap-2 flex-1 justify-center overflow-hidden">
             {diasSlice.map((dia, index) => {
-              const fechaDia = new Date(dia.isoString);
+              const fechaDia = parsearFechaLocal(dia.isoString);
               const hoyStr = new Date().toISOString().split('T')[0];
               const esPasado = fechaDia < new Date(hoyStr);
               return (
@@ -240,13 +244,12 @@ const Paso1DatosBasicos = () => {
                   type="button"
                   onClick={() => !esPasado && handleSeleccionarFecha(dia)}
                   disabled={esPasado}
-                  className={`px-3 py-2 sm:px-4 sm:py-3 rounded-xl sm:rounded-full transition-all min-w-17.5 sm:min-w-20 lg:min-w-22.5 flex flex-col items-center ${
-                    esPasado
-                      ? 'bg-gray-900 text-gray-500 cursor-not-allowed opacity-50'
-                      : fechaSeleccionada === dia.isoString
+                  className={`px-3 py-2 sm:px-4 sm:py-3 rounded-xl sm:rounded-full transition-all min-w-17.5 sm:min-w-20 lg:min-w-22.5 flex flex-col items-center ${esPasado
+                    ? 'bg-gray-900 text-gray-500 cursor-not-allowed opacity-50'
+                    : fechaSeleccionada === dia.isoString
                       ? 'bg-red-600 text-white shadow-lg shadow-red-600/50 scale-105'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
+                    }`}
                 >
                   <div className="text-[10px] sm:text-xs uppercase font-medium opacity-80">{dia.diaSemana}</div>
                   <div className="text-lg sm:text-xl lg:text-2xl font-bold">{dia.dia}</div>
@@ -260,11 +263,10 @@ const Paso1DatosBasicos = () => {
             type="button"
             onClick={handleSiguiente}
             disabled={indiceInicio >= diasVisibles.length - diasAMostrar}
-            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${
-              indiceInicio >= diasVisibles.length - diasAMostrar
-                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-gray-700 text-white hover:bg-gray-600'
-            }`}
+            className={`w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${indiceInicio >= diasVisibles.length - diasAMostrar
+              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
           >
             <FiChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -306,13 +308,12 @@ const Paso1DatosBasicos = () => {
                 if (horario.disponible) setValue('hora', horario.value, { shouldValidate: true });
               }}
               disabled={!horario.disponible}
-              className={`py-3 px-4 sm:py-4 sm:px-6 rounded-lg sm:rounded-xl font-semibold transition-all relative text-sm sm:text-base ${
-                !horario.disponible
-                  ? 'bg-gray-900 text-gray-500 cursor-not-allowed opacity-50'
-                  : horaForm === horario.value
+              className={`py-3 px-4 sm:py-4 sm:px-6 rounded-lg sm:rounded-xl font-semibold transition-all relative text-sm sm:text-base ${!horario.disponible
+                ? 'bg-gray-900 text-gray-500 cursor-not-allowed opacity-50'
+                : horaForm === horario.value
                   ? 'bg-red-600 text-white shadow-lg shadow-red-600/50 scale-105'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
+                }`}
             >
               {horario.label}
               {!horario.disponible && (
@@ -351,11 +352,10 @@ const Paso1DatosBasicos = () => {
             type="button"
             onClick={() => { if (personasForm > 1) setValue('personas', personasForm - 1, { shouldValidate: true }); }}
             disabled={personasForm <= 1}
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all shrink-0 ${
-              personasForm <= 1
-                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
-            }`}
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all shrink-0 ${personasForm <= 1
+              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              : 'bg-red-600 text-white hover:bg-red-700 active:scale-95'
+              }`}
           >
             -
           </button>
@@ -371,11 +371,10 @@ const Paso1DatosBasicos = () => {
             type="button"
             onClick={() => { if (personasForm < 20) setValue('personas', personasForm + 1, { shouldValidate: true }); }}
             disabled={personasForm >= 20}
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all shrink-0 ${
-              personasForm >= 20
-                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700 active:scale-95'
-            }`}
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-xl sm:text-2xl transition-all shrink-0 ${personasForm >= 20
+              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700 active:scale-95'
+              }`}
           >
             +
           </button>
@@ -392,18 +391,16 @@ const Paso1DatosBasicos = () => {
         />
 
         {mensajePersonas && (
-          <div className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-xl text-center ${
-            mensajePersonas.tipo === 'info' ? 'bg-blue-600/10 border border-blue-600/30'
+          <div className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-xl text-center ${mensajePersonas.tipo === 'info' ? 'bg-blue-600/10 border border-blue-600/30'
             : mensajePersonas.tipo === 'success' ? 'bg-green-600/10 border border-green-600/30'
-            : mensajePersonas.tipo === 'warning' ? 'bg-yellow-600/10 border border-yellow-600/30'
-            : 'bg-red-600/10 border border-red-600/30'
-          }`}>
-            <p className={`text-xs sm:text-sm font-medium ${
-              mensajePersonas.tipo === 'info' ? 'text-blue-400'
-              : mensajePersonas.tipo === 'success' ? 'text-green-400'
-              : mensajePersonas.tipo === 'warning' ? 'text-yellow-400'
-              : 'text-red-400'
+              : mensajePersonas.tipo === 'warning' ? 'bg-yellow-600/10 border border-yellow-600/30'
+                : 'bg-red-600/10 border border-red-600/30'
             }`}>
+            <p className={`text-xs sm:text-sm font-medium ${mensajePersonas.tipo === 'info' ? 'text-blue-400'
+              : mensajePersonas.tipo === 'success' ? 'text-green-400'
+                : mensajePersonas.tipo === 'warning' ? 'text-yellow-400'
+                  : 'text-red-400'
+              }`}>
               {mensajePersonas.icono} {mensajePersonas.texto}
             </p>
           </div>
