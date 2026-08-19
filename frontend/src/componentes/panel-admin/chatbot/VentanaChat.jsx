@@ -18,8 +18,8 @@ const VentanaChat = ({ abierto, alCerrar }) => {
 
   const respuestasRapidas = [
     'Ver ventas de hoy',
-    'Productos con stock bajo',
-    '¿Cómo genero un reporte?',
+    '¿Qué insumos se están acabando?',
+    'Top 5 productos más vendidos',
   ];
 
   const idUltimoMensaje = mensajes[mensajes.length - 1]?.id;

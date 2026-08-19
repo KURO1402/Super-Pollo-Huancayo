@@ -10,7 +10,7 @@ const formatearHora = () =>
 const MENSAJE_BIENVENIDA = {
   id: generarId(),
   rol: 'bot',
-  texto: 'Hola 👋 Soy Pollobot, tu asistente del panel. Puedo ayudarte con ventas, stock, reportes o dudas del sistema. ¿En qué puedo ayudarte?',
+  texto: '👋 Hola, soy Pollobot, tu asistente virtual. Puedo ayudarte con tus ventas, productos más vendidos y generar gráficos de los datos de tu negocio. ¿En qué puedo ayudarte?',
   hora: formatearHora(),
   grafico: null,
 };
