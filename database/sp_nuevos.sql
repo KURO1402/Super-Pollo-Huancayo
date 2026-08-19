@@ -425,23 +425,24 @@ CREATE PROCEDURE sp_ia_caja_resumen(
 BEGIN
     SELECT
         c.id_caja,
-        DATE(c.fecha_caja)                          AS fecha,
+        DATE(c.fecha_caja) AS fecha,
         c.saldo_inicial,
         c.monto_actual,
         c.saldo_final,
         c.estado_caja,
-        c.hora_cierre,
+        ec_cierre.fecha_evento AS hora_cierre,
         COALESCE(SUM(CASE WHEN mc.tipo_movimiento = 'ingreso' THEN mc.monto_movimiento ELSE 0 END), 0) AS total_ingresos,
         COALESCE(SUM(CASE WHEN mc.tipo_movimiento = 'egreso'  THEN mc.monto_movimiento ELSE 0 END), 0) AS total_egresos,
         COUNT(mc.id_movimiento_caja)                AS cantidad_movimientos,
         CONCAT(u.nombre_usuario, ' ', u.apellido_usuario) AS abierta_por
     FROM caja c
-    LEFT JOIN movimientos_caja mc ON mc.id_caja    = c.id_caja
-    LEFT JOIN eventos_caja     ec ON ec.id_caja    = c.id_caja AND ec.tipo_evento = 'apertura'
-    LEFT JOIN usuarios          u ON ec.id_usuario = u.id_usuario
+    LEFT JOIN movimientos_caja mc     ON mc.id_caja        = c.id_caja
+    LEFT JOIN eventos_caja     ec_ap  ON ec_ap.id_caja      = c.id_caja AND ec_ap.tipo_evento = 'apertura'
+    LEFT JOIN eventos_caja     ec_cierre ON ec_cierre.id_caja = c.id_caja AND ec_cierre.tipo_evento = 'cierre'
+    LEFT JOIN usuarios          u      ON ec_ap.id_usuario    = u.id_usuario
     WHERE DATE(c.fecha_caja) BETWEEN p_fecha_inicio AND p_fecha_fin
     GROUP BY c.id_caja, c.fecha_caja, c.saldo_inicial, c.monto_actual,
-             c.saldo_final, c.estado_caja, c.hora_cierre,
+             c.saldo_final, c.estado_caja, ec_cierre.fecha_evento,
              u.nombre_usuario, u.apellido_usuario
     ORDER BY c.fecha_caja DESC;
 END //

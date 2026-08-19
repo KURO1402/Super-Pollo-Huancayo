@@ -1870,13 +1870,11 @@ BEGIN
             ELSE m.estado_local
         END AS estado_mesa
     FROM mesas m
-    -- Bloqueo temporal: la fecha/hora del param cae dentro de (bloqueado_desde - 1 hora) y bloqueado_hasta
     LEFT JOIN bloqueos_temporales_mesa bt
         ON bt.id_mesa = m.id_mesa
         AND p_fecha_hora >= DATE_SUB(bt.bloqueado_desde, INTERVAL 1 HOUR)
         AND p_fecha_hora <= bt.bloqueado_hasta
         AND bt.expira_en > NOW()
-    -- Reserva activa: la fecha/hora del param cae dentro del rango reservado
     LEFT JOIN mesas_reservacion mr
       ON mr.id_mesa = m.id_mesa
       AND p_fecha_hora >= DATE_SUB(mr.reserva_desde, INTERVAL 89 MINUTE)

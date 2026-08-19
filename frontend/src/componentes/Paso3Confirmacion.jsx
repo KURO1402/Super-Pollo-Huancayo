@@ -12,6 +12,13 @@ import mostrarAlerta from '../utilidades/toastUtilidades';
 const TIEMPO_BLOQUEO = 5 * 60;
 const STORAGE_KEY = 'reserva_bloqueo_expira';
 
+const UMBRAL_CAPACIDAD_MESA_GRANDE = 8;
+const COSTO_MESA_ESTANDAR = 10;
+const COSTO_MESA_GRANDE = 20;
+
+const calcularCostoMesa = (capacidad) =>
+  capacidad >= UMBRAL_CAPACIDAD_MESA_GRANDE ? COSTO_MESA_GRANDE : COSTO_MESA_ESTANDAR;
+
 const Paso3Confirmacion = () => {
   const { datos, resetReserva, crearReserva } = useReservacionStore();
   const { usuario } = useAutenticacionStore();
@@ -25,8 +32,11 @@ const Paso3Confirmacion = () => {
     solicitarConfirmacion, ocultarConfirmacion, confirmarAccion,
   } = useConfirmacion();
 
-  const COSTO_POR_MESA = 10;
-  const costoMesas = (datos.mesas?.length || 0) * COSTO_POR_MESA;
+  const mesasConCosto = (datos.mesas || []).map((mesa) => ({
+    ...mesa,
+    costo: calcularCostoMesa(mesa.capacidad),
+  }));
+  const costoMesas = mesasConCosto.reduce((total, mesa) => total + mesa.costo, 0);
 
   useEffect(() => {
     const expira = localStorage.getItem(STORAGE_KEY);
@@ -175,12 +185,15 @@ const Paso3Confirmacion = () => {
                 <MdTableBar className="w-5 h-5 text-red-500 mt-1" />
                 <div className="flex-1">
                   <span className="text-gray-400 text-xs md:text-sm">Mesas Seleccionadas:</span>
-                  {datos.mesas?.length > 0 ? (
+                  {mesasConCosto.length > 0 ? (
                     <div className="mt-2 space-y-2">
-                      {datos.mesas.map((mesa) => (
-                        <div key={mesa.id} className="flex justify-between bg-gray-600 rounded-lg px-3 py-2">
+                      {mesasConCosto.map((mesa) => (
+                        <div key={mesa.id} className="flex justify-between items-center bg-gray-600 rounded-lg px-3 py-2">
                           <span className="text-white">Mesa {mesa.numero}</span>
-                          <span className="text-gray-300 text-sm">{mesa.capacidad} personas</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-300 text-sm">{mesa.capacidad} personas</span>
+                            <span className="text-green-400 text-sm font-semibold">{formatearMoneda(mesa.costo)}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -197,17 +210,19 @@ const Paso3Confirmacion = () => {
               <div className="w-10 h-10 md:w-12 md:h-12 bg-green-600/10 rounded-xl flex items-center justify-center">
                 <FiDollarSign className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
               </div>
-              <h3 className="text-lg md:text-xl font-semibold text-white">Pago las Mesas</h3>
+              <h3 className="text-lg md:text-xl font-semibold text-white">Pago de mesas</h3>
             </div>
 
             <div className="space-y-4 mb-6">
               <div className="flex justify-between bg-gray-700 p-3 rounded-lg">
                 <span className="text-gray-400">Mesas reservadas</span>
-                <span className="text-white">{datos.mesas?.length || 0}</span>
+                <span className="text-white">{mesasConCosto.length}</span>
               </div>
               <div className="flex justify-between bg-gray-700 p-3 rounded-lg">
-                <span className="text-gray-400">Costo por mesa</span>
-                <span className="text-white">{formatearMoneda(COSTO_POR_MESA)}</span>
+                <span className="text-gray-400">Tarifa</span>
+                <span className="text-white text-sm text-right">
+                  {formatearMoneda(COSTO_MESA_ESTANDAR)} (mesa de 4 personas) | {formatearMoneda(COSTO_MESA_GRANDE)} (mesa de 8 personas)
+                </span>
               </div>
               <div className="flex justify-between bg-blue-600/10 border border-blue-500/20 p-3 rounded-lg">
                 <span className="text-gray-400">Costo total</span>

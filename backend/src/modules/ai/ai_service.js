@@ -1,4 +1,3 @@
-// modules/ai/ai_service.js
 const { GoogleGenAI } = require('@google/genai');
 const db = require('./ai_repository');
 const { ALL_TOOLS } = require('./tools/index');
@@ -6,21 +5,109 @@ const { ALL_TOOLS } = require('./tools/index');
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const MODELO = 'gemini-2.5-flash';
 
-const SYSTEM_PROMPT = `
-Eres el asistente de IA de Super Pollo HYO, un restaurante peruano.
+const MAX_ITERACIONES_TOOLS = 5;
+
+function obtenerFechaPeruISO(date = new Date()) {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Lima',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(date);
+}
+
+function construirContextoFechas() {
+    const hoyISO = obtenerFechaPeruISO();
+    const hoy = new Date(`${hoyISO}T12:00:00Z`);
+
+    const diaSemanaNombre = new Intl.DateTimeFormat('es-PE', {
+        timeZone: 'America/Lima',
+        weekday: 'long'
+    }).format(hoy);
+
+    const diaSemanaNum = hoy.getUTCDay();
+    const diffLunes = diaSemanaNum === 0 ? 6 : diaSemanaNum - 1;
+
+    const lunes = new Date(hoy);
+    lunes.setUTCDate(hoy.getUTCDate() - diffLunes);
+
+    const primerDiaMes = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), 1, 12));
+
+    const ayer = new Date(hoy);
+    ayer.setUTCDate(hoy.getUTCDate() - 1);
+
+    const manana = new Date(hoy);
+    manana.setUTCDate(hoy.getUTCDate() + 1);
+
+    const toISO = (d) => d.toISOString().split('T')[0];
+
+    return {
+        hoy: hoyISO,
+        diaSemanaNombre,
+        ayer: toISO(ayer),
+        manana: toISO(manana),
+        lunesEstaSemana: toISO(lunes),
+        primerDiaMes: toISO(primerDiaMes),
+    };
+}
+
+function construirSystemPrompt() {
+    const f = construirContextoFechas();
+
+    return `
+Eres el asistente de IA con nombre PolloBot en la polleria Super Pollo, una polleria local de la ciudad de huancayo de la regon Junin en Peru que se dedica a la venta de pollos a la brasa princiaplmente.
 Ayudas al personal administrativo con consultas sobre ventas, caja, inventario y reservas.
 
-FECHA ACTUAL: ${new Date().toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+## CONTEXTO DE FECHAS
+Usa estos valores directamente. NO calcules fechas relativas por tu cuenta, ya están resueltas:
+- HOY: ${f.hoy} (${f.diaSemanaNombre})
+- AYER: ${f.ayer}
+- MAÑANA: ${f.manana}
+- LUNES DE ESTA SEMANA: ${f.lunesEstaSemana}
+- PRIMER DÍA DE ESTE MES: ${f.primerDiaMes}
 
-REGLAS:
-- Responde siempre en español, de forma clara y directa.
-- Cuando el usuario pida un gráfico, usa la tool generarGrafico. No describas los datos como texto, solo confirma que el gráfico fue generado.
-- Cuando el usuario pida reportes, por ahora di que no esta disponible y que estara mas adelante
+Reglas de fecha:
+- "hoy" → fecha_inicio = fecha_fin = HOY
+- "ayer" → fecha_inicio = fecha_fin = AYER
+- "mañana" → fecha_inicio = fecha_fin = MAÑANA
+- "esta semana" → fecha_inicio = LUNES DE ESTA SEMANA, fecha_fin = HOY
+- "este mes" → fecha_inicio = PRIMER DÍA DE ESTE MES, fecha_fin = HOY
+- Si el usuario da fechas explícitas (ej. "del 1 al 15 de julio"), respétalas tal cual, en formato YYYY-MM-DD.
+
+## CUÁNDO USAR CADA TOOL (para evitar confusión entre consulta de texto y gráfico)
+- Si el usuario pide datos, cifras, comparaciones o texto → usa la tool de CONSULTA correspondiente
+  (consultarVentas, consultarTopProductos, consultarCaja, consultarInventario, consultarReservas,
+  consultarProductos, consultarProductosConInsumos) y responde en TEXTO.
+- Usa generarGrafico SOLO si el usuario pide explícitamente algo visual: "gráfico", "grafica", "chart",
+  "visualiza", "dibuja", "muéstrame en un gráfico/diagrama". Si solo pide cifras ("ventas de hoy",
+  "top productos", "stock bajo") SIN mencionar nada visual, usa la tool de consulta normal, no generarGrafico.
+- "top productos" y "stock de insumos" existen como consulta de texto Y como gráfico: la mención
+  explícita de algo visual es lo único que decide cuál usar.
+- Si el usuario pide ambos en el mismo mensaje (ej. "dame las ventas de hoy y un gráfico"), prioriza
+  responder primero con la tool de consulta en texto.
+- Cuando generarGrafico se ejecuta, NO describas los datos como texto ni repitas cifras: solo confirma
+  brevemente que el gráfico fue generado (1 línea).
+
+## REGLAS GENERALES
+- Responde siempre en español, de forma clara, directa y breve.
 - Para montos usa el formato S/. con 2 decimales.
-- Si no tienes datos suficientes para responder, dilo claramente.
-- No inventes datos. Solo usa lo que retornan las tools.
-- Si el usuario dice "hoy" calcula la fecha actual. "esta semana" = lunes a hoy. "este mes" = 1ro del mes a hoy.
+- Si el resultado de una tool viene vacío ([]), o todos los valores son 0, dilo explícitamente
+  (ej: "No se registraron ventas en ese período"). Nunca inventes datos ni omitas la respuesta.
+- Si una tool devuelve un error, informa al usuario que no se pudo obtener esa información en vez
+  de inventar una respuesta.
+- No inventes datos. Usa únicamente lo que retornan las tools.
+- Cuando el usuario pida reportes (documento/PDF/exportable), di que esa función no está disponible
+  todavía y que estará más adelante.
+
+## EJEMPLOS
+- "cuánto vendimos hoy" → consultarVentas(tipo=resumen, fecha_inicio=HOY, fecha_fin=HOY)
+- "ventas de ayer detalladas" → consultarVentas(tipo=detalle, fecha_inicio=AYER, fecha_fin=AYER)
+- "gráfico de ventas de esta semana" → generarGrafico(tipo_grafico=ventas_diarias, fecha_inicio=LUNES DE ESTA SEMANA, fecha_fin=HOY)
+- "qué insumos están por acabarse" → consultarInventario(tipo=estado, nivel_stock=critico)
+- "reservas de mañana" → consultarReservas(tipo=detalle, fecha_inicio=MAÑANA, fecha_fin=MAÑANA)
+- "top 5 productos de este mes en un gráfico" → generarGrafico(tipo_grafico=top_productos, fecha_inicio=PRIMER DÍA DE ESTE MES, fecha_fin=HOY, limite=5)
 `.trim();
+}
 
 async function construirGrafico({ tipo_grafico, fecha_inicio, fecha_fin, limite }) {
     const COLORES = ['#4F8EF7', '#34C27B', '#F7C948', '#E2534A', '#A78BFA'];
@@ -137,7 +224,7 @@ async function construirGrafico({ tipo_grafico, fecha_inicio, fecha_fin, limite 
     }
 }
 
-async function ejecutarTool(nombre, args) {
+async function ejecutarToolInterna(nombre, args) {
     switch (nombre) {
         case 'consultarVentas':
             return args.tipo === 'resumen'
@@ -153,11 +240,11 @@ async function ejecutarTool(nombre, args) {
             if (args.tipo === 'resumen') return db.obtenerResumenCaja(args.fecha_inicio, args.fecha_fin);
             if (args.tipo === 'movimientos') return db.obtenerMovimientosCaja(args.fecha_inicio, args.fecha_fin, args.tipo_movimiento ?? null);
             if (args.tipo === 'arqueos') return db.obtenerArqueosCaja(args.fecha_inicio, args.fecha_fin);
-            break;
+            return { error: `tipo="${args.tipo}" no válido para consultarCaja.` };
         case 'consultarInventario':
             if (args.tipo === 'estado') return db.obtenerEstadoInventario(args.nivel_stock ?? null);
             if (args.tipo === 'movimientos') return db.obtenerMovimientosInventario(args.fecha_inicio, args.fecha_fin, args.id_insumo ?? null);
-            break;
+            return { error: `tipo="${args.tipo}" no válido para consultarInventario.` };
         case 'consultarReservas':
             return args.tipo === 'resumen'
                 ? db.obtenerResumenReservas(args.fecha_inicio, args.fecha_fin)
@@ -169,64 +256,60 @@ async function ejecutarTool(nombre, args) {
     }
 }
 
+async function ejecutarTool(nombre, args) {
+    try {
+        return await ejecutarToolInterna(nombre, args);
+    } catch (err) {
+        console.error(`[ai_service] Error ejecutando tool "${nombre}":`, err);
+        return { error: `No se pudo obtener la información de "${nombre}" en este momento.` };
+    }
+}
+
 async function procesarMensaje(mensaje, historial = [], onChunk = null) {
-    // Instanciar el chat usando la API moderna de @google/genai
     const chat = genAI.chats.create({
         model: MODELO,
         config: {
-            systemInstruction: SYSTEM_PROMPT,
-            tools: [{ functionDeclarations: ALL_TOOLS }]
+            systemInstruction: construirSystemPrompt(),
+            tools: [{ functionDeclarations: ALL_TOOLS }],
+            temperature: 0.2,
         },
-        history: historial // Asegúrate de pasar el historial mapeado al formato del nuevo SDK [{ role: 'user', parts: [...] }]
+        history: historial
     });
 
-    // Enviamos el mensaje inicial
     let resultado = await chat.sendMessage({ message: mensaje });
+    let iteraciones = 0;
 
-    // Verificamos si Gemini requiere llamar a una función (Tool)
-    if (resultado.functionCalls && resultado.functionCalls.length > 0) {
-        const llamada = resultado.functionCalls[0];
-        const resultadoTool = await ejecutarTool(llamada.name, llamada.args);
+    while (resultado.functionCalls && resultado.functionCalls.length > 0) {
+        iteraciones++;
 
-        // Si es gráfico va directo, no necesita que Gemini lo interprete
-        if (resultadoTool?.__tipo === 'grafico') {
-            return { tipo: 'grafico', contenido: resultadoTool };
-        }
-
-        // Si es información de la BD (Ventas, Insumos, etc), se la devolvemos a Gemini
-        // y habilitamos el streaming para la redacción final de la IA
-        if (onChunk) {
-            const respuestaStream = await chat.sendMessageStream({
-                message: [{
-                    functionResponse: {
-                        name: llamada.name,
-                        response: { resultado: resultadoTool }
-                    }
-                }]
-            });
-
-            for await (const chunk of respuestaStream) {
-                onChunk(chunk.text);
+        if (iteraciones > MAX_ITERACIONES_TOOLS) {
+            const msgLimite = 'No pude completar tu consulta con la información disponible. ¿Puedes reformularla?';
+            if (onChunk) {
+                onChunk(msgLimite);
+                return { tipo: 'stream_completado' };
             }
-            return { tipo: 'stream_completado' };
-        } else {
-            // Fallback síncrono si no pasas un callback de streaming
-            const respuestaFinal = await chat.sendMessage({
-                message: [{
-                    functionResponse: {
-                        name: llamada.name,
-                        response: { resultado: resultadoTool }
-                    }
-                }]
-            });
-            return { tipo: 'texto', contenido: respuestaFinal.text };
+            return { tipo: 'texto', contenido: msgLimite };
         }
+
+        const llamadaGrafico = resultado.functionCalls.find(c => c.name === 'generarGrafico');
+        if (llamadaGrafico) {
+            const resultadoGrafico = await ejecutarTool(llamadaGrafico.name, llamadaGrafico.args);
+            return { tipo: 'grafico', contenido: resultadoGrafico };
+        }
+
+        const responses = await Promise.all(
+            resultado.functionCalls.map(async (llamada) => ({
+                name: llamada.name,
+                response: { resultado: await ejecutarTool(llamada.name, llamada.args) }
+            }))
+        );
+
+        resultado = await chat.sendMessage({
+            message: responses.map(r => ({ functionResponse: r }))
+        });
     }
 
-    // Si Gemini respondió directamente con texto sin usar herramientas
     if (onChunk) {
-        // Para soportar streaming directo de un solo paso tendrías que usar sendMessageStream desde el inicio,
-        // pero dado que manejas herramientas interceptadas, este flujo maneja el texto plano de caída.
         onChunk(resultado.text);
         return { tipo: 'stream_completado' };
     }

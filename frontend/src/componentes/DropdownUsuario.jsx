@@ -59,8 +59,8 @@ const DropdownUsuario = ({ usuario, mobile = false }) => {
     return (
       <div className="w-full">
         <div className="text-gray-100 text-center mb-4">
-          <p className="font-semibold">{usuario.nombresUsuario} {usuario.apellidosUsuario}</p>
-          <p className="text-sm text-gray-300">{usuario.correoUsuario}</p>
+          <p className="font-semibold">{usuario.nombre_usuario} {usuario.apellido_usuario}</p>
+          <p className="text-sm text-gray-300">{usuario.correo_usuario}</p>
         </div>
         <div className="space-y-2">
           {opciones.map((opcion, index) => (
@@ -103,7 +103,7 @@ const DropdownUsuario = ({ usuario, mobile = false }) => {
         <div className="flex items-center space-x-2">
           <FaUser className="w-5 h-5" />
           <span className="font-medium max-w-32 truncate">
-            {usuario.nombresUsuario}
+            {usuario.nombre_usuario}
           </span>
         </div>
         <FaChevronDown 
@@ -117,10 +117,10 @@ const DropdownUsuario = ({ usuario, mobile = false }) => {
         <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
           <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <p className="font-semibold text-gray-900 dark:text-white truncate">
-              {usuario.nombresUsuario} {usuario.apellidosUsuario}
+              {usuario.nombre_usuario} {usuario.apellido_usuario}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-              {usuario.correoUsuario}
+              {usuario.correo_usuario}
             </p>
           </div>
 

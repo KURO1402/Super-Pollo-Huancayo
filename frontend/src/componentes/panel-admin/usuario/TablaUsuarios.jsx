@@ -2,7 +2,6 @@ import { FiEdit, FiTrash2, FiRotateCcw, FiMail, FiPhone } from "react-icons/fi";
 import { Tabla } from '../../ui/tabla/Tabla';
 
 const TablaUsuarios = ({ usuarios, cargando, esSuperadmin, onEditarRol, onEliminarUsuario, onReactivarUsuario }) => {
-  console.log(usuarios);
   return (
     <Tabla encabezados={['Usuario', 'Correo', 'Teléfono', 'Rol', 'Acciones']}
       registros={usuarios.map(u => (
