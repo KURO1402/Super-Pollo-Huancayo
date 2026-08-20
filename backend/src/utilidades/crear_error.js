@@ -1,3 +1,4 @@
+//Crear error
 const crearError = (mensaje, status = 400) => {
   const error = new Error(mensaje);
   error.status = status;
