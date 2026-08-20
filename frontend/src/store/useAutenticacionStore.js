@@ -43,7 +43,8 @@ export const useAutenticacionStore = create(
                     const respuesta = await generarCodigoVerificacion(correo, tipoVerificacion);
                     return respuesta;
                 } catch (err) {
-                    set({ error: err.response?.data?.mensaje || 'Error al enviar código de verificación' });
+                    console.log(err)
+                    set({ error: err.message || 'Error al enviar codigo de verificación' });
                     throw err;
                 } finally {
                     set({ carga: false });
@@ -56,7 +57,7 @@ export const useAutenticacionStore = create(
                     const respuesta = await validarCodigoVerificacion(datos);
                     return respuesta;
                 } catch (err) {
-                    set({ error: err.response?.data?.mensaje || 'Error al validar código' });
+                    set({ error: err.message || 'Error al validar código' });
                     throw err;
                 } finally {
                     set({ carga: false });
@@ -69,7 +70,7 @@ export const useAutenticacionStore = create(
                     const respuesta = await restaurarClave(correoUsuario, nuevaClave);
                     return respuesta;
                 } catch (err) {
-                    set({ error: err.response?.data?.mensaje || 'Error al restaurar contraseña' });
+                    set({ error: err.message || 'Error al restaurar contraseña' });
                     throw err;
                 } finally {
                     set({ carga: false });
