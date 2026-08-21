@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 const BIENVENIDA = {
   id: 'welcome',
   rol: 'bot',
-  texto: 'Hola 👋 Soy Pollobot, tu asistente del panel. Puedo ayudarte con ventas, stock, reportes o dudas del sistema. ¿En qué puedo ayudarte?',
+  texto: '👋 Hola, soy Pollobot, tu asistente virtual. Puedo ayudarte con tus ventas, productos más vendidos y generar gráficos de los datos de tu negocio. ¿En qué puedo ayudarte?',
   hora: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
   grafico: null,
 };

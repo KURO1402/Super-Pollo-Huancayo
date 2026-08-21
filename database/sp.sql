@@ -3068,7 +3068,12 @@ BEGIN
         r.codigo_reservacion,
         r.fecha_creacion,
         r.id_usuario,
-        COALESCE(CONCAT(u.nombre_usuario, ' ', u.apellido_usuario), '----') AS nombre_completo
+        r.nombre_cliente,
+        COALESCE(
+            NULLIF(TRIM(CONCAT(COALESCE(u.nombre_usuario, ''), ' ', COALESCE(u.apellido_usuario, ''))), ''),
+            NULLIF(TRIM(r.nombre_cliente), ''),
+            '----'
+        ) AS nombre_completo
     FROM reservaciones r
     LEFT JOIN usuarios u ON r.id_usuario = u.id_usuario
     WHERE r.id_reservacion = p_id_reservacion;

@@ -64,7 +64,7 @@ const GestionPedidosPagina = () => {
 
     setMesaSeleccionada(mesaCompleta);
 
-    const tieneEstadoOcupada = mesaCompleta.estado_local === "ocupado";
+    const tieneEstadoOcupada = mesaCompleta.estado_mesa === "ocupado";
 
     if (!tieneEstadoOcupada) {
       modalPedido.abrir();
@@ -171,10 +171,8 @@ const GestionPedidosPagina = () => {
     }
   };
 
-  const estadoDisplay = (mesa) => {
-    if (mesa.estado_mesa && mesa.estado_mesa !== "disponible") return mesa.estado_mesa;
-    return mesa.estado_local || "disponible";
-  };
+  const estadoDisplay = (mesa) =>
+  mesa.estado_mesa || "disponible";
 
   const resumen = {
     total: mesas.length,

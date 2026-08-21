@@ -80,13 +80,15 @@ const registrarVerificacionCorreoService = async (datos) => {
   }
 
   const tipoTexto = tipoVerificacion === 1 ? 'registro' : 'recuperacion_password';
+  const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoRepository(correo);
 
-  if (tipoTexto === 'registro') {
-    const correosCoincidentes = await seleccionarTotalUsuarioPorCorreoRepository(correo);
-    if (correosCoincidentes > 0) {
+  if (tipoTexto === 'registro' && correosCoincidentes > 0) {
       throw crearError('Ya existe un usuario registrado con el correo ingresado.', 409);
-    }
-  }
+  } 
+
+  if (tipoTexto !== 'registro' && correosCoincidentes <= 0) {
+      throw crearError('El correo electrónico no está registrado.', 400);
+  } 
 
   const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -305,13 +307,12 @@ const restaurarClaveUsuarioService = async (datos) => {
   }
 
   const validacion = await validarVerificacionRepository(correoUsuario, "recuperacion_password");
-  console.log(validacion);
   if (!validacion || validacion.verificado !== 1) {
     throw crearError('Revise su correo y verifique el código primero.', 403);
   }
   const nuevaClaveEncriptada = await bcrypt.hash(nuevaClave, 10);
   const usuario = await seleccionarUsuarioCorreoRepository(correoUsuario);
-  const resultado = actualizarClaveUsuarioRepository(usuario.id_usuario, nuevaClaveEncriptada);
+  await actualizarClaveUsuarioRepository(usuario.id_usuario, nuevaClaveEncriptada);
   await eliminarVerificacionRepository(validacion.id_verificacion);
   return {
     ok: true,
