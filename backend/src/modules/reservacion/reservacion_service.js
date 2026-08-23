@@ -72,7 +72,7 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
         items.push({
             title: `Reservación Pollería - Mesa ${mesaInfo.numero_mesa}`,
             quantity: 1,
-            unit_price: precioMesa,
+            unit_price: 1,//precio temporal
             currency_id: 'PEN'
         });
     }
@@ -305,11 +305,9 @@ const cancelarReservacionService = async (idReservacion) => {
 
     const reservacionID = Number(idReservacion);
 
-    // Verificar que existe
     const existe = await contarReservacionPorIdRepository(reservacionID);
     if (!existe) throw crearError('Reservación no encontrada', 404);
 
-    // Verificar estado
     const estado = await obtenerEstadoReservacionRepository(reservacionID);
     if (estado === 'cancelado') throw crearError('La reservación ya está cancelada', 400);
     if (estado === 'completado') throw crearError('No se puede cancelar una reservación ya completada', 400);
@@ -334,8 +332,8 @@ const listarMesasDisponibilidadService = async (fecha, hora) => {
 
     const [horas, minutos] = hora.split(':').map(Number);
     const totalMinutos = horas * 60 + minutos;
-    const aperturaMinutos = 12 * 60;      // 12:00 = 720
-    const cierreMinutos = 20 * 60;        // 20:00 = 1200
+    const aperturaMinutos = 12 * 60;      
+    const cierreMinutos = 20 * 60;        
 
     if (totalMinutos < aperturaMinutos || totalMinutos > cierreMinutos) {
         throw crearError('El horario de reservas es de 12:00 a 20:00.', 400);
