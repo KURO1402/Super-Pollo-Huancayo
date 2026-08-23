@@ -276,7 +276,25 @@ async function procesarMensaje(mensaje, historial = [], onChunk = null) {
         history: historial
     });
 
-    let resultado = await chat.sendMessage({ message: mensaje });
+    async function enviarYStreamear(payload) {
+        const streamResp = await chat.sendMessageStream(payload);
+        let textoAcumulado = '';
+        let functionCalls = null;
+
+        for await (const chunk of streamResp) {
+            if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+                functionCalls = chunk.functionCalls;
+            }
+            if (chunk.text) {
+                textoAcumulado += chunk.text;
+                if (onChunk) onChunk(chunk.text);
+            }
+        }
+
+        return { text: textoAcumulado, functionCalls };
+    }
+
+    let resultado = await enviarYStreamear({ message: mensaje });
     let iteraciones = 0;
 
     while (resultado.functionCalls && resultado.functionCalls.length > 0) {
@@ -304,17 +322,16 @@ async function procesarMensaje(mensaje, historial = [], onChunk = null) {
             }))
         );
 
-        resultado = await chat.sendMessage({
+        resultado = await enviarYStreamear({
             message: responses.map(r => ({ functionResponse: r }))
         });
     }
 
-    if (onChunk) {
-        onChunk(resultado.text);
-        return { tipo: 'stream_completado' };
+    if (!onChunk) {
+        return { tipo: 'texto', contenido: resultado.text };
     }
 
-    return { tipo: 'texto', contenido: resultado.text };
+    return { tipo: 'stream_completado' };
 }
 
 module.exports = { procesarMensaje };
