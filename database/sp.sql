@@ -1159,7 +1159,7 @@ BEGIN
         DATE_FORMAT(ea.fecha_evento, '%d/%m/%Y %H:%i') AS fecha_apertura,
         CONCAT(ua.nombre_usuario, ' ', ua.apellido_usuario) AS usuario_apertura,
         DATE_FORMAT(ec.fecha_evento, '%d/%m/%Y %H:%i') AS fecha_cierre,
-        CONCAT(ua.nombre_usuario, ' ', ua.apellido_usuario)  AS usuario_cierre,
+        CONCAT(uc.nombre_usuario, ' ', uc.apellido_usuario)  AS usuario_cierre,
         FORMAT(c.saldo_inicial, 2) AS saldo_inicial,
         FORMAT(c.saldo_final, 2) AS saldo_final
     FROM caja c
