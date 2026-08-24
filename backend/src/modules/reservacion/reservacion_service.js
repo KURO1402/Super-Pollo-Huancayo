@@ -72,7 +72,7 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
         items.push({
             title: `Reservación Pollería - Mesa ${mesaInfo.numero_mesa}`,
             quantity: 1,
-            unit_price: 1,//precio temporal
+            unit_price: 2,//precio temporal
             currency_id: 'PEN'
         });
     }
