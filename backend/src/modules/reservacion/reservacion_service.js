@@ -128,7 +128,7 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     return {
         ok: true,
         mensaje: 'Mesas ocupadas exitosamente. Tiene 5 min para efectuar el pago',
-        init_point: result.sandbox_init_point
+        init_point: result.init_point
     };
 };
 
