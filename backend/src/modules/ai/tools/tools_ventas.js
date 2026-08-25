@@ -28,7 +28,7 @@ para ver cada venta individual usa tipo 'detalle'.`,
 
 const toolTopProductos = {
     name: 'consultarTopProductos',
-    description: `Consulta el ranking de productos más vendidos en un período.
+    description: `Consulta el ranking de productos más o menos vendidos en un período.
 Úsala cuando pregunten por: top productos, más vendidos, productos populares, 
 qué se vende más, ranking de ventas por producto.`,
     parameters: {
