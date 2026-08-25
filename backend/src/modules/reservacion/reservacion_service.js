@@ -128,12 +128,23 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
     return {
         ok: true,
         mensaje: 'Mesas ocupadas exitosamente. Tiene 5 min para efectuar el pago',
-        init_point: result.sandbox_init_point
+        init_point: result.init_point
     };
 };
 
 const confirmarPagoReservacionService = async (paymentId) => {
     const pagoMP = await payment.get({ id: paymentId });
+
+    console.log('========== MERCADO PAGO ==========');
+    console.log('ID:', pagoMP.id);
+    console.log('STATUS:', pagoMP.status);
+    console.log('STATUS DETAIL:', pagoMP.status_detail);
+    console.log('PAYMENT METHOD:', pagoMP.payment_method_id);
+    console.log('PAYMENT TYPE:', pagoMP.payment_type_id);
+    console.log('TRANSACTION AMOUNT:', pagoMP.transaction_amount);
+    console.log('EXTERNAL REFERENCE:', pagoMP.external_reference);
+    console.log('DATE:', pagoMP.date_created);
+    console.log('==================================');
 
     if (pagoMP.status !== 'approved') return;
 
@@ -305,11 +316,9 @@ const cancelarReservacionService = async (idReservacion) => {
 
     const reservacionID = Number(idReservacion);
 
-    // Verificar que existe
     const existe = await contarReservacionPorIdRepository(reservacionID);
     if (!existe) throw crearError('Reservación no encontrada', 404);
 
-    // Verificar estado
     const estado = await obtenerEstadoReservacionRepository(reservacionID);
     if (estado === 'cancelado') throw crearError('La reservación ya está cancelada', 400);
     if (estado === 'completado') throw crearError('No se puede cancelar una reservación ya completada', 400);
@@ -334,8 +343,8 @@ const listarMesasDisponibilidadService = async (fecha, hora) => {
 
     const [horas, minutos] = hora.split(':').map(Number);
     const totalMinutos = horas * 60 + minutos;
-    const aperturaMinutos = 12 * 60;      // 12:00 = 720
-    const cierreMinutos = 20 * 60;        // 20:00 = 1200
+    const aperturaMinutos = 12 * 60;      
+    const cierreMinutos = 20 * 60;        
 
     if (totalMinutos < aperturaMinutos || totalMinutos > cierreMinutos) {
         throw crearError('El horario de reservas es de 12:00 a 20:00.', 400);
