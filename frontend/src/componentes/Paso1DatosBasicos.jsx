@@ -37,7 +37,7 @@ const Paso1DatosBasicos = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const hoyEstaDisponible = () => new Date().getHours() < 20;
+  const hoyEstaDisponible = () => new Date().getHours() < 18;
 
   const validarDisponibilidadHora = (fecha, hora) => {
     const ahora = new Date();
