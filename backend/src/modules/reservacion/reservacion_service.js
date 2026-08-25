@@ -135,6 +135,17 @@ const crearPreferenciaReservacionService = async (datos, idUsuario) => {
 const confirmarPagoReservacionService = async (paymentId) => {
     const pagoMP = await payment.get({ id: paymentId });
 
+    console.log('========== MERCADO PAGO ==========');
+    console.log('ID:', pagoMP.id);
+    console.log('STATUS:', pagoMP.status);
+    console.log('STATUS DETAIL:', pagoMP.status_detail);
+    console.log('PAYMENT METHOD:', pagoMP.payment_method_id);
+    console.log('PAYMENT TYPE:', pagoMP.payment_type_id);
+    console.log('TRANSACTION AMOUNT:', pagoMP.transaction_amount);
+    console.log('EXTERNAL REFERENCE:', pagoMP.external_reference);
+    console.log('DATE:', pagoMP.date_created);
+    console.log('==================================');
+
     if (pagoMP.status !== 'approved') return;
 
     const codigoReservacion = pagoMP.external_reference;
